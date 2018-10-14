@@ -1,0 +1,22 @@
+// {type:class}
+// {direction:rightToLeft}
+// {generate:true}
+[MotorController|bool initialize(); failsafe();bool safetyCheck();]
+[MotorCurrentSensor|initialize();read();supported();|getCurrentReading();]
+[MotorPowerOutput|bool initialize(); void setPower(float value); bool safetyCheck();]
+[EncoderSensor|initialize();read();supported();|getCurrentReading();]
+[ComplementaryTimerMotorPowerOutput|_timer;_channel;_outputValue;]
+[PID|PID(dt,cmax,min,Kp,d,Ki); calculate(setpoint,pv,dt); calculate(setpoint,pv);]
+
+[ADCMotorCurrentSensor|getCurrentReading();]
+[MotorPowerOutput]++-[MotorController]
+[MotorCurrentSensor]++-[MotorController]
+[EncoderSensor]++-[MotorController]
+[MotorCurrentSensor]^[ADCMotorCurrentSensor]
+[MotorPowerOutput]^[ComplementaryTimerMotorPowerOutput]
+[MotorController]-[note: Implements the basic handling of a single motor. It also runs the controllers on velocity and (optionally) current{bg:white}]
+[EncoderSensor]-[note: An abstract rotary encoder{bg:white}]
+[MotorPowerOutput]-[note: An abstract device that can control the power applied to a motor{bg:white}]
+[ComplementaryTimerMotorPowerOutput]-[note: An implementation using a timer in complementary PWM output mode {bg:white}]
+[PID]<>-VelocityController[MotorController]
+[PID]<>-CurrentController[MotorController]
