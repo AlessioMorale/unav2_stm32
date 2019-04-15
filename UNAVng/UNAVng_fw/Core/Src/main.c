@@ -102,11 +102,9 @@ int main(void)
   /* USER CODE BEGIN 2 */
   HAL_TIM_PWM_Start(&htim4,TIM_CHANNEL_1); 
   __HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_1, 0xFFF);
-  MX_FREERTOS_Init();
   HAL_TIM_PWM_Start(&htim4,TIM_CHANNEL_2); 
   __HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_2, 0xFFF);
   HAL_TIM_PWM_Start(&htim4,TIM_CHANNEL_3); 
-  //vTaskStartScheduler();
   __HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_3, 0xFFF);
   HAL_TIM_PWM_Start(&htim4,TIM_CHANNEL_4); 
   __HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_4, 0xFFF);

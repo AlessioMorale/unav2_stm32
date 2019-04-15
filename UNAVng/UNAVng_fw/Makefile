@@ -47,17 +47,7 @@ Core/Src/stm32f4xx_it.c \
 Core/Src/stm32f4xx_hal_msp.c \
 Core/Src/system_stm32f4xx.c \
 Core/Src/stm32f4xx_hal_timebase_tim.c \
-Core/Src/freertos.c \
-Middlewares/Third_Party/FreeRTOS/Source/croutine.c \
-Middlewares/Third_Party/FreeRTOS/Source/event_groups.c \
-Middlewares/Third_Party/FreeRTOS/Source/list.c \
-Middlewares/Third_Party/FreeRTOS/Source/queue.c \
-Middlewares/Third_Party/FreeRTOS/Source/stream_buffer.c \
-Middlewares/Third_Party/FreeRTOS/Source/tasks.c \
-Middlewares/Third_Party/FreeRTOS/Source/timers.c \
-Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c \
-Middlewares/Third_Party/FreeRTOS/Source/portable/MemMang/heap_4.c \
-Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/port.c \
+Core/Src/freertos.c
 
 
 
@@ -68,7 +58,7 @@ startup_stm32f407xx.s
 include $(HALPATH)/stm32hal.mk
 include $(USBDEVPATH)/usbdev.mk
 include $(MIDDLEWARESPATH)/middlewares.mk
-#include $(FREERTOSPATH)/freertos.mk
+include $(FREERTOSPATH)/freertos.mk
 #######################################
 # binaries
 #######################################
@@ -122,11 +112,7 @@ C_INCLUDES +=  \
 -ICore/Inc \
 -IDrivers/CMSIS/Device/ST/STM32F4xx/Include \
 -IDrivers/CMSIS/Include \
--IDrivers/CMSIS/Include \
--IMiddlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/ \
--IMiddlewares/Third_Party/FreeRTOS/Source/include \
--IMiddlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F
-
+-IMiddlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/
 
 # compile gcc flags
 ASFLAGS = $(MCU) $(AS_DEFS) $(AS_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections

@@ -91,7 +91,7 @@ void MX_FREERTOS_Init(void) {
 
   /* Create the thread(s) */
   /* definition and creation of defaultTask */
-  osThreadDef(defaultTask, StartDefaultTask, osPriorityNormal, 0, 128);
+  osThreadDef(defaultTask, StartDefaultTask, osPriorityNormal, 0, 256);
   defaultTaskHandle = osThreadCreate(osThread(defaultTask), NULL);
 
   /* USER CODE BEGIN RTOS_THREADS */
@@ -126,7 +126,7 @@ void StartDefaultTask(void const * argument)
     count += 100;
   __HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_4, count);
     
-    CDC_Transmit_FS(cdcbuffer, 9);
+    CDC_Transmit_FS((uint8_t*)cdcbuffer, 9);
 
 /*
     // Receive up to another sizeof( ucRxData ) bytes from the stream buffer.
