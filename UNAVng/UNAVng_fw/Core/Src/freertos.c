@@ -23,10 +23,12 @@
 #include "task.h"
 #include "main.h"
 #include "cmsis_os.h"
+#include "tim.h"
+
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */     
-
+#include "usbd_cdc_if.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -36,7 +38,8 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-
+volatile uint8_t cdcbuffer[128] = "Test CDC\0";
+volatile int32_t cdcSize = 9;
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -110,10 +113,35 @@ void StartDefaultTask(void const * argument)
   MX_USB_DEVICE_Init();
 
   /* USER CODE BEGIN StartDefaultTask */
+  //StreamBufferHandle_t stream = CDC_GetRxStream();
+  //uint8_t data[ 20 ];
+  //size_t receivedBytes;
+  //const TickType_t blockTime = pdMS_TO_TICKS( 20 );
+
+  uint16_t count = 0;
   /* Infinite loop */
   for(;;)
   {
     osDelay(1);
+    count += 100;
+  __HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_4, count);
+    
+    CDC_Transmit_FS(cdcbuffer, 9);
+
+/*
+    // Receive up to another sizeof( ucRxData ) bytes from the stream buffer.
+    // Wait in the Blocked state (so not using any CPU processing time) for a
+    // maximum of 100ms for the full sizeof( ucRxData ) number of bytes to be
+    // available.
+    receivedBytes = xStreamBufferReceive( stream,
+                                           ( void * ) data,
+                                           sizeof( data ),
+                                           blockTime );
+
+    if( receivedBytes > 0 ){
+      CDC_Transmit_FS(data, receivedBytes);
+    }
+*/
   }
   /* USER CODE END StartDefaultTask */
 }

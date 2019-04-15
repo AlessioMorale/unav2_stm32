@@ -99,9 +99,15 @@ uint8_t UserRxBufferFS[APP_RX_DATA_SIZE];
 uint8_t UserTxBufferFS[APP_TX_DATA_SIZE];
 
 /* USER CODE BEGIN PRIVATE_VARIABLES */
-extern volatile uint8_t cdcbuffer[128];
-extern volatile  int32_t cdcSize;
 
+/* Used to dimension the array used to hold the streams.  The available space
+will actually be one less than this, so 999. */
+#define USB_RX_STORAGE_SIZE_BYTES 2000
+
+//static uint8_t cdcRxBufferStorage[USB_RX_STORAGE_SIZE_BYTES];
+//StaticStreamBuffer_t cdcRxStreamBufferStruct;
+//StreamBufferHandle_t cdcRxStream;
+uint8_t tempbuf[7];
 /* USER CODE END PRIVATE_VARIABLES */
 
 /**
@@ -160,7 +166,10 @@ static int8_t CDC_Init_FS(void)
   /* Set Application Buffers */
   USBD_CDC_SetTxBuffer(&hUsbDeviceFS, UserTxBufferFS, 0);
   USBD_CDC_SetRxBuffer(&hUsbDeviceFS, UserRxBufferFS);
-  //`USBD_CDC_ReceivePacket(&hUsbDeviceFS);
+
+  //const size_t triggerLevel = 1;
+  //cdcRxStream = xStreamBufferCreateStatic(sizeof(cdcRxBufferStorage), triggerLevel, cdcRxBufferStorage, &cdcRxStreamBufferStruct);
+  USBD_CDC_ReceivePacket(&hUsbDeviceFS);
   return (USBD_OK);
   /* USER CODE END 3 */
 }
@@ -226,11 +235,22 @@ static int8_t CDC_Control_FS(uint8_t cmd, uint8_t* pbuf, uint16_t length)
   /* 6      | bDataBits  |   1   | Number Data bits (5, 6, 7, 8 or 16).          */
   /*******************************************************************************/
     case CDC_SET_LINE_CODING:
-
+        tempbuf[0]=pbuf[0];
+        tempbuf[1]=pbuf[1];
+        tempbuf[2]=pbuf[2];
+        tempbuf[3]=pbuf[3];
+        tempbuf[4]=pbuf[4];
+        tempbuf[5]=pbuf[5];
+        tempbuf[6]=pbuf[6];
     break;
-
     case CDC_GET_LINE_CODING:
-
+        pbuf[0]=tempbuf[0];
+        pbuf[1]=tempbuf[1];
+        pbuf[2]=tempbuf[2];
+        pbuf[3]=tempbuf[3];
+        pbuf[4]=tempbuf[4];
+        pbuf[5]=tempbuf[5];
+        pbuf[6]=tempbuf[6];
     break;
 
     case CDC_SET_CONTROL_LINE_STATE:
@@ -266,13 +286,15 @@ static int8_t CDC_Control_FS(uint8_t cmd, uint8_t* pbuf, uint16_t length)
 static int8_t CDC_Receive_FS(uint8_t* Buf, uint32_t *Len)
 {
   /* USER CODE BEGIN 6 */
-  USBD_CDC_SetRxBuffer(&hUsbDeviceFS, &Buf[0]);
-  USBD_CDC_ReceivePacket(&hUsbDeviceFS);
-  if(*Len){
-    memcpy(cdcbuffer, Buf, *Len);
-  }
-  cdcSize = *Len;
-  return (USBD_OK);
+    USBD_CDC_SetRxBuffer(&hUsbDeviceFS, &Buf[0]);
+    USBD_CDC_ReceivePacket(&hUsbDeviceFS);
+    //BaseType_t higherPriorityTaskWoken = pdFALSE; // Initialised to pdFALSE.
+    //const size_t len = (size_t)*Len;
+    // Attempt to send the string to the stream buffer.
+    /*size_t bytesSent = */
+    //xStreamBufferSendFromISR(cdcRxStream, (void*)Buf, len, &higherPriorityTaskWoken);
+    //portYIELD_FROM_ISR(higherPriorityTaskWoken);
+    return (USBD_OK);
   /* USER CODE END 6 */
 }
 
