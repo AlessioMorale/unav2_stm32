@@ -54,11 +54,18 @@ ros::NodeHandle nh;
 rosserial_msgs::Log log_msg;
 
 std_msgs::Float32 encoder1;
+std_msgs::Float32 encoder2;
 ros::Publisher pubEncoder1("unav/enc1", &encoder1);
+ros::Publisher pubEncoder2("unav/enc2", &encoder2);
 
+void mot1_cb( const std_msgs::Int16& cmd_msg);
+void mot2_cb( const std_msgs::Int16& cmd_msg);
+
+ros::Subscriber<std_msgs::Int16> subMot1("unav/mot1", mot1_cb);
+ros::Subscriber<std_msgs::Int16> subMot2("unav/mot2", mot2_cb);
 
 char hello[] = "hello world!\0";
-char serror[] = "error occurred";
+char serror[] = "error occurred\0";
 
 /* USER CODE END PD */
 
@@ -155,13 +162,19 @@ extern "C" void StartDefaultTask(void const * argument)
   /* USER CODE END StartDefaultTask */
 }
 
+/* Private application code --------------------------------------------------*/
+/* USER CODE BEGIN Application */
+void mot1_cb( const std_msgs::Int16& cmd_msg){
+    __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_1, cmd_msg.data);
+}
+
+void mot2_cb( const std_msgs::Int16& cmd_msg){
+    __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_3, cmd_msg.data);
+}
+     
 extern "C" void StartRosTask(void const * argument){
     nh.initNode();
     nh.advertise(pubEncoder1);
-    //nh.advertise(pubLog);
-    //rosserial_msgs::Log l;
-    //l.level= rosserial_msgs::Log::INFO;
-    //l.msg =(char*) &hello;
     int counter = 0;
     while (true) { 
         if(!counter--){
@@ -174,12 +187,7 @@ extern "C" void StartRosTask(void const * argument){
         nh.spinOnce();
         vTaskDelay(1);
     }
-
-
 }
-/* Private application code --------------------------------------------------*/
-/* USER CODE BEGIN Application */
-     
 /* USER CODE END Application */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
