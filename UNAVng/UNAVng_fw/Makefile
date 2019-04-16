@@ -40,15 +40,17 @@ FREERTOSPATH = FreeRTOS
 ######################################
 # C sources
 C_SOURCES =  \
-Core/Src/main.c \
 Core/Src/gpio.c \
+Core/Src/main.c \
 Core/Src/tim.c \
 Core/Src/stm32f4xx_it.c \
 Core/Src/stm32f4xx_hal_msp.c \
 Core/Src/system_stm32f4xx.c \
-Core/Src/stm32f4xx_hal_timebase_tim.c \
-Core/Src/freertos.c
+Core/Src/stm32f4xx_hal_timebase_tim.c
 
+CPP_SOURCES = \
+Core/Src/freertos.cpp \
+rosserial/ros/time.cpp
 
 
 # ASM sources
@@ -67,11 +69,13 @@ PREFIX = arm-none-eabi-
 # either it can be added to the PATH environment variable.
 ifdef GCC_PATH
 CC = $(GCC_PATH)/$(PREFIX)gcc
+CPPC = $(GCC_PATH)/$(PREFIX)g++
 AS = $(GCC_PATH)/$(PREFIX)gcc -x assembler-with-cpp
 CP = $(GCC_PATH)/$(PREFIX)objcopy
 SZ = $(GCC_PATH)/$(PREFIX)size
 else
 CC = $(PREFIX)gcc
+CPPC = $(PREFIX)g++
 AS = $(PREFIX)gcc -x assembler-with-cpp
 CP = $(PREFIX)objcopy
 SZ = $(PREFIX)size
@@ -92,7 +96,7 @@ FPU = -mfpu=fpv4-sp-d16
 FLOAT-ABI = -mfloat-abi=hard
 
 # mcu
-MCU = $(CPU) -mthumb $(FPU) $(FLOAT-ABI)
+MCU = $(CPU) -mthumb $(FPU) $(FLOAT-ABI) -fsingle-precision-constant
 
 # macros for gcc
 # AS defines
@@ -112,12 +116,29 @@ C_INCLUDES +=  \
 -ICore/Inc \
 -IDrivers/CMSIS/Device/ST/STM32F4xx/Include \
 -IDrivers/CMSIS/Include \
--IMiddlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/
+-IMiddlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/ \
+-Irosserial
+
+CFLAGS                  += -Wall
+CFLAGS 					+= -Wextra
+CFLAGS 					+= -Wfatal-errors
+CFLAGS 					+= -Wpacked
+CFLAGS 					+= -Winline
+CFLAGS 					+= -Wfloat-equal
+CFLAGS 					+= -Wconversion
+CFLAGS 					+= -Wlogical-op
+CFLAGS 					+= -Wpointer-arith
+CFLAGS 					+= -Wdisabled-optimization
+CFLAGS                	+= -Wno-unused-parameter
+CFLAGS                  += -Wa,-alh=$(@:.o=.lst)
+
 
 # compile gcc flags
-ASFLAGS = $(MCU) $(AS_DEFS) $(AS_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections
+ASFLAGS = $(MCU) $(AS_DEFS) $(AS_INCLUDES) $(OPT) -fdata-sections -ffunction-sections -fno-common
 
-CFLAGS = $(MCU) $(C_DEFS) $(C_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections
+CFLAGS = $(MCU) $(C_DEFS) $(C_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections -fno-common
+
+
 
 ifeq ($(DEBUG), 1)
 CFLAGS += -g -gdwarf-2
@@ -141,6 +162,35 @@ LDFLAGS = $(MCU) -specs=nano.specs -T$(LDSCRIPT) $(LIBDIR) $(LIBS) -Wl,-Map=$(BU
 
 # default action: build all
 all: $(BUILD_DIR)/$(TARGET).elf $(BUILD_DIR)/$(TARGET).hex $(BUILD_DIR)/$(TARGET).bin
+# C++ Compiler -- Required & Optimization Flags
+
+CXXFLAGS                += $(CFLAGS)
+CXXFLAGS 				+= -fabi-version=0
+CXXFLAGS                += -fno-rtti
+CXXFLAGS                += -fno-exceptions
+CXXFLAGS				+= -fno-use-cxa-atexit
+CXXFLAGS 				+= -fno-threadsafe-statics
+
+# C++ -- Warnings
+CXXFLAGS 				+= -Weffc++
+CXXFLAGS 				+= -Wfloat-equal
+CXXFLAGS 				+= -Wsign-promo
+CXXFLAGS 				+= -Wzero-as-null-pointer-constant
+CXXFLAGS 				+= -Wmissing-declarations 
+CXXFLAGS 				+= -Woverloaded-virtual
+CXXFLAGS 				+= -Wsuggest-final-types
+CXXFLAGS 				+= -Wsuggest-final-methods
+CXXFLAGS 				+= -Wsuggest-override
+CXXFLAGS 				+= -Wsuggest-attribute=pure
+CXXFLAGS 				+= -Wsuggest-attribute=const
+CXXFLAGS 				+= -Wsuggest-attribute=noreturn
+CXXFLAGS 				+= -Wsuggest-attribute=format
+CXXFLAGS 				+= -Wmissing-format-attribute
+CXXFLAGS 				+= -Wold-style-cast
+CXXFLAGS 				+= -Wshadow
+CXXFLAGS 				+= -Wuseless-cast
+CXXFLAGS 				+= -Wctor-dtor-privacy
+CXXFLAGS 				+= -Wstrict-null-sentinel
 
 
 #######################################
@@ -149,12 +199,19 @@ all: $(BUILD_DIR)/$(TARGET).elf $(BUILD_DIR)/$(TARGET).hex $(BUILD_DIR)/$(TARGET
 # list of objects
 OBJECTS = $(addprefix $(BUILD_DIR)/,$(notdir $(C_SOURCES:.c=.o)))
 vpath %.c $(sort $(dir $(C_SOURCES)))
+# list of cpp objects
+OBJECTS += $(addprefix $(BUILD_DIR)/,$(notdir $(CPP_SOURCES:.cpp=.o)))
+vpath %.cpp $(sort $(dir $(CPP_SOURCES)))
+
 # list of ASM program objects
 OBJECTS += $(addprefix $(BUILD_DIR)/,$(notdir $(ASM_SOURCES:.s=.o)))
 vpath %.s $(sort $(dir $(ASM_SOURCES)))
 
 $(BUILD_DIR)/%.o: %.c Makefile | $(BUILD_DIR) 
 	$(CC) -c $(CFLAGS) -Wa,-a,-ad,-alms=$(BUILD_DIR)/$(notdir $(<:.c=.lst)) $< -o $@
+
+$(BUILD_DIR)/%.o: %.cpp Makefile | $(BUILD_DIR) 
+	$(CPPC) -c $(CXXFLAGS) -Wa,-a,-ad,-alms=$(BUILD_DIR)/$(notdir $(<:.cpp=.lst)) $< -o $@
 
 $(BUILD_DIR)/%.o: %.s Makefile | $(BUILD_DIR)
 	$(AS) -c $(CFLAGS) $< -o $@

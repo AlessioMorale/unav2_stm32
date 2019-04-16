@@ -5,13 +5,14 @@
  *      Author: nucho
  */
 
-#ifndef ROS_MBED_HARDWARE_H_
-#define ROS_MBED_HARDWARE_H_
+#ifndef ROS_USBSERIAL_H
+#define ROS_USBSERIAL_H
 
 #include <usbd_cdc_if.h>
 #include <stm32f4xx_hal.h>
-
-#define MAXBLOCK 60
+#include "FreeRTOS.h"
+extern USBD_HandleTypeDef hUsbDeviceFS;
+#define MAXBLOCK 40
 class rosUSBSerial {
   public:
     rosUSBSerial(){
@@ -25,37 +26,43 @@ class rosUSBSerial {
 
     // any initialization code necessary to use the serial port
     void init(){
-      rxStream = CDC_GetRxStream();
+
     }
   
 
     // read a byte from the serial port. -1 = failure
     int read(){
-        uint8_t byte;
-       if(xStreamBufferReceive(rxStream, (void*)&byte, 1, 1) < 1){
+      uint8_t byte;
+      if ((!rxStream && !(rxStream = CDC_GetRxStream())) ||
+           !xStreamBufferReceive(rxStream, (void*)&byte, 1, 0)){
           return -1;
-       }
-       return byte;
+      }
+      return byte;
     }
-
+    
     void write(uint8_t* data, int length) {
+        if (!rxStream && !(rxStream = CDC_GetRxStream())){
+          return;
+        }
         while (length){
-            if(length > MAXBLOCK){
-              CDC_Transmit_FS(data, (uint16_t)MAXBLOCK);
-              length -=MAXBLOCK;
-              data+=MAXBLOCK;
-            } else{
-              CDC_Transmit_FS(data,length);
-              length = 0;
+            uint16_t tosend = MIN( MAXBLOCK, length);
+            if(CDC_Transmit_FS(data, tosend) != USBD_FAIL)
+            {
+              while(((USBD_CDC_HandleTypeDef*)(hUsbDeviceFS.pClassData))->TxState!=0);
+              length -= tosend;
+              data+= tosend;
             }
         }
     }
 
-    unsigned long time(){return (HAL_GetTick() / 1000);}
-
-protected:
+    unsigned long time(){return (HAL_GetTick());}
+    private:
     StreamBufferHandle_t rxStream;
+    //StreamBufferHandle_t txStream;
+    osThreadId commTaskHandle;
+
 };
 
 
-#endif /* ROS_MBED_HARDWARE_H_ */
+#endif /* ROS_USBSERIAL_H */
+ 

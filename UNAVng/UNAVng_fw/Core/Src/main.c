@@ -29,8 +29,6 @@
 /* USER CODE BEGIN Includes */
 //#include "FreeRTOS.h"
 //#include "task.h"
-void MX_FREERTOS_Init();
-
 
 /* USER CODE END Includes */
 
@@ -57,7 +55,7 @@ void MX_FREERTOS_Init();
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
-void MX_FREERTOS_Init(void);
+extern void MX_FREERTOS_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -71,6 +69,7 @@ void MX_FREERTOS_Init(void);
   * @brief  The application entry point.
   * @retval int
   */
+
 int main(void)
 {
   /* USER CODE BEGIN 1 */
@@ -103,11 +102,8 @@ int main(void)
   HAL_TIM_PWM_Start(&htim4,TIM_CHANNEL_1); 
   __HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_1, 0xFFF);
   HAL_TIM_PWM_Start(&htim4,TIM_CHANNEL_2); 
-  __HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_2, 0xFFF);
   HAL_TIM_PWM_Start(&htim4,TIM_CHANNEL_3); 
-  __HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_3, 0xFFF);
   HAL_TIM_PWM_Start(&htim4,TIM_CHANNEL_4); 
-  __HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_4, 0xFFF);
   /* USER CODE END 2 */
 
   /* Call init function for freertos objects (in freertos.c) */
@@ -193,6 +189,9 @@ void SystemClock_Config(void)
   * @param  htim : TIM handle
   * @retval None
   */
+#ifdef __cplusplus
+extern "C" 
+#endif
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
   /* USER CODE BEGIN Callback 0 */
@@ -210,6 +209,9 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
   * @brief  This function is executed in case of error occurrence.
   * @retval None
   */
+#ifdef __cplusplus
+extern "C" 
+#endif
 void Error_Handler(void)
 {
   /* USER CODE BEGIN Error_Handler_Debug */
@@ -226,6 +228,9 @@ void Error_Handler(void)
   * @param  line: assert_param error line source number
   * @retval None
   */
+#ifdef __cplusplus
+extern "C" 
+#endif
 void assert_failed(uint8_t *file, uint32_t line)
 { 
   /* USER CODE BEGIN 6 */

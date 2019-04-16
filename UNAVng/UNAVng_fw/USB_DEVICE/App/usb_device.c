@@ -28,7 +28,9 @@
 #include "usbd_cdc_if.h"
 
 /* USER CODE BEGIN Includes */
-
+#ifdef __cplusplus
+extern "C" {
+#endif
 /* USER CODE END Includes */
 
 /* USER CODE BEGIN PV */
@@ -86,7 +88,9 @@ void MX_USB_DEVICE_Init(void)
     Error_Handler();
   }
   /* USER CODE BEGIN USB_DEVICE_Init_PostTreatment */
-  
+  #ifdef __cplusplus
+  }
+#endif
   /* USER CODE END USB_DEVICE_Init_PostTreatment */
 }
 

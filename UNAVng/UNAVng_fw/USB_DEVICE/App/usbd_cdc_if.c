@@ -104,9 +104,9 @@ uint8_t UserTxBufferFS[APP_TX_DATA_SIZE];
 will actually be one less than this, so 999. */
 #define USB_RX_STORAGE_SIZE_BYTES 2000
 
-//static uint8_t cdcRxBufferStorage[USB_RX_STORAGE_SIZE_BYTES];
-//StaticStreamBuffer_t cdcRxStreamBufferStruct;
-//StreamBufferHandle_t cdcRxStream;
+static uint8_t cdcRxBufferStorage[USB_RX_STORAGE_SIZE_BYTES];
+StaticStreamBuffer_t cdcRxStreamBufferStruct;
+StreamBufferHandle_t cdcRxStream = 0;
 uint8_t tempbuf[7];
 /* USER CODE END PRIVATE_VARIABLES */
 
@@ -167,8 +167,8 @@ static int8_t CDC_Init_FS(void)
   USBD_CDC_SetTxBuffer(&hUsbDeviceFS, UserTxBufferFS, 0);
   USBD_CDC_SetRxBuffer(&hUsbDeviceFS, UserRxBufferFS);
 
-  //const size_t triggerLevel = 1;
-  //cdcRxStream = xStreamBufferCreateStatic(sizeof(cdcRxBufferStorage), triggerLevel, cdcRxBufferStorage, &cdcRxStreamBufferStruct);
+  const size_t triggerLevel = 1;
+  cdcRxStream = xStreamBufferCreateStatic(sizeof(cdcRxBufferStorage), triggerLevel, cdcRxBufferStorage, &cdcRxStreamBufferStruct);
   USBD_CDC_ReceivePacket(&hUsbDeviceFS);
   return (USBD_OK);
   /* USER CODE END 3 */
@@ -288,11 +288,11 @@ static int8_t CDC_Receive_FS(uint8_t* Buf, uint32_t *Len)
   /* USER CODE BEGIN 6 */
     USBD_CDC_SetRxBuffer(&hUsbDeviceFS, &Buf[0]);
     USBD_CDC_ReceivePacket(&hUsbDeviceFS);
-    //BaseType_t higherPriorityTaskWoken = pdFALSE; // Initialised to pdFALSE.
-    //const size_t len = (size_t)*Len;
+    BaseType_t higherPriorityTaskWoken = pdFALSE; // Initialised to pdFALSE.
+    const size_t len = (size_t)*Len;
     // Attempt to send the string to the stream buffer.
     /*size_t bytesSent = */
-    //xStreamBufferSendFromISR(cdcRxStream, (void*)Buf, len, &higherPriorityTaskWoken);
+    xStreamBufferSendFromISR(cdcRxStream, (void*)Buf, len, &higherPriorityTaskWoken);
     //portYIELD_FROM_ISR(higherPriorityTaskWoken);
     return (USBD_OK);
   /* USER CODE END 6 */
@@ -314,11 +314,17 @@ uint8_t CDC_Transmit_FS(uint8_t* Buf, uint16_t Len)
   uint8_t result = USBD_OK;
   /* USER CODE BEGIN 7 */
   USBD_CDC_HandleTypeDef *hcdc = (USBD_CDC_HandleTypeDef*)hUsbDeviceFS.pClassData;
-  if (hcdc->TxState != 0){
-    return USBD_BUSY;
-  }
+  while(hcdc->TxState);
   USBD_CDC_SetTxBuffer(&hUsbDeviceFS, Buf, Len);
-  result = USBD_CDC_TransmitPacket(&hUsbDeviceFS);
+  do {
+    result |= USBD_CDC_TransmitPacket(&hUsbDeviceFS);
+  } while((result != USBD_OK) && (result != USBD_FAIL)); 
+  
+  if ((Len%64==0) && (result==USBD_OK)){
+    while(hcdc->TxState);
+    USBD_CDC_SetTxBuffer(&hUsbDeviceFS, Buf, 0);
+    result |= USBD_CDC_TransmitPacket(&hUsbDeviceFS);
+  }
   /* USER CODE END 7 */
   return result;
 }
