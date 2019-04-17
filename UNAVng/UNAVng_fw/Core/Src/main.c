@@ -24,7 +24,7 @@
 #include "tim.h"
 #include "usb_device.h"
 #include "gpio.h"
-#include "timing.h"
+
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 //#include "FreeRTOS.h"
@@ -93,11 +93,11 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+  MX_TIM4_Init();
   MX_TIM1_Init();
+  MX_TIM3_Init();
   MX_TIM8_Init();
   MX_TIM2_Init();
-  MX_TIM3_Init();
-  MX_TIM4_Init();
   /* USER CODE BEGIN 2 */
   HAL_TIM_PWM_Start(&htim4,TIM_CHANNEL_1); 
   HAL_TIM_PWM_Start(&htim4,TIM_CHANNEL_2); 
@@ -115,7 +115,7 @@ int main(void)
 
   __HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_1, 0xFFF);
   __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_1, 512);
-  __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_2, 512);  
+  __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_2, 512); 
    timing_Init();
   /* USER CODE END 2 */
 
