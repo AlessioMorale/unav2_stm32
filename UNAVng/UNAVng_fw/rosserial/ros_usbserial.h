@@ -45,7 +45,7 @@ class rosUSBSerial {
           return;
         }
         while (length){
-            uint16_t tosend = MIN( MAXBLOCK, length);
+            uint16_t tosend = MIN(MAXBLOCK, length);
             if(CDC_Transmit_FS(data, tosend) != USBD_FAIL)
             {
               while(((USBD_CDC_HandleTypeDef*)(hUsbDeviceFS.pClassData))->TxState!=0);
@@ -58,7 +58,6 @@ class rosUSBSerial {
     unsigned long time(){return (HAL_GetTick());}
     private:
     StreamBufferHandle_t rxStream;
-    //StreamBufferHandle_t txStream;
     osThreadId commTaskHandle;
 
 };

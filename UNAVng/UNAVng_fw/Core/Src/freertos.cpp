@@ -24,7 +24,7 @@
 #include "main.h"
 #include "cmsis_os.h"
 #include "tim.h"
-
+#include "timing.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
@@ -35,7 +35,8 @@
 #include <std_msgs/Int32.h>
 #include <std_msgs/Int16.h>
 #include <std_msgs/Float32.h>
-
+#include <modules/rosnodemodule.h>
+#include <modules/rosmotormodule.h>
 
 
 /* USER CODE END Includes */
@@ -47,25 +48,8 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-volatile uint8_t cdcbuffer[128] = "Test CDC\0";
-volatile int32_t cdcSize = 9;
 
-ros::NodeHandle nh;
-rosserial_msgs::Log log_msg;
 
-std_msgs::Float32 encoder1;
-std_msgs::Float32 encoder2;
-ros::Publisher pubEncoder1("unav/enc1", &encoder1);
-ros::Publisher pubEncoder2("unav/enc2", &encoder2);
-
-void mot1_cb( const std_msgs::Int16& cmd_msg);
-void mot2_cb( const std_msgs::Int16& cmd_msg);
-
-ros::Subscriber<std_msgs::Int16> subMot1("unav/mot1", mot1_cb);
-ros::Subscriber<std_msgs::Int16> subMot2("unav/mot2", mot2_cb);
-
-char hello[] = "hello world!\0";
-char serror[] = "error occurred\0";
 
 /* USER CODE END PD */
 
@@ -78,15 +62,13 @@ char serror[] = "error occurred\0";
 /* USER CODE BEGIN Variables */
 
 osThreadId defaultTaskHandle;
-osThreadId rosTaskHandle;
-osThreadId motorsTaskHandle;
+unav::modules::RosNodeModule rosnode;
+unav::modules::RosMotorModule rosmotornode;
 /* USER CODE END Variables */
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
 extern "C" void StartDefaultTask(void const * argument);
-extern "C" void StartRosTask(void const * argument);
-extern "C" void StartMotorsTask(void const * argument);
 extern "C" void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 
 void MX_USB_DEVICE_Init(void);
@@ -123,11 +105,8 @@ extern "C" void MX_FREERTOS_Init(void) {
   /* definition and creation of defaultTask */
   osThreadDef(defaultTask, StartDefaultTask, osPriorityNormal, 0, 256);
   defaultTaskHandle = osThreadCreate(osThread(defaultTask), NULL);
-  osThreadDef(rosTask, StartRosTask, osPriorityAboveNormal, 0, 512);
-  rosTaskHandle = osThreadCreate(osThread(rosTask), NULL);
-  osThreadDef(motorsTask, StartMotorsTask, osPriorityAboveNormal, 0, 512);
-  motorsTaskHandle = osThreadCreate(osThread(motorsTask), NULL);
-
+  rosnode.initialize();
+  rosmotornode.initialize();
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
   /* USER CODE END RTOS_THREADS */
@@ -175,54 +154,6 @@ void mot1_cb( const std_msgs::Int16& cmd_msg){
 
 void mot2_cb( const std_msgs::Int16& cmd_msg){
     __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_2, cmd_msg.data);
-}
-     
-extern "C" void StartRosTask(void const * argument){
-    nh.initNode();
-    TIM2->CNT = 100;
-    nh.advertise(pubEncoder1);
-    nh.advertise(pubEncoder2);
-    int counter = 0;
-    TickType_t c = xTaskGetTickCount();
-    while (true) { 
-      if(!counter--){
-        counter = 100;
-        nh.logdebug(hello);
-      } 
-      //pubLog.publish(&log_msg);
-      nh.spinOnce();
-      vTaskDelayUntil(&c, 10);  
-    }
-}
-
-extern "C" void StartMotorsTask(void const * argument){
-    float speed = 0;
-    uint16_t lastreading1 = TIM2->CNT;
-    uint16_t lastreading2 = TIM3->CNT;
-    uint32_t lasttime = TIM5->CNT;
-    float speed1 = 0;
-    float speed2 = 0;
-
-    TickType_t c = xTaskGetTickCount();
-    while (true) { 
-      uint32_t currenttime = TIM5->CNT;
-      float dt =(float)(currenttime - lasttime) * 0.001; 
-      lasttime = currenttime;
-      uint32_t current1 = TIM2->CNT;
-      uint32_t current2 = TIM3->CNT;
-
-      int32_t deltaenc1 = (uint16_t)lastreading1 - current1; 
-      int32_t deltaenc2 = (uint16_t)lastreading2 - current2;
-      speed1 = speed1 * 0.005f + 0.995f * ((float)deltaenc1) / dt;
-      speed2 = speed2 * 0.005f + 0.995f * ((float)deltaenc2) / dt;
-      encoder1.data = speed1;
-      encoder2.data = TIM14->CNT;
-      pubEncoder1.publish(&encoder1);
-      pubEncoder2.publish(&encoder2);
-      //pubLog.publish(&log_msg);
-      nh.spinOnce();
-      vTaskDelayUntil(&c, 10);  
-    }
 }
 /* USER CODE END Application */
 

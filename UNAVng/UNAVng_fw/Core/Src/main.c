@@ -24,7 +24,7 @@
 #include "tim.h"
 #include "usb_device.h"
 #include "gpio.h"
-
+#include "timing.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 //#include "FreeRTOS.h"
@@ -116,6 +116,7 @@ int main(void)
   __HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_1, 0xFFF);
   __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_1, 512);
   __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_2, 512);  
+   timing_Init();
   /* USER CODE END 2 */
 
   /* Call init function for freertos objects (in freertos.c) */

@@ -51,7 +51,11 @@ Core/Src/timing.c
 
 CPP_SOURCES = \
 Core/Src/freertos.cpp \
-rosserial/ros/time.cpp
+rosserial/ros/time.cpp \
+Core/Src/modules/basemodule.cpp \
+Core/Src/modules/baserosmodule.cpp \
+Core/Src/modules/rosnodemodule.cpp \
+Core/Src/modules/rosmotormodule.cpp
 
 
 # ASM sources
