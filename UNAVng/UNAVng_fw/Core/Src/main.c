@@ -55,7 +55,7 @@
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
-extern void MX_FREERTOS_Init(void);
+void MX_FREERTOS_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -69,7 +69,6 @@ extern void MX_FREERTOS_Init(void);
   * @brief  The application entry point.
   * @retval int
   */
-
 int main(void)
 {
   /* USER CODE BEGIN 1 */
@@ -94,16 +93,29 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-  MX_TIM4_Init();
   MX_TIM1_Init();
-  MX_TIM3_Init();
   MX_TIM8_Init();
+  MX_TIM2_Init();
+  MX_TIM3_Init();
+  MX_TIM4_Init();
   /* USER CODE BEGIN 2 */
   HAL_TIM_PWM_Start(&htim4,TIM_CHANNEL_1); 
-  __HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_1, 0xFFF);
   HAL_TIM_PWM_Start(&htim4,TIM_CHANNEL_2); 
   HAL_TIM_PWM_Start(&htim4,TIM_CHANNEL_3); 
   HAL_TIM_PWM_Start(&htim4,TIM_CHANNEL_4); 
+
+  HAL_TIM_Encoder_Start(&htim2,TIM_CHANNEL_ALL);
+  HAL_TIM_Encoder_Start(&htim3,TIM_CHANNEL_ALL);  
+
+  HAL_TIM_Base_Start(&htim1); 
+  HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_1);
+  HAL_TIMEx_PWMN_Start(&htim1, TIM_CHANNEL_1);
+  HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_2);
+  HAL_TIMEx_PWMN_Start(&htim1, TIM_CHANNEL_2);
+
+  __HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_1, 0xFFF);
+  __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_1, 512);
+  __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_2, 512);  
   /* USER CODE END 2 */
 
   /* Call init function for freertos objects (in freertos.c) */
@@ -189,9 +201,6 @@ void SystemClock_Config(void)
   * @param  htim : TIM handle
   * @retval None
   */
-#ifdef __cplusplus
-extern "C" 
-#endif
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
   /* USER CODE BEGIN Callback 0 */
@@ -209,9 +218,6 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
   * @brief  This function is executed in case of error occurrence.
   * @retval None
   */
-#ifdef __cplusplus
-extern "C" 
-#endif
 void Error_Handler(void)
 {
   /* USER CODE BEGIN Error_Handler_Debug */
@@ -228,9 +234,6 @@ void Error_Handler(void)
   * @param  line: assert_param error line source number
   * @retval None
   */
-#ifdef __cplusplus
-extern "C" 
-#endif
 void assert_failed(uint8_t *file, uint32_t line)
 { 
   /* USER CODE BEGIN 6 */

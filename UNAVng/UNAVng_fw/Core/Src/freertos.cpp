@@ -79,12 +79,14 @@ char serror[] = "error occurred\0";
 
 osThreadId defaultTaskHandle;
 osThreadId rosTaskHandle;
+osThreadId motorsTaskHandle;
 /* USER CODE END Variables */
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
 extern "C" void StartDefaultTask(void const * argument);
 extern "C" void StartRosTask(void const * argument);
+extern "C" void StartMotorsTask(void const * argument);
 extern "C" void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 
 void MX_USB_DEVICE_Init(void);
@@ -123,6 +125,9 @@ extern "C" void MX_FREERTOS_Init(void) {
   defaultTaskHandle = osThreadCreate(osThread(defaultTask), NULL);
   osThreadDef(rosTask, StartRosTask, osPriorityAboveNormal, 0, 512);
   rosTaskHandle = osThreadCreate(osThread(rosTask), NULL);
+  osThreadDef(motorsTask, StartMotorsTask, osPriorityAboveNormal, 0, 512);
+  motorsTaskHandle = osThreadCreate(osThread(motorsTask), NULL);
+
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
   /* USER CODE END RTOS_THREADS */
@@ -169,23 +174,54 @@ void mot1_cb( const std_msgs::Int16& cmd_msg){
 }
 
 void mot2_cb( const std_msgs::Int16& cmd_msg){
-    __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_3, cmd_msg.data);
+    __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_2, cmd_msg.data);
 }
      
 extern "C" void StartRosTask(void const * argument){
     nh.initNode();
+    TIM2->CNT = 100;
     nh.advertise(pubEncoder1);
+    nh.advertise(pubEncoder2);
     int counter = 0;
+    TickType_t c = xTaskGetTickCount();
     while (true) { 
-        if(!counter--){
-          counter = 100;
-          nh.logdebug(hello);
-        } 
-        encoder1.data++; 
-        pubEncoder1.publish(&encoder1);
-        //pubLog.publish(&log_msg);
-        nh.spinOnce();
-        vTaskDelay(1);
+      if(!counter--){
+        counter = 100;
+        nh.logdebug(hello);
+      } 
+      //pubLog.publish(&log_msg);
+      nh.spinOnce();
+      vTaskDelayUntil(&c, 10);  
+    }
+}
+
+extern "C" void StartMotorsTask(void const * argument){
+    float speed = 0;
+    uint16_t lastreading1 = TIM2->CNT;
+    uint16_t lastreading2 = TIM3->CNT;
+    uint32_t lasttime = TIM5->CNT;
+    float speed1 = 0;
+    float speed2 = 0;
+
+    TickType_t c = xTaskGetTickCount();
+    while (true) { 
+      uint32_t currenttime = TIM5->CNT;
+      float dt =(float)(currenttime - lasttime) * 0.001; 
+      lasttime = currenttime;
+      uint32_t current1 = TIM2->CNT;
+      uint32_t current2 = TIM3->CNT;
+
+      int32_t deltaenc1 = (uint16_t)lastreading1 - current1; 
+      int32_t deltaenc2 = (uint16_t)lastreading2 - current2;
+      speed1 = speed1 * 0.005f + 0.995f * ((float)deltaenc1) / dt;
+      speed2 = speed2 * 0.005f + 0.995f * ((float)deltaenc2) / dt;
+      encoder1.data = speed1;
+      encoder2.data = TIM14->CNT;
+      pubEncoder1.publish(&encoder1);
+      pubEncoder2.publish(&encoder2);
+      //pubLog.publish(&log_msg);
+      nh.spinOnce();
+      vTaskDelayUntil(&c, 10);  
     }
 }
 /* USER CODE END Application */
