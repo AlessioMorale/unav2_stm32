@@ -47,15 +47,17 @@ Core/Src/stm32f4xx_it.c \
 Core/Src/stm32f4xx_hal_msp.c \
 Core/Src/system_stm32f4xx.c \
 Core/Src/stm32f4xx_hal_timebase_tim.c \
-Core/Src/timing.c
+Core/Src/timing.c \
+Core/Src/mathutils.c
 
 CPP_SOURCES = \
 Core/Src/freertos.cpp \
-rosserial/ros/time.cpp \
+rosserial/time.cpp \
 Core/Src/modules/basemodule.cpp \
 Core/Src/modules/baserosmodule.cpp \
 Core/Src/modules/rosnodemodule.cpp \
-Core/Src/modules/rosmotormodule.cpp
+Core/Src/modules/rosmotormodule.cpp \
+Core/Src/controls/pid.cpp
 
 
 # ASM sources

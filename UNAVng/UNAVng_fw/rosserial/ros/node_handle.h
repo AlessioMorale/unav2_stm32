@@ -41,7 +41,7 @@
 #include "rosserial_msgs/TopicInfo.h"
 #include "rosserial_msgs/Log.h"
 #include "rosserial_msgs/RequestParam.h"
-#include "ros/time.h"
+
 #include "ros/msg.h"
 
 namespace ros

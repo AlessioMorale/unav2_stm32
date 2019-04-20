@@ -8,50 +8,109 @@
 #include <std_msgs/Int32.h>
 #include <std_msgs/Int16.h>
 #include <std_msgs/Float32.h>
-
+#include <sensor_msgs/JointState.h>
+#include <control_msgs/PidState.h>
+#include <stm32f4xx.h>
+#include <mathutils.h>
 namespace unav::modules{
 
 void RosMotorModule::initialize(){
+
     BaseRosModule::initialize(osPriority::osPriorityAboveNormal, 512);
 }
 
-void mot1_cb( const std_msgs::Int16& cmd_msg){
-    __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_1, cmd_msg.data);
+void dummy( const std_msgs::Float32& cmd_msg){
+    
 }
 
-void mot2_cb( const std_msgs::Int16& cmd_msg){
-    __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_2, cmd_msg.data);
-}
 void RosMotorModule::moduleThreadStart(){
-    ros::Subscriber<std_msgs::Int16> subMot1("unav/mot1", mot1_cb);
-    ros::Subscriber<std_msgs::Int16> subMot2("unav/mot2", mot2_cb);
+    const float dt = 0.02;
+    const float alpha = LPF_ALPHA(dt, 5);
+    const float alphaMotor = LPF_ALPHA(dt, 5);
+    
+    ros::Subscriber<std_msgs::Float32> subMot1("unav/mot1", dummy);
+    ros::Subscriber<std_msgs::Float32> subKp1("unav/kp1", dummy);
+    ros::Subscriber<std_msgs::Float32> subKd1("unav/kd1", dummy);
+    ros::Subscriber<std_msgs::Float32> subKi1("unav/ki1", dummy);
+    ros::Subscriber<std_msgs::Float32> subKiLimit1("unav/kiLimit1", dummy);
+    getNodeHandle().subscribe(subMot1);
+    getNodeHandle().subscribe(subKp1);
+    getNodeHandle().subscribe(subKd1);
+    getNodeHandle().subscribe(subKi1);
+    getNodeHandle().subscribe(subKiLimit1);
+
+    pidControllers[0].setGains(1,0,0,1);
+    pidControllers[0].setRange(-.85, .85);
+    subMot1.msg.data = 0.0;
+
     TickType_t c = xTaskGetTickCount();
     uint16_t lastreading1 = TIM2->CNT;
-    uint16_t lastreading2 = TIM3->CNT;
-    float lasttime = ((float)timing_getUs() * 0.000001);
     float speed1 = 0;
-    float speed2 = 0;
-    ros::Publisher pubEncoder1("unav/enc1", &encoder1);
-    ros::Publisher pubEncoder2("unav/enc2", &encoder2);
-    getNodeHandle().advertise(pubEncoder1);
-    getNodeHandle().advertise(pubEncoder2);
+    sensor_msgs::JointState jstate;
+
+    //creating the arrays for the message
+    char *name[] = {"m1", "m2"};
+    double vel[]={0,0};
+    double pos[]={0,0};
+    double eff[]={0,0};
+
+    //assigning the arrays to the message
+    jstate.name=name;
+    jstate.position=pos;
+    jstate.velocity=vel;
+    jstate.effort=eff;
+
+    //setting the length
+    jstate.name_length=2;
+    jstate.position_length=2;
+    jstate.velocity_length=2;
+    jstate.effort_length=2;
+    control_msgs::PidState pidstate;
+    std_msgs::Float32 moterror;
+    ros::Publisher pubJoints("unav/joint", &jstate);
+    ros::Publisher pubpid1("unav/pid", &pidstate);
+    ros::Publisher pubMoterror1("unav/mot_e1", &moterror);
+    getNodeHandle().advertise(pubJoints);
+    getNodeHandle().advertise(pubpid1);
+    getNodeHandle().advertise(pubMoterror1);
+    float output = 0;
     while (true) {
+        float ppr = 12;
+        float gearReduction = 51.5;
+        float divisor = 1.0f / (ppr * gearReduction * 2.0);
         float currenttime = ((float)timing_getUs() * 0.000001);
-        float dt =currenttime - lasttime; 
-        lasttime = currenttime;
+        pidControllers[0].setGains(subKp1.msg.data,subKi1.msg.data,subKd1.msg.data, subKiLimit1.msg.data);
+        
         uint32_t current1 = TIM2->CNT;
-        uint32_t current2 = TIM3->CNT;
-        int32_t deltaenc1 = lastreading1 - current1; 
-        int32_t deltaenc2 = lastreading2 - current2;
-        speed1 = speed1 * 0.005f + 0.995f * ((float)deltaenc1) / dt;
-        speed2 = speed2 * 0.005f + 0.995f * ((float)deltaenc2) / dt;
-        lastreading1 = current1;
-        lastreading2 = current2;
-        encoder1.data = speed1;
-        pubEncoder1.publish(&encoder1);
-        encoder2.data = dt;
-        pubEncoder2.publish(&encoder2);
-        vTaskDelayUntil(&c, 1);  
+        float deltaenc1 = ((float)lastreading1 - current1) / dt;
+        speed1 = alpha * (deltaenc1 - speed1) + speed1;
+        float measuredSpeed = speed1 * divisor;
+        if(!isfinite(speed1)){
+            speed1 = 0;
+        } else {
+            lastreading1 = current1;
+            float requiredSpeed = subMot1.msg.data;
+            float error = requiredSpeed - measuredSpeed;
+            moterror.data = error;
+            float motorOutput1 = pidControllers[0].apply(requiredSpeed, measuredSpeed, dt, &pidstate);
+            float a = fabsf(motorOutput1);
+            if(a < 0.05){
+                motorOutput1 = 0;
+            }
+            output = alphaMotor * (motorOutput1 - output) + output;
+            eff[0] = output;
+
+            uint32_t motoroutput = (uint32_t)(512.0 + output * 512.0);
+            
+            __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_1, motoroutput);
+        }
+
+        vel[0] = measuredSpeed;
+        pos[0] += ((float)deltaenc1) * divisor;
+        pubpid1.publish(&pidstate);
+        pubJoints.publish(&jstate);
+        pubMoterror1.publish(&moterror);
+        vTaskDelayUntil(&c, 20);  
     }
 }
 }
