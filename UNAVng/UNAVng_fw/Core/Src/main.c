@@ -21,16 +21,16 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "cmsis_os.h"
+#include "adc.h"
+#include "i2c.h"
 #include "tim.h"
+#include "usart.h"
 #include "usb_device.h"
 #include "gpio.h"
-#include "timing.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-//#include "FreeRTOS.h"
-//#include "task.h"
-
+#include<timing.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -99,6 +99,11 @@ int main(void)
   MX_TIM3_Init();
   MX_TIM8_Init();
   MX_TIM2_Init();
+  MX_ADC1_Init();
+  MX_ADC2_Init();
+  MX_I2C2_Init();
+  MX_USART3_UART_Init();
+  MX_USART6_UART_Init();
   /* USER CODE BEGIN 2 */
   HAL_TIM_PWM_Start(&htim4,TIM_CHANNEL_1); 
   HAL_TIM_PWM_Start(&htim4,TIM_CHANNEL_2); 

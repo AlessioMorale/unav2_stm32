@@ -21,7 +21,10 @@ $(HALPATH)/Src/stm32f4xx_hal_pwr.c \
 $(HALPATH)/Src/stm32f4xx_hal_pwr_ex.c \
 $(HALPATH)/Src/stm32f4xx_hal_cortex.c \
 $(HALPATH)/Src/stm32f4xx_hal.c \
-$(HALPATH)/Src/stm32f4xx_hal_exti.c
+$(HALPATH)/Src/stm32f4xx_hal_exti.c \
+$(HALPATH)/Src/stm32f4xx_hal_adc.c \
+$(HALPATH)/Src/stm32f4xx_hal_adc_ex.c \
+$(HALPATH)/Src/stm32f4xx_hal_uart.c
 
 C_SOURCES += $(stm32libsrc)
 
