@@ -25,19 +25,22 @@ void dummy( const std_msgs::Float32& cmd_msg){
 
 void RosMotorModule::moduleThreadStart(){
     const float dt = 0.02;
-    const float alpha = LPF_ALPHA(dt, 5);
-    const float alphaMotor = LPF_ALPHA(dt, 5);
+    
     
     ros::Subscriber<std_msgs::Float32> subMot1("unav/mot1", dummy);
     ros::Subscriber<std_msgs::Float32> subKp1("unav/kp1", dummy);
     ros::Subscriber<std_msgs::Float32> subKd1("unav/kd1", dummy);
     ros::Subscriber<std_msgs::Float32> subKi1("unav/ki1", dummy);
     ros::Subscriber<std_msgs::Float32> subKiLimit1("unav/kiLimit1", dummy);
+    ros::Subscriber<std_msgs::Float32> subEncLPF("unav/enclpf", dummy);
+    ros::Subscriber<std_msgs::Float32> subMotLPF("unav/motlpf", dummy);
     getNodeHandle().subscribe(subMot1);
     getNodeHandle().subscribe(subKp1);
     getNodeHandle().subscribe(subKd1);
     getNodeHandle().subscribe(subKi1);
     getNodeHandle().subscribe(subKiLimit1);
+    getNodeHandle().subscribe(subEncLPF);
+    getNodeHandle().subscribe(subMotLPF);
 
     pidControllers[0].setGains(1,0,0,1);
     pidControllers[0].setRange(-.85, .85);
@@ -75,6 +78,8 @@ void RosMotorModule::moduleThreadStart(){
     getNodeHandle().advertise(pubMoterror1);
     float output = 0;
     while (true) {
+        const float alpha = LPF_ALPHA(dt, subEncLPF.msg.data);
+        const float alphaMotor = LPF_ALPHA(dt, subMotLPF.msg.data);
         float ppr = 12;
         float gearReduction = 51.5;
         float divisor = 1.0f / (ppr * gearReduction * 2.0);
