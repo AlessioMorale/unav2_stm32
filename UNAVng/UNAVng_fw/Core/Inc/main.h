@@ -29,6 +29,7 @@ extern "C" {
 
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f4xx_hal.h"
+
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
@@ -108,6 +109,36 @@ void Error_Handler(void);
 #define ENC_2_A_Pin GPIO_PIN_5
 #define ENC_2_A_GPIO_Port GPIOB
 /* USER CODE BEGIN Private defines */
+#define MOTORS_COUNT 2
+
+/* Definition for ADCx clock resources */
+#define MOTOR_CUR_ADCx                            ADC2
+#define MOTOR_CUR_ADCx_CLK_ENABLE()               __HAL_RCC_ADC2_CLK_ENABLE()
+#define MOTOR_CUR_ADCx_CHANNEL_GPIO_CLK_ENABLE()  __HAL_RCC_GPIOB_CLK_ENABLE()
+
+#define MOTOR_CUR_ADCx_FORCE_RESET()              __HAL_RCC_ADC_FORCE_RESET()
+#define MOTOR_CUR_ADCx_RELEASE_RESET()            __HAL_RCC_ADC_RELEASE_RESET()
+
+/* Definition for ADCx Channel Pin */
+#define MOTOR_CUR_ADCx_CHANNEL_PINS               { CUR_MOT_1_Pin, CUR_MOT_2_Pin } 
+#define MOTOR_CUR_ADCx_CHANNEL_GPIO_PORT          { CUR_MOT_1_GPIO_Port, CUR_MOT_2_GPIO_Port }
+
+/* Definition for ADCx's Channel */
+#define MOTOR_CUR_ADC2_CH1                        ADC_CHANNEL_8
+#define MOTOR_CUR_ADC2_CH2                        ADC_CHANNEL_9
+#define MOTOR_CUR_ADC2_ARRAY_OF_CHANNELS          {MOTOR_CUR_ADC2_CH1, MOTOR_CUR_ADC2_CH2}
+
+/* Definition for ADCx's NVIC */
+#define MOTOR_CUR_ADCx_IRQn                       ADC_IRQn
+#define MOTOR_CUR_ADCx_IRQHandler                 ADC_IRQHandler
+
+/* Definition for TIMx clock resources */
+#define MOTOR_CUR_ADC_TIMx                        TIM8
+#define MOTOR_CUR_ADC_TIMx_CLK_ENABLE()           __HAL_RCC_TIM8_CLK_ENABLE()
+
+#define MOTOR_CUR_ADC_TIMx_FORCE_RESET()          __HAL_RCC_TIM8_FORCE_RESET()
+#define MOTOR_CUR_ADC_TIMx_RELEASE_RESET()        __HAL_RCC_TIM8_RELEASE_RESET()
+
 
 /* USER CODE END Private defines */
 

@@ -104,6 +104,7 @@ int main(void)
   MX_I2C2_Init();
   MX_USART3_UART_Init();
   MX_USART6_UART_Init();
+  //MX_ADC3_Init();
   /* USER CODE BEGIN 2 */
   HAL_TIM_PWM_Start(&htim4,TIM_CHANNEL_1); 
   HAL_TIM_PWM_Start(&htim4,TIM_CHANNEL_2); 
@@ -137,18 +138,6 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-    /* USER CODE END WHILE */
-
-    /* USER CODE BEGIN 3 */
-    //const int32_t s = cdcSize;
-    //cdcSize = 0;
-    //if(s){
-    // 
-
-    //} else {
-    //  const uint8_t test[] = "H15";
-    //  CDC_Transmit_FS(test, sizeof(test));
-    //}
     HAL_Delay(500);
   }
   /* USER CODE END 3 */

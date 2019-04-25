@@ -5,6 +5,7 @@
 #include <std_msgs/Int16.h>
 #include <std_msgs/Float32.h>
 #include <controls/pid.h>
+#include <messages.h>
 
 #ifndef ROSMOTORMODULE_H
 #define ROSMOTORMODULE_H
@@ -15,7 +16,7 @@ class RosMotorModule : public BaseRosModule {
         void initialize();
     protected:
         void moduleThreadStart();
-        unav::controls::PID pidControllers[2];
+        unav::controls::PID pidControllers[MOTORS_COUNT];
 };
 }
 #endif

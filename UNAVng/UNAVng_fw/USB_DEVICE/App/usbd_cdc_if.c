@@ -293,7 +293,7 @@ static int8_t CDC_Receive_FS(uint8_t* Buf, uint32_t *Len)
     // Attempt to send the string to the stream buffer.
     /*size_t bytesSent = */
     xStreamBufferSendFromISR(cdcRxStream, (void*)Buf, len, &higherPriorityTaskWoken);
-    //portYIELD_FROM_ISR(higherPriorityTaskWoken);
+    portYIELD_FROM_ISR(higherPriorityTaskWoken);
     return (USBD_OK);
   /* USER CODE END 6 */
 }

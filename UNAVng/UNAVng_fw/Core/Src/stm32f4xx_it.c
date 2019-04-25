@@ -19,11 +19,14 @@
 /* USER CODE END Header */
 
 /* Includes ------------------------------------------------------------------*/
+#include <stdbool.h>
 #include "main.h"
 #include "stm32f4xx_it.h"
 #include "cmsis_os.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "adc.h"
+#include "tim.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -160,14 +163,14 @@ void DebugMon_Handler(void)
 /* For the available peripheral interrupt handler names,                      */
 /* please refer to the startup file (startup_stm32f4xx.s).                    */
 /******************************************************************************/
-
+uint32_t iy = 0;
 /**
+ * 
   * @brief This function handles TIM8 trigger and commutation interrupts and TIM14 global interrupt.
   */
 void TIM8_TRG_COM_TIM14_IRQHandler(void)
 {
   /* USER CODE BEGIN TIM8_TRG_COM_TIM14_IRQn 0 */
-
   /* USER CODE END TIM8_TRG_COM_TIM14_IRQn 0 */
   HAL_TIM_IRQHandler(&htim8);
   HAL_TIM_IRQHandler(&htim14);
@@ -190,7 +193,14 @@ void OTG_FS_IRQHandler(void)
   /* USER CODE END OTG_FS_IRQn 1 */
 }
 
+bool status = 0;
 /* USER CODE BEGIN 1 */
-
+void ADC_IRQHandler(void){
+  HAL_GPIO_WritePin(MOT_EN_GPIO_Port , MOT_EN_Pin, status ? GPIO_PIN_RESET:GPIO_PIN_SET );
+  status =! status;
+  HAL_ADC_IRQHandler(&hadc2);
+  //HAL_ADC_IRQHandler(&hadc1);
+  HAL_ADC_IRQHandler(&hadc3);
+}
 /* USER CODE END 1 */
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

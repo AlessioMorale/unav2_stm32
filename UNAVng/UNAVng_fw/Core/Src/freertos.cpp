@@ -37,6 +37,7 @@
 #include <std_msgs/Float32.h>
 #include <modules/rosnodemodule.h>
 #include <modules/rosmotormodule.h>
+#include <modules/motorcontrollermodule.h>
 
 
 /* USER CODE END Includes */
@@ -64,6 +65,7 @@
 osThreadId defaultTaskHandle;
 unav::modules::RosNodeModule rosnode;
 unav::modules::RosMotorModule rosmotornode;
+unav::modules::MotorControllerModule motorController;
 /* USER CODE END Variables */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -107,6 +109,7 @@ extern "C" void MX_FREERTOS_Init(void) {
   defaultTaskHandle = osThreadCreate(osThread(defaultTask), NULL);
   rosnode.initialize();
   rosmotornode.initialize();
+  motorController.initialize();
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
   /* USER CODE END RTOS_THREADS */

@@ -15,7 +15,6 @@
 namespace unav::modules{
 
 void RosMotorModule::initialize(){
-
     BaseRosModule::initialize(osPriority::osPriorityAboveNormal, 512);
 }
 
@@ -25,8 +24,6 @@ void dummy( const std_msgs::Float32& cmd_msg){
 
 void RosMotorModule::moduleThreadStart(){
     const float dt = 0.02;
-    
-    
     ros::Subscriber<std_msgs::Float32> subMot1("unav/mot1", dummy);
     ros::Subscriber<std_msgs::Float32> subKp1("unav/kp1", dummy);
     ros::Subscriber<std_msgs::Float32> subKd1("unav/kd1", dummy);
