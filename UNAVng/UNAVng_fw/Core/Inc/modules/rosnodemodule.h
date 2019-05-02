@@ -4,12 +4,13 @@
 #ifndef ROSNODEMODULE_H
 #define ROSNODEMODULE_H
 
-namespace unav::modules{ 
+namespace unav::modules {
 class RosNodeModule : public BaseRosModule {
-    public:
-        void initialize();
-    protected:
-        void moduleThreadStart();
+public:
+  void initialize();
+
+protected:
+  void moduleThreadStart();
 };
-}
+} // namespace unav::modules
 #endif
