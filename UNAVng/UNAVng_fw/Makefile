@@ -50,6 +50,7 @@ Core/Src/stm32f4xx_hal_timebase_tim.c \
 Core/Src/timing.c \
 Core/Src/mathutils.c \
 Core/Src/adc.c \
+Core/Src/dma.c \
 Core/Src/i2c.c \
 Core/Src/usart.c \
 Middlewares/Third_Party/FreeRTOS/Source/croutine.c \
