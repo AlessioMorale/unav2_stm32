@@ -12,7 +12,7 @@
 #include <stm32f4xx_hal.h>
 #include "FreeRTOS.h"
 extern USBD_HandleTypeDef hUsbDeviceFS;
-#define MAXBLOCK 40
+#define MAXBLOCK 60
 class rosUSBSerial {
   public:
     rosUSBSerial(){
@@ -44,15 +44,17 @@ class rosUSBSerial {
         if (!rxStream && !(rxStream = CDC_GetRxStream())){
           return;
         }
-        while (length){
-            uint16_t tosend = MIN(MAXBLOCK, length);
+        /*while (length){
+           uint16_t tosend = MIN(MAXBLOCK, length);
             if(CDC_Transmit_FS(data, tosend) != USBD_FAIL)
             {
               while(((USBD_CDC_HandleTypeDef*)(hUsbDeviceFS.pClassData))->TxState!=0);
               length -= tosend;
               data+= tosend;
             }
-        }
+        }0
+        */
+       while (CDC_Transmit_FS(data, length) == USBD_BUSY);
     }
 
     unsigned long time(){return (HAL_GetTick());}
