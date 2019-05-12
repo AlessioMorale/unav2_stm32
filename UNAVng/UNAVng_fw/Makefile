@@ -77,7 +77,10 @@ Core/Src/modules/baserosmodule.cpp \
 Core/Src/modules/rosnodemodule.cpp \
 Core/Src/modules/rosmotormodule.cpp \
 Core/Src/modules/motorcontrollermodule.cpp \
-Core/Src/controls/pid.cpp
+Core/Src/controls/pid.cpp \
+Core/Src/drivers/encoder.cpp \
+Core/Src/utils/timer.cpp
+
 
 
 # ASM sources

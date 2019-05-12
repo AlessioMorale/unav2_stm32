@@ -29,7 +29,6 @@ extern "C" {
 
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f4xx_hal.h"
-#include "stm32f4xx_hal.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -173,6 +172,8 @@ void Error_Handler(void);
 #define TIM_MOT_PERIOD_MAX 1024
 #define TIM_MOT_PERIOD_MIN 0
 #define TIM_MOT_PERIOD_ZERO 512
+
+#define TIM_MOT_ARRAY_OF_CHANNELS {TIM_MOT1_CH, TIM_CHANNEL_2}
 
 #define TIM_LED1 htim13
 #define TIM_LED2 htim14
