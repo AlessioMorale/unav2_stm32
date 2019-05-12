@@ -42,6 +42,9 @@ FREERTOSPATH = FreeRTOS
 C_SOURCES =  \
 Core/Src/gpio.c \
 Core/Src/main.c \
+Core/Src/rtc.c \
+Core/Src/sdio.c \
+Core/Src/spi.c \
 Core/Src/tim.c \
 Core/Src/stm32f4xx_it.c \
 Core/Src/stm32f4xx_hal_msp.c \

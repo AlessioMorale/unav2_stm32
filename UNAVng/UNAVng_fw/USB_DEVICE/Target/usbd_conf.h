@@ -64,11 +64,11 @@
   */
 
 /*---------- -----------*/
-#define USBD_MAX_NUM_INTERFACES     1U
+#define USBD_MAX_NUM_INTERFACES     8U
 /*---------- -----------*/
 #define USBD_MAX_NUM_CONFIGURATION     1U
 /*---------- -----------*/
-#define USBD_MAX_STR_DESC_SIZ     512U
+#define USBD_MAX_STR_DESC_SIZ     0x200U
 /*---------- -----------*/
 #define USBD_SUPPORT_USER_STRING     0U
 /*---------- -----------*/

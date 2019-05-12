@@ -24,6 +24,9 @@
 #include "adc.h"
 #include "dma.h"
 #include "i2c.h"
+#include "rtc.h"
+#include "sdio.h"
+#include "spi.h"
 #include "tim.h"
 #include "usart.h"
 #include "usb_device.h"
@@ -74,8 +77,9 @@ void MX_FREERTOS_Init(void);
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-  
+
   /* USER CODE END 1 */
+  
 
   /* MCU Configuration--------------------------------------------------------*/
 
@@ -90,42 +94,54 @@ int main(void)
   SystemClock_Config();
 
   /* USER CODE BEGIN SysInit */
-  //MX_FREERTOS_Init();
+
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_DMA_Init();
-  MX_TIM4_Init();
+  MX_ADC1_Init();
+  MX_ADC2_Init();
+  MX_I2C1_Init();
+  MX_RTC_Init();
+ //MX_SDIO_MMC_Init();
+  MX_SPI1_Init();
   MX_TIM1_Init();
   MX_TIM3_Init();
-  MX_TIM8_Init();
-  MX_TIM2_Init();
-  //MX_ADC1_Init();
-  MX_ADC2_Init();
-  MX_I2C2_Init();
+  MX_TIM4_Init();
+  MX_TIM9_Init();
+  MX_TIM11_Init();
+  MX_TIM12_Init();
+  MX_TIM13_Init();
+  MX_TIM14_Init();
+  MX_USART1_UART_Init();
+  MX_USART2_UART_Init();
   MX_USART3_UART_Init();
-  MX_USART6_UART_Init();
-  //MX_ADC3_Init();
+  MX_TIM8_Init();
+  MX_ADC3_Init();
   /* USER CODE BEGIN 2 */
-  HAL_TIM_PWM_Start(&htim4,TIM_CHANNEL_1); 
-  HAL_TIM_PWM_Start(&htim4,TIM_CHANNEL_2); 
-  HAL_TIM_PWM_Start(&htim4,TIM_CHANNEL_3); 
-  HAL_TIM_PWM_Start(&htim4,TIM_CHANNEL_4); 
+  HAL_TIM_PWM_Start(&TIM_LED1,TIM_LED1_CH); 
+  HAL_TIM_PWM_Start(&TIM_LED2,TIM_LED2_CH); 
 
-  HAL_TIM_Encoder_Start(&htim2,TIM_CHANNEL_ALL);
-  HAL_TIM_Encoder_Start(&htim3,TIM_CHANNEL_ALL);  
 
-  HAL_TIM_Base_Start(&htim1); 
-  HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_1);
-  HAL_TIMEx_PWMN_Start(&htim1, TIM_CHANNEL_1);
-  HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_2);
-  HAL_TIMEx_PWMN_Start(&htim1, TIM_CHANNEL_2);
+  HAL_TIM_Encoder_Start(&TIM_ENC1,TIM_CHANNEL_ALL);
+  HAL_TIM_Encoder_Start(&TIM_ENC2,TIM_CHANNEL_ALL);  
 
-  __HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_1, 0xFFF);
-  __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_1, 512);
-  __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_2, 512); 
+  HAL_TIM_Base_Start(&TIM_MOT); 
+  HAL_TIM_PWM_Start(&TIM_MOT, TIM_MOT1_CH);
+  HAL_TIMEx_PWMN_Start(&TIM_MOT, TIM_MOT1_CH);
+  HAL_TIM_PWM_Start(&TIM_MOT, TIM_MOT2_CH);
+  HAL_TIMEx_PWMN_Start(&TIM_MOT, TIM_MOT2_CH);
+
+  __HAL_TIM_SET_AUTORELOAD(&TIM_LED1, TIM_LED_PERIOD_MAX);
+  __HAL_TIM_SET_AUTORELOAD(&TIM_LED2, TIM_LED_PERIOD_MAX);
+  __HAL_TIM_SET_COMPARE(&TIM_LED1, TIM_LED1_CH, 0xFFF);
+  __HAL_TIM_SET_COMPARE(&TIM_MOT, TIM_MOT1_CH, TIM_MOT_PERIOD_ZERO);
+  __HAL_TIM_SET_COMPARE(&TIM_MOT, TIM_MOT2_CH, TIM_MOT_PERIOD_ZERO); 
    timing_Init();
+  HAL_GPIO_WritePin(O_PWR_EN_GPIO_Port, O_PWR_EN_Pin, O_PWR_EN_STATUS_ENABLE);
+  HAL_GPIO_WritePin(O_PWR_MOT_EN_GPIO_Port, O_PWR_MOT_EN_Pin, O_PWR_MOT_EN_STATUS_ENABLE);
+  HAL_GPIO_WritePin(O_PWR_SBC_EN_GPIO_Port, O_PWR_SBC_EN_Pin, O_PWR_SBC_EN_STATUS_ENABLE);
   /* USER CODE END 2 */
 
   /* Call init function for freertos objects (in freertos.c) */
@@ -155,6 +171,7 @@ void SystemClock_Config(void)
 {
   RCC_OscInitTypeDef RCC_OscInitStruct = {0};
   RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
+  RCC_PeriphCLKInitTypeDef PeriphClkInitStruct = {0};
 
   /** Configure the main internal regulator output voltage 
   */
@@ -162,8 +179,9 @@ void SystemClock_Config(void)
   __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
   /** Initializes the CPU, AHB and APB busses clocks 
   */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE|RCC_OSCILLATORTYPE_LSE;
   RCC_OscInitStruct.HSEState = RCC_HSE_ON;
+  RCC_OscInitStruct.LSEState = RCC_LSE_ON;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
   RCC_OscInitStruct.PLL.PLLM = 8;
@@ -187,6 +205,12 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
+  PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_RTC;
+  PeriphClkInitStruct.RTCClockSelection = RCC_RTCCLKSOURCE_LSE;
+  if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
+  {
+    Error_Handler();
+  }
 }
 
 /* USER CODE BEGIN 4 */
@@ -195,7 +219,7 @@ void SystemClock_Config(void)
 
 /**
   * @brief  Period elapsed callback in non blocking mode
-  * @note   This function is called  when TIM14 interrupt took place, inside
+  * @note   This function is called  when TIM10 interrupt took place, inside
   * HAL_TIM_IRQHandler(). It makes a direct call to HAL_IncTick() to increment
   * a global variable "uwTick" used as application time base.
   * @param  htim : TIM handle
@@ -206,7 +230,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
   /* USER CODE BEGIN Callback 0 */
 
   /* USER CODE END Callback 0 */
-  if (htim->Instance == TIM14) {
+  if (htim->Instance == TIM10) {
     HAL_IncTick();
   }
   /* USER CODE BEGIN Callback 1 */

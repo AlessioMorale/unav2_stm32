@@ -83,7 +83,7 @@ void RosMotorModule::moduleThreadStart() {
     pidControllers[0].setGains(subKp1.msg.data, subKi1.msg.data,
                                subKd1.msg.data, subKiLimit1.msg.data);
 
-    uint32_t current1 = TIM2->CNT;
+    uint32_t current1 = TIM_ENC1.Instance->CNT;
     float deltaenc1 = ((float)lastreading1 - current1) / dt;
     speed1 = alpha * (deltaenc1 - speed1) + speed1;
     float measuredSpeed = speed1 * divisor;
@@ -105,7 +105,7 @@ void RosMotorModule::moduleThreadStart() {
 
       uint32_t motoroutput = (uint32_t)(512.0 + output * 512.0);
 
-      __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_1, motoroutput);
+      __HAL_TIM_SET_COMPARE(&TIM_MOT, TIM_MOT1_CH, motoroutput);
     }
 
     vel[0] = measuredSpeed;

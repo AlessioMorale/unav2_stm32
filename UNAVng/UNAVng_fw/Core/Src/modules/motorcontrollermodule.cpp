@@ -42,7 +42,7 @@ void MotorControllerModule::moduleThreadStart() {
   getNodeHandle().advertise(pubAdcValue);
   HAL_TIM_Base_Start(&htim8);
 
-  if (HAL_ADC_Start_DMA(&hadc2, (uint32_t*) dmaBuffer, 4) != HAL_OK) {
+  if (HAL_ADC_Start_DMA(&MOTOR_CUR_ADC, (uint32_t*) dmaBuffer, 4) != HAL_OK) {
       /* Start Conversation Error */
       Error_Handler();
   }
@@ -77,7 +77,6 @@ void MotorControllerModule::setup() {
 }
 
 extern "C" {
-bool status = 0;
 
 /**
  * @brief  Conversion complete callback in non blocking mode
@@ -88,13 +87,11 @@ bool status = 0;
  */
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc) {
   /* Get the converted value of regular channel */
-HAL_GPIO_WritePin(MOT_EN_GPIO_Port , MOT_EN_Pin, GPIO_PIN_SET );
-status =! status;
-
+  HAL_GPIO_WritePin(O_MOT_ENABLE_GPIO_Port , O_MOT_ENABLE_Pin, GPIO_PIN_SET );
   BaseType_t woken;
   xSemaphoreGiveFromISR(adcSemaphore, &woken);
   portYIELD_FROM_ISR(woken);
-HAL_GPIO_WritePin(MOT_EN_GPIO_Port , MOT_EN_Pin, GPIO_PIN_RESET );
+  HAL_GPIO_WritePin(O_MOT_ENABLE_GPIO_Port , O_MOT_ENABLE_Pin, GPIO_PIN_RESET );
 
 }
 }

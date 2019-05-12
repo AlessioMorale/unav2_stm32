@@ -109,7 +109,7 @@ extern "C" void MX_FREERTOS_Init(void) {
   defaultTaskHandle = osThreadCreate(osThread(defaultTask), NULL);
   rosnode.initialize();
   rosmotornode.initialize();
-  motorController.initialize();
+  //motorController.initialize();
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
   /* USER CODE END RTOS_THREADS */
@@ -140,10 +140,10 @@ extern "C" void StartDefaultTask(void const * argument)
   for(;;)
   {
     count += delta;
-    if(count > 0xFF00){
+    if(count > 0xFF00 || count == 0){
       delta *= -1;
     }
-    __HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_4, count);
+    __HAL_TIM_SET_COMPARE(&TIM_LED1, TIM_LED1_CH, count);
     vTaskDelayUntil(&c, 1);    
   }
   /* USER CODE END StartDefaultTask */
@@ -151,13 +151,6 @@ extern "C" void StartDefaultTask(void const * argument)
 
 /* Private application code --------------------------------------------------*/
 /* USER CODE BEGIN Application */
-void mot1_cb( const std_msgs::Int16& cmd_msg){
-    __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_1, cmd_msg.data);
-}
-
-void mot2_cb( const std_msgs::Int16& cmd_msg){
-    __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_2, cmd_msg.data);
-}
 /* USER CODE END Application */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

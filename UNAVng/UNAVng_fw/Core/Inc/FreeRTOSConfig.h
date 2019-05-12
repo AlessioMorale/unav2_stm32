@@ -20,8 +20,10 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
- * http://aws.amazon.com/freertos
  * http://www.FreeRTOS.org
+ * http://aws.amazon.com/freertos
+ *
+ * 1 tab == 4 spaces!
  */
  /* USER CODE END Header */
 
@@ -69,8 +71,11 @@
 #define configUSE_16_BIT_TICKS                   0
 #define configUSE_MUTEXES                        1
 #define configQUEUE_REGISTRY_SIZE                8
+#define configCHECK_FOR_STACK_OVERFLOW           1
+#define configENABLE_BACKWARD_COMPATIBILITY      0
 #define configUSE_RECURSIVE_MUTEXES              1
 #define configUSE_PORT_OPTIMISED_TASK_SELECTION  1
+#define configRECORD_STACK_HIGH_ADDRESS          1
 
 /* Co-routine definitions. */
 #define configUSE_CO_ROUTINES                    0
