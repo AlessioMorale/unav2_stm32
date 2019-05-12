@@ -84,12 +84,21 @@ void RosMotorModule::moduleThreadStart() {
                                subKd1.msg.data, subKiLimit1.msg.data);
 
     uint32_t current1 = TIM_ENC1.Instance->CNT;
-    float deltaenc1 = ((float)lastreading1 - current1) / dt;
-    speed1 = alpha * (deltaenc1 - speed1) + speed1;
-    float measuredSpeed = speed1 * divisor;
-    if (!isfinite(speed1)) {
-      speed1 = 0;
+    int32_t delta =  current1 - lastreading1;
+    if(!__HAL_TIM_IS_TIM_COUNTING_DOWN(&TIM_ENC1)){
+      if(delta < 0){
+        delta = enc_period + delta;
+      }  
     } else {
+      if(delta > 0){
+        delta = delta - enc_period;
+      }
+    }
+
+    float deltaenc1 = ((float)-delta) / dt;
+    if (isfinite(deltaenc1)) {
+      speed1 = alpha * (deltaenc1 - speed1) + speed1;
+      float measuredSpeed = speed1 * divisor;
       lastreading1 = current1;
       float requiredSpeed = subMot1.msg.data;
       float error = requiredSpeed - measuredSpeed;
