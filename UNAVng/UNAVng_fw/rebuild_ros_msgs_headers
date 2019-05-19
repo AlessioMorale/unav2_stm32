@@ -1,0 +1,27 @@
+#!/bin/bash
+if rospack find unav2_msgs > /dev/null && rospack find std_msgs > /dev/null && rospack find rosserial_client > /dev/null && rospack find rosserial_msgs > /dev/null && rospack find sensor_msgs > /dev/null ;
+then
+    echo This script rebuilds all message header files needed by this firmware
+    echo "* Preparing temp working folder"
+    working_folder="/tmp/unav2_fw"
+    [ -d $working_folder ] && rm -rf $working_folder
+    mkdir -p $working_folder
+    echo "* Generating headers"
+    rosrun rosserial_client make_libraries $working_folder > /dev/null
+    echo "* Copying to the destination folder"
+    cp -r $working_folder/ros_lib/unav2_msgs ./rosserial/
+    cp -r $working_folder/ros_lib/std_msgs ./rosserial/
+    #cp -r $working_folder/ros_lib/geometry_msgs ./rosserial/
+    #cp -r $working_folder/ros_lib/sensor_msgs ./rosserial/
+    cp -r $working_folder/ros_lib/rosserial_msgs ./rosserial/
+    echo "* Cleaning up temp folder"
+    rm -rf $working_folder
+    echo "Successfully completed"
+else
+    echo cannot find at least one of the following required packages needed to create header files
+    echo - unav2_msgs
+    echo - sensor_msgs
+    echo - rosserial_client
+    echo - std_msgs
+    echo - rosserial_msgs
+fi
