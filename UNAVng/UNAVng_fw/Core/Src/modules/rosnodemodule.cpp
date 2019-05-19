@@ -9,11 +9,10 @@ void RosNodeModule::initialize() {
 }
 void RosNodeModule::moduleThreadStart() {
   TickType_t c = xTaskGetTickCount();
-  const char hello[] = "hello world!\0";
   while (true) {
     // getNodeHandle().loginfo(hello);
     getNodeHandle().spinOnce();
-    vTaskDelayUntil(&c, 10);
+    vTaskDelayUntil(&c, 2);
   }
 }
 } // namespace unav::modules
