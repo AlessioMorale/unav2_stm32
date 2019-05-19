@@ -1,7 +1,16 @@
 #include<controls/pid.h>
 #include<mathutils.h>
+#include<math.h>
+#include<limits.h>
+#include<string.h>
 namespace unav::controls
 {
+      PID::PID(){
+        memset( &_status, 0, sizeof(pid_status_t));
+        _mutex = xSemaphoreCreateBinaryStatic(&_semBuffer);
+        release();
+      }
+
 void PID::setGains(float kp, float ki, float kd, float ilimit){
     _kp = kp;
     _kd = kd;
@@ -15,36 +24,47 @@ void PID::setRange(float min, float max){
 }
 
 void PID::zero(){
+    
     _lastError = 0;
-    _iAccumulator = 0;
+    lock();
+    _status.i_term = 0;
+    _status.i_max = 0;
+    _status.i_min = 0;
+    release();
 }
 
-float PID::apply(float setpoint, float measure, float dT, control_msgs::PidState *state){
+void PID::getStatus(pid_status_t *status){
+    lock();
+    memcpy(status, &_status, sizeof(pid_status_t));
+    release();
+}
 
-    float error = setpoint - measure;
-    state->error = error;
-    _iAccumulator += error * _ki * dT;
-    _iAccumulator = fboundf( -_iLimit, _iLimit, _iAccumulator);
+float PID::apply(float setpoint, float measure, float dT){
+    lock();
+    _status.timestep = dT;
+    _status.error = setpoint - measure;
+    _status.i_term += _status.error * _ki * dT;
+    _status.i_term = fboundf( -_iLimit, _iLimit, _status.i_term);
 
     float diff;
 
-    diff = error - _lastError;
-    state->d_error = diff;
-    _lastError = error;
+    diff = _status.error - _lastError;
+    _lastError = _status.error;
 
-    float dterm = 0;
+    _status.d_term = 0;
 
     if (_kd > 0.0f && dT > 0.0f) {
-        dterm = diff * _kd / dT;
+        _status.d_term = diff * _kd / dT;
     }
-    state->d_term = dterm;
-    state->i_term = _iAccumulator;
-    float pterm = (error * _kp);
-    state->p_error = error;
-    state->p_term = pterm;
-    float output =  pterm + _iAccumulator + dterm;
-    state->output = output;
-    output = fboundf(_min, _max, output);
+
+    _status.i_min = fminf(_status.i_min, _status.i_term);
+    _status.i_max = fmaxf(_status.i_max, _status.i_term);
+    _status.p_term = (_status.error * _kp);
+
+    _status.output =  _status.p_term + _status.i_term + _status.d_term;
+    _status.output = fboundf(_min, _max, _status.output);
+    float output = _status.output;
+    release();
     return output;
 }
 } // namespace unav::controls
