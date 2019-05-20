@@ -1,5 +1,5 @@
 #include <modules/baserosmodule.h>
 
 namespace unav::modules {
-ros::NodeHandle BaseRosModule::nh;
+    unav::Messaging BaseRosModule::_messaging;
 }

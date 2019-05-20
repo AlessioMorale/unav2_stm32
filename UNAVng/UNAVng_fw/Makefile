@@ -79,7 +79,8 @@ Core/Src/modules/rosmotormodule.cpp \
 Core/Src/modules/motorcontrollermodule.cpp \
 Core/Src/controls/pid.cpp \
 Core/Src/drivers/encoder.cpp \
-Core/Src/utils/timer.cpp
+Core/Src/utils/timer.cpp \
+Core/Src/messaging.cpp
 
 
 
