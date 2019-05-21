@@ -12,22 +12,18 @@ RosNodeModule::RosNodeModule():
   pubJoints("unav2/status/joint", &msgjointstate),
   pubPIDState("unav2/status/vel_pid", &msgpidstate),
   pubAck("unav2/status/ack", &msgack)
-{ }
+{ 
+}
 
 void RosNodeModule::initialize() {
   getNodeHandle().initNode();
-
-  outboundMessageBuffer = xMessageBufferCreateStatic( sizeof( outboundBuffer ),
-                                                 outboundBuffer,
-                                                 &outboundBufferStruct);  
-  
-  
-  getMessaging().setMessageBuffer(outboundMessageBuffer);
+  getMessaging().setup(_messageBuffer, sizeof(outbound_message_t), MESSAGING_BUFFER_SIZE);  
+  incomingMessageQueue = getMessaging().subscribe(RosNodeModule::ModuleMessageId);
   BaseRosModule::initialize(osPriority::osPriorityNormal, 512);
+
 }
 
 void RosNodeModule::moduleThreadStart() {
-  
   getNodeHandle().advertise(pubJoints);
   getNodeHandle().advertise(pubPIDState);
   getNodeHandle().advertise(pubAck);
@@ -36,11 +32,11 @@ void RosNodeModule::moduleThreadStart() {
   TickType_t c = xTaskGetTickCount();
 
   while (true) {
-    size_t size = xMessageBufferReceive(outboundMessageBuffer, 
-                                        (void*)&outboundMessage, 
-                                        sizeof(outboundMessage), 5);
-    if(size){
-      sendRosMessage();
+    message_handle_t msg;
+
+    if(xQueueReceive(incomingMessageQueue, (void*)&msg, 5)){
+      sendRosMessage(msg);
+      getMessaging().releaseMessage(msg);
     }
     vTaskDelayUntil(&c, 5);
     getNodeHandle().spinOnce();
@@ -62,29 +58,30 @@ void RosNodeModule::setupMessages() {
     msgpidstate.timestep_length = MOTORS_COUNT;
 }
 
-void RosNodeModule::sendRosMessage()
+void RosNodeModule::sendRosMessage(message_handle_t msg)
 {
-  switch (outboundMessage.payload.type)
+  outbound_message_t *m = (outbound_message_t*)msg;
+  switch (m->payload.type)
   {
   case MessageType_outbound_JointState:
-    msgjointstate.position = outboundMessage.payload.jointstate.pos;
-    msgjointstate.velocity = outboundMessage.payload.jointstate.vel;
-    msgjointstate.effort = outboundMessage.payload.jointstate.eff;
+    msgjointstate.position = m->payload.jointstate.pos;
+    msgjointstate.velocity = m->payload.jointstate.vel;
+    msgjointstate.effort = m->payload.jointstate.eff;
     pubJoints.publish(&msgjointstate);
     break;
   case MessageType_outbound_PIDState:
-    msgpidstate.output = outboundMessage.payload.pidstate.output;
-    msgpidstate.error = outboundMessage.payload.pidstate.error;
-    msgpidstate.timestep = outboundMessage.payload.pidstate.timestep;
-    msgpidstate.p_term = outboundMessage.payload.pidstate.p_term;
-    msgpidstate.i_term = outboundMessage.payload.pidstate.i_term;
-    msgpidstate.d_term = outboundMessage.payload.pidstate.d_term;
-    msgpidstate.i_min = outboundMessage.payload.pidstate.i_min;
-    msgpidstate.i_max = outboundMessage.payload.pidstate.i_max;
+    msgpidstate.output = m->payload.pidstate.output;
+    msgpidstate.error = m->payload.pidstate.error;
+    msgpidstate.timestep = m->payload.pidstate.timestep;
+    msgpidstate.p_term = m->payload.pidstate.p_term;
+    msgpidstate.i_term = m->payload.pidstate.i_term;
+    msgpidstate.d_term = m->payload.pidstate.d_term;
+    msgpidstate.i_min = m->payload.pidstate.i_min;
+    msgpidstate.i_max = m->payload.pidstate.i_max;
     pubPIDState.publish(&msgpidstate);
     break;
   case MessageType_outboudn_ack:
-    msgack.data = outboundMessage.payload.ackcontent.transactionId;
+    msgack.data = m->payload.ackcontent.transactionId;
     pubAck.publish(&msgack);
     break; 
   default:

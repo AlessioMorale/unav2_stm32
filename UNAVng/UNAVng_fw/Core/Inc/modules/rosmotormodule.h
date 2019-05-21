@@ -16,14 +16,13 @@ namespace unav::modules {
 #define ACK_QUEUE_ITEM_SIZE (sizeof(unav2_msgs::BridgeConfig::_transactionId_type))
 class RosMotorModule : public BaseRosModule {
 public:
+  static const uint32_t ModuleMessageId = 0x0A01;
   RosMotorModule();
   void initialize();
-
 protected:
+  QueueHandle_t _incomingMessageQueue;
   unav::utils::Timer timer;
   unav::drivers::Encoder encoders[MOTORS_COUNT];
-  jointstate_content_t jointstate;
-  pidstate_content_t pidstate;
   void moduleThreadStart();
   unav::controls::PID pidControllers[MOTORS_COUNT];
 };

@@ -9,21 +9,20 @@
 #define ROSNODEMODULE_H
 
 namespace unav::modules {
-#define OUTBOUND_BUFFER_SIZE 1000
+#define MESSAGING_BUFFER_SIZE 10
 
 class RosNodeModule : public BaseRosModule {
 public:
+  static const uint32_t ModuleMessageId = 0x0100;
   RosNodeModule();
   void initialize();
 private:
   void setupMessages();
-  void sendRosMessage();
+  void sendRosMessage(message_handle_t msg);
   static ros::NodeHandle nh;
   ros::NodeHandle &getNodeHandle() { return nh; }
-  uint8_t outboundBuffer[ OUTBOUND_BUFFER_SIZE ];
-  StaticMessageBuffer_t outboundBufferStruct;
-  MessageBufferHandle_t outboundMessageBuffer;
-  outbound_message_t outboundMessage;
+  QueueHandle_t incomingMessageQueue;
+  uint8_t _messageBuffer[MESSAGING_BUFFER_SIZE * sizeof(outbound_message_t)];
 protected:
   unav2_msgs::JointState msgjointstate;
   unav2_msgs::PIDState msgpidstate;
