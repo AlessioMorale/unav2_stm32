@@ -14,12 +14,12 @@ void Messaging::setup(uint8_t *buffer, size_t slotSize, uint32_t slotsCount){
 
 void Messaging::initFreeSlots(){
     taskENTER_CRITICAL();
-    uint8_t* p;
+    void* p;
     if(!freeSlotInitialized){
     freeSlotInitialized = true;
     for(int i = 0; i < _maxMessagesCount; i++){
         p = _messagebuffer + _slotSize * i;
-        xQueueSend(_freeMessagesQueue, (void*)p, 0);
+        xQueueSend(_freeMessagesQueue, (void*)&p, portMAX_DELAY);
     }
     }
     taskEXIT_CRITICAL();
@@ -29,7 +29,7 @@ void Messaging::sendMessage(message_handle_t message, uint32_t recipientId){
     if(!queue){
         Error_Handler();
     }
-    xQueueSend(queue, message, 0);
+    xQueueSend(queue, &message, portMAX_DELAY);
 }
 
 message_handle_t Messaging::prepareMessage(){
@@ -37,11 +37,11 @@ message_handle_t Messaging::prepareMessage(){
         initFreeSlots();
     }
     message_handle_t message;
-    xQueueReceive(_freeMessagesQueue, &message, 0);
+    xQueueReceive(_freeMessagesQueue, &message, portMAX_DELAY);
     return message;
 }
 void Messaging::releaseMessage(message_handle_t message){
-    xQueueSend(_freeMessagesQueue, &message, 0);
+    xQueueSend(_freeMessagesQueue, &message, portMAX_DELAY);
 }
 
 QueueHandle_t Messaging::subscribe(uint32_t recipientId){

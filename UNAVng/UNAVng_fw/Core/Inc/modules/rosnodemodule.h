@@ -17,12 +17,11 @@ public:
   RosNodeModule();
   void initialize();
 private:
-  void setupMessages();
   void sendRosMessage(message_handle_t msg);
   static ros::NodeHandle nh;
   ros::NodeHandle &getNodeHandle() { return nh; }
   QueueHandle_t incomingMessageQueue;
-  uint8_t _messageBuffer[MESSAGING_BUFFER_SIZE * sizeof(outbound_message_t)];
+  uint32_t _messageBuffer[MESSAGING_BUFFER_SIZE * (sizeof(outbound_message_t) / sizeof(uint32_t) + 1)];
 protected:
   unav2_msgs::JointState msgjointstate;
   unav2_msgs::PIDState msgpidstate;

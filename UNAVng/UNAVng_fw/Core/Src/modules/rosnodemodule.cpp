@@ -17,7 +17,7 @@ RosNodeModule::RosNodeModule():
 
 void RosNodeModule::initialize() {
   getNodeHandle().initNode();
-  getMessaging().setup(_messageBuffer, sizeof(outbound_message_t), MESSAGING_BUFFER_SIZE);  
+  getMessaging().setup((uint8_t*)_messageBuffer, sizeof(outbound_message_t), MESSAGING_BUFFER_SIZE);  
   incomingMessageQueue = getMessaging().subscribe(RosNodeModule::ModuleMessageId);
   BaseRosModule::initialize(osPriority::osPriorityNormal, 512);
 
@@ -43,10 +43,22 @@ void RosNodeModule::moduleThreadStart() {
   }
 }
 
-void RosNodeModule::setupMessages() {
+void RosNodeModule::sendRosMessage(message_handle_t msg)
+{
+  outbound_message_t *m = (outbound_message_t*)msg;
+  switch (m->payload.type)
+  {
+  case MessageType_outbound_JointState:
+    msgjointstate.stamp = getNodeHandle().now();
     msgjointstate.position_length = MOTORS_COUNT;
     msgjointstate.velocity_length = MOTORS_COUNT;
     msgjointstate.effort_length = MOTORS_COUNT;
+    msgjointstate.position = m->payload.jointstate.pos;
+    msgjointstate.velocity = m->payload.jointstate.vel;
+    msgjointstate.effort = m->payload.jointstate.eff;
+    pubJoints.publish(&msgjointstate);
+    break;
+  case MessageType_outbound_PIDState:
     msgpidstate.output_length = MOTORS_COUNT;
     msgpidstate.p_term_length = MOTORS_COUNT;
     msgpidstate.i_term_length = MOTORS_COUNT;
@@ -56,20 +68,6 @@ void RosNodeModule::setupMessages() {
     msgpidstate.error_length = MOTORS_COUNT;
     msgpidstate.output_length = MOTORS_COUNT;
     msgpidstate.timestep_length = MOTORS_COUNT;
-}
-
-void RosNodeModule::sendRosMessage(message_handle_t msg)
-{
-  outbound_message_t *m = (outbound_message_t*)msg;
-  switch (m->payload.type)
-  {
-  case MessageType_outbound_JointState:
-    msgjointstate.position = m->payload.jointstate.pos;
-    msgjointstate.velocity = m->payload.jointstate.vel;
-    msgjointstate.effort = m->payload.jointstate.eff;
-    pubJoints.publish(&msgjointstate);
-    break;
-  case MessageType_outbound_PIDState:
     msgpidstate.output = m->payload.pidstate.output;
     msgpidstate.error = m->payload.pidstate.error;
     msgpidstate.timestep = m->payload.pidstate.timestep;
