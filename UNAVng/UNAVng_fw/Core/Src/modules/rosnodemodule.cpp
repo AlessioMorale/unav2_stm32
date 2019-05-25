@@ -27,7 +27,6 @@ void RosNodeModule::moduleThreadStart() {
   getNodeHandle().advertise(pubPIDState);
   getNodeHandle().advertise(pubAck);
 
-  TickType_t c = xTaskGetTickCount();
 
   while (true) {
     message_handle_t msg;
@@ -36,7 +35,6 @@ void RosNodeModule::moduleThreadStart() {
       sendRosMessage(msg);
       getMessaging().releaseMessage(msg);
     }
-    vTaskDelayUntil(&c, 3);
     getNodeHandle().spinOnce();
   }
 }
