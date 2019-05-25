@@ -4,11 +4,7 @@
 #include <mathutils.h>
 #include <string.h>
 namespace unav::controls {
-PID::PID() {
-  memset(&_status, 0, sizeof(pid_status_t));
-  _mutex = xSemaphoreCreateBinaryStatic(&_semBuffer);
-  release();
-}
+PID::PID() : _status() {}
 
 void PID::setGains(float kp, float ki, float kd, float ilimit) {
   _kp = kp;
@@ -24,29 +20,20 @@ void PID::setRange(float min, float max) {
 
 void PID::zero() {
   _lastError = 0;
-  lock();
   _status.i_term = 0;
   _status.i_max = 0;
   _status.i_min = 0;
-  release();
 }
 
-void PID::getStatus(pid_status_t *status) {
-  lock();
-  memcpy(status, &_status, sizeof(pid_status_t));
-  release();
-}
+pid_status_t PID::getStatus() { return _status; }
 
 float PID::apply(float setpoint, float measure, float dT) {
-  lock();
   _status.timestep = dT;
   _status.error = setpoint - measure;
   _status.i_term += _status.error * _ki * dT;
   _status.i_term = fboundf(-_iLimit, _iLimit, _status.i_term);
 
-  float diff;
-
-  diff = _status.error - _lastError;
+  auto diff = _status.error - _lastError;
   _lastError = _status.error;
 
   _status.d_term = 0;
@@ -61,8 +48,6 @@ float PID::apply(float setpoint, float measure, float dT) {
 
   _status.output = _status.p_term + _status.i_term + _status.d_term;
   _status.output = fboundf(_min, _max, _status.output);
-  float output = _status.output;
-  release();
-  return output;
+  return _status.output;
 }
 } // namespace unav::controls
