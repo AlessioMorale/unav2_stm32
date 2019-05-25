@@ -21,7 +21,7 @@ DMA_HandleTypeDef hdma_adc;
 void MotorControllerModule::initialize() {
   adcSemaphore = xSemaphoreCreateBinary();
   if (adcSemaphore == 0) {
-    //getNodeHandle().logerror(msg_error);
+    // getNodeHandle().logerror(msg_error);
   }
   BaseModule::initialize(osPriority::osPriorityAboveNormal, 512);
   setup();
@@ -29,22 +29,21 @@ void MotorControllerModule::initialize() {
 static void dummy(const std_msgs::Float32 &cmd_msg) {}
 
 void MotorControllerModule::moduleThreadStart() {
-
   ros::Subscriber<std_msgs::Float32> subCurZero1("unav/motor1/CurrentZero",
                                                  dummy);
-  //getNodeHandle().subscribe(subCurZero1);
+  // getNodeHandle().subscribe(subCurZero1);
   ros::Subscriber<std_msgs::Float32> subCurFactor1("unav/motor1/CurrentFactor",
                                                    dummy);
-  //getNodeHandle().subscribe(subCurZero1);
+  // getNodeHandle().subscribe(subCurZero1);
 
   std_msgs::Float32 adcValue;
-  //ros::Publisher pubAdcValue("unav/adc1", &adcValue);
-  //getNodeHandle().advertise(pubAdcValue);
+  // ros::Publisher pubAdcValue("unav/adc1", &adcValue);
+  // getNodeHandle().advertise(pubAdcValue);
   HAL_TIM_Base_Start(&htim8);
 
-  if (HAL_ADC_Start_DMA(&MOTOR_CUR_ADC, (uint32_t*) dmaBuffer, 4) != HAL_OK) {
-      /* Start Conversation Error */
-      Error_Handler();
+  if (HAL_ADC_Start_DMA(&MOTOR_CUR_ADC, (uint32_t *)dmaBuffer, 4) != HAL_OK) {
+    /* Start Conversation Error */
+    Error_Handler();
   }
 
   vTaskDelay(1000);
@@ -53,11 +52,11 @@ void MotorControllerModule::moduleThreadStart() {
     BaseType_t ret = xSemaphoreTake(adcSemaphore, 5);
     if (ret == pdPASS) {
       adcValue.data = ((float)(dmaBuffer[0] + dmaBuffer[2])) / 2.0f;
-      //pubAdcValue.publish(&adcValue);
+      // pubAdcValue.publish(&adcValue);
     } else {
-      //getNodeHandle().logwarn(msg_warn);
+      // getNodeHandle().logwarn(msg_warn);
     }
-    if (HAL_ADC_Start_DMA(&hadc2, (uint32_t*) dmaBuffer, 4) != HAL_OK) {
+    if (HAL_ADC_Start_DMA(&hadc2, (uint32_t *)dmaBuffer, 4) != HAL_OK) {
       /* Start Conversation Error */
       Error_Handler();
     }
@@ -87,12 +86,11 @@ extern "C" {
  */
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc) {
   /* Get the converted value of regular channel */
-  HAL_GPIO_WritePin(O_MOT_ENABLE_GPIO_Port , O_MOT_ENABLE_Pin, GPIO_PIN_SET );
+  HAL_GPIO_WritePin(O_MOT_ENABLE_GPIO_Port, O_MOT_ENABLE_Pin, GPIO_PIN_SET);
   BaseType_t woken;
   xSemaphoreGiveFromISR(adcSemaphore, &woken);
   portYIELD_FROM_ISR(woken);
-  HAL_GPIO_WritePin(O_MOT_ENABLE_GPIO_Port , O_MOT_ENABLE_Pin, GPIO_PIN_RESET );
-
+  HAL_GPIO_WritePin(O_MOT_ENABLE_GPIO_Port, O_MOT_ENABLE_Pin, GPIO_PIN_RESET);
 }
 }
 } // namespace unav::modules

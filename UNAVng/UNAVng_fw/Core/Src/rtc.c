@@ -1,21 +1,21 @@
 /**
-  ******************************************************************************
-  * File Name          : RTC.c
-  * Description        : This file provides code for the configuration
-  *                      of the RTC instances.
-  ******************************************************************************
-  * @attention
-  *
-  * <h2><center>&copy; Copyright (c) 2019 STMicroelectronics.
-  * All rights reserved.</center></h2>
-  *
-  * This software component is licensed by ST under Ultimate Liberty license
-  * SLA0044, the "License"; You may not use this file except in compliance with
-  * the License. You may obtain a copy of the License at:
-  *                             www.st.com/SLA0044
-  *
-  ******************************************************************************
-  */
+ ******************************************************************************
+ * File Name          : RTC.c
+ * Description        : This file provides code for the configuration
+ *                      of the RTC instances.
+ ******************************************************************************
+ * @attention
+ *
+ * <h2><center>&copy; Copyright (c) 2019 STMicroelectronics.
+ * All rights reserved.</center></h2>
+ *
+ * This software component is licensed by ST under Ultimate Liberty license
+ * SLA0044, the "License"; You may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at:
+ *                             www.st.com/SLA0044
+ *
+ ******************************************************************************
+ */
 
 /* Includes ------------------------------------------------------------------*/
 #include "rtc.h"
@@ -27,13 +27,12 @@
 RTC_HandleTypeDef hrtc;
 
 /* RTC init function */
-void MX_RTC_Init(void)
-{
+void MX_RTC_Init(void) {
   RTC_TimeTypeDef sTime = {0};
   RTC_DateTypeDef sDate = {0};
 
-  /** Initialize RTC Only 
-  */
+  /** Initialize RTC Only
+   */
   hrtc.Instance = RTC;
   hrtc.Init.HourFormat = RTC_HOURFORMAT_24;
   hrtc.Init.AsynchPrediv = 127;
@@ -41,24 +40,22 @@ void MX_RTC_Init(void)
   hrtc.Init.OutPut = RTC_OUTPUT_DISABLE;
   hrtc.Init.OutPutPolarity = RTC_OUTPUT_POLARITY_HIGH;
   hrtc.Init.OutPutType = RTC_OUTPUT_TYPE_OPENDRAIN;
-  if (HAL_RTC_Init(&hrtc) != HAL_OK)
-  {
+  if (HAL_RTC_Init(&hrtc) != HAL_OK) {
     Error_Handler();
   }
 
   /* USER CODE BEGIN Check_RTC_BKUP */
-    
+
   /* USER CODE END Check_RTC_BKUP */
 
-  /** Initialize RTC and set the Time and Date 
-  */
+  /** Initialize RTC and set the Time and Date
+   */
   sTime.Hours = 0x0;
   sTime.Minutes = 0x0;
   sTime.Seconds = 0x0;
   sTime.DayLightSaving = RTC_DAYLIGHTSAVING_NONE;
   sTime.StoreOperation = RTC_STOREOPERATION_RESET;
-  if (HAL_RTC_SetTime(&hrtc, &sTime, RTC_FORMAT_BCD) != HAL_OK)
-  {
+  if (HAL_RTC_SetTime(&hrtc, &sTime, RTC_FORMAT_BCD) != HAL_OK) {
     Error_Handler();
   }
   sDate.WeekDay = RTC_WEEKDAY_THURSDAY;
@@ -66,44 +63,36 @@ void MX_RTC_Init(void)
   sDate.Date = 0x7;
   sDate.Year = 0x18;
 
-  if (HAL_RTC_SetDate(&hrtc, &sDate, RTC_FORMAT_BCD) != HAL_OK)
-  {
+  if (HAL_RTC_SetDate(&hrtc, &sDate, RTC_FORMAT_BCD) != HAL_OK) {
     Error_Handler();
   }
-
 }
 
-void HAL_RTC_MspInit(RTC_HandleTypeDef* rtcHandle)
-{
+void HAL_RTC_MspInit(RTC_HandleTypeDef *rtcHandle) {
+  if (rtcHandle->Instance == RTC) {
+    /* USER CODE BEGIN RTC_MspInit 0 */
 
-  if(rtcHandle->Instance==RTC)
-  {
-  /* USER CODE BEGIN RTC_MspInit 0 */
-
-  /* USER CODE END RTC_MspInit 0 */
+    /* USER CODE END RTC_MspInit 0 */
     /* RTC clock enable */
     __HAL_RCC_RTC_ENABLE();
-  /* USER CODE BEGIN RTC_MspInit 1 */
+    /* USER CODE BEGIN RTC_MspInit 1 */
 
-  /* USER CODE END RTC_MspInit 1 */
+    /* USER CODE END RTC_MspInit 1 */
   }
 }
 
-void HAL_RTC_MspDeInit(RTC_HandleTypeDef* rtcHandle)
-{
+void HAL_RTC_MspDeInit(RTC_HandleTypeDef *rtcHandle) {
+  if (rtcHandle->Instance == RTC) {
+    /* USER CODE BEGIN RTC_MspDeInit 0 */
 
-  if(rtcHandle->Instance==RTC)
-  {
-  /* USER CODE BEGIN RTC_MspDeInit 0 */
-
-  /* USER CODE END RTC_MspDeInit 0 */
+    /* USER CODE END RTC_MspDeInit 0 */
     /* Peripheral clock disable */
     __HAL_RCC_RTC_DISABLE();
-  /* USER CODE BEGIN RTC_MspDeInit 1 */
+    /* USER CODE BEGIN RTC_MspDeInit 1 */
 
-  /* USER CODE END RTC_MspDeInit 1 */
+    /* USER CODE END RTC_MspDeInit 1 */
   }
-} 
+}
 
 /* USER CODE BEGIN 1 */
 

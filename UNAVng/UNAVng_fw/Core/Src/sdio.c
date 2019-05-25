@@ -1,21 +1,21 @@
 /**
-  ******************************************************************************
-  * File Name          : SDIO.c
-  * Description        : This file provides code for the configuration
-  *                      of the SDIO instances.
-  ******************************************************************************
-  * @attention
-  *
-  * <h2><center>&copy; Copyright (c) 2019 STMicroelectronics.
-  * All rights reserved.</center></h2>
-  *
-  * This software component is licensed by ST under Ultimate Liberty license
-  * SLA0044, the "License"; You may not use this file except in compliance with
-  * the License. You may obtain a copy of the License at:
-  *                             www.st.com/SLA0044
-  *
-  ******************************************************************************
-  */
+ ******************************************************************************
+ * File Name          : SDIO.c
+ * Description        : This file provides code for the configuration
+ *                      of the SDIO instances.
+ ******************************************************************************
+ * @attention
+ *
+ * <h2><center>&copy; Copyright (c) 2019 STMicroelectronics.
+ * All rights reserved.</center></h2>
+ *
+ * This software component is licensed by ST under Ultimate Liberty license
+ * SLA0044, the "License"; You may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at:
+ *                             www.st.com/SLA0044
+ *
+ ******************************************************************************
+ */
 
 /* Includes ------------------------------------------------------------------*/
 #include "sdio.h"
@@ -30,9 +30,7 @@ DMA_HandleTypeDef hdma_sdio_tx;
 
 /* SDIO init function */
 
-void MX_SDIO_MMC_Init(void)
-{
-
+void MX_SDIO_MMC_Init(void) {
   hmmc.Instance = SDIO;
   hmmc.Init.ClockEdge = SDIO_CLOCK_EDGE_RISING;
   hmmc.Init.ClockBypass = SDIO_CLOCK_BYPASS_DISABLE;
@@ -40,41 +38,35 @@ void MX_SDIO_MMC_Init(void)
   hmmc.Init.BusWide = SDIO_BUS_WIDE_1B;
   hmmc.Init.HardwareFlowControl = SDIO_HARDWARE_FLOW_CONTROL_ENABLE;
   hmmc.Init.ClockDiv = 1;
-  if (HAL_MMC_Init(&hmmc) != HAL_OK)
-  {
+  if (HAL_MMC_Init(&hmmc) != HAL_OK) {
     Error_Handler();
   }
-  if (HAL_MMC_ConfigWideBusOperation(&hmmc, SDIO_BUS_WIDE_4B) != HAL_OK)
-  {
+  if (HAL_MMC_ConfigWideBusOperation(&hmmc, SDIO_BUS_WIDE_4B) != HAL_OK) {
     Error_Handler();
   }
-
 }
 
-void HAL_MMC_MspInit(MMC_HandleTypeDef* mmcHandle)
-{
-
+void HAL_MMC_MspInit(MMC_HandleTypeDef *mmcHandle) {
   GPIO_InitTypeDef GPIO_InitStruct = {0};
-  if(mmcHandle->Instance==SDIO)
-  {
-  /* USER CODE BEGIN SDIO_MspInit 0 */
+  if (mmcHandle->Instance == SDIO) {
+    /* USER CODE BEGIN SDIO_MspInit 0 */
 
-  /* USER CODE END SDIO_MspInit 0 */
+    /* USER CODE END SDIO_MspInit 0 */
     /* SDIO clock enable */
     __HAL_RCC_SDIO_CLK_ENABLE();
-  
+
     __HAL_RCC_GPIOC_CLK_ENABLE();
     __HAL_RCC_GPIOD_CLK_ENABLE();
-    /**SDIO GPIO Configuration    
+    /**SDIO GPIO Configuration
     PC8     ------> SDIO_D0
     PC9     ------> SDIO_D1
     PC10     ------> SDIO_D2
     PC11     ------> SDIO_D3
     PC12     ------> SDIO_CK
-    PD2     ------> SDIO_CMD 
+    PD2     ------> SDIO_CMD
     */
-    GPIO_InitStruct.Pin = GPIO_PIN_8|GPIO_PIN_9|GPIO_PIN_10|GPIO_PIN_11 
-                          |GPIO_PIN_12;
+    GPIO_InitStruct.Pin =
+        GPIO_PIN_8 | GPIO_PIN_9 | GPIO_PIN_10 | GPIO_PIN_11 | GPIO_PIN_12;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
@@ -103,12 +95,11 @@ void HAL_MMC_MspInit(MMC_HandleTypeDef* mmcHandle)
     hdma_sdio_rx.Init.FIFOThreshold = DMA_FIFO_THRESHOLD_FULL;
     hdma_sdio_rx.Init.MemBurst = DMA_MBURST_INC4;
     hdma_sdio_rx.Init.PeriphBurst = DMA_PBURST_INC4;
-    if (HAL_DMA_Init(&hdma_sdio_rx) != HAL_OK)
-    {
+    if (HAL_DMA_Init(&hdma_sdio_rx) != HAL_OK) {
       Error_Handler();
     }
 
-    __HAL_LINKDMA(mmcHandle,hdmarx,hdma_sdio_rx);
+    __HAL_LINKDMA(mmcHandle, hdmarx, hdma_sdio_rx);
 
     /* SDIO_TX Init */
     hdma_sdio_tx.Instance = DMA2_Stream3;
@@ -124,51 +115,47 @@ void HAL_MMC_MspInit(MMC_HandleTypeDef* mmcHandle)
     hdma_sdio_tx.Init.FIFOThreshold = DMA_FIFO_THRESHOLD_FULL;
     hdma_sdio_tx.Init.MemBurst = DMA_MBURST_INC4;
     hdma_sdio_tx.Init.PeriphBurst = DMA_PBURST_INC4;
-    if (HAL_DMA_Init(&hdma_sdio_tx) != HAL_OK)
-    {
+    if (HAL_DMA_Init(&hdma_sdio_tx) != HAL_OK) {
       Error_Handler();
     }
 
-    __HAL_LINKDMA(mmcHandle,hdmatx,hdma_sdio_tx);
+    __HAL_LINKDMA(mmcHandle, hdmatx, hdma_sdio_tx);
 
-  /* USER CODE BEGIN SDIO_MspInit 1 */
+    /* USER CODE BEGIN SDIO_MspInit 1 */
 
-  /* USER CODE END SDIO_MspInit 1 */
+    /* USER CODE END SDIO_MspInit 1 */
   }
 }
 
-void HAL_MMC_MspDeInit(MMC_HandleTypeDef* mmcHandle)
-{
+void HAL_MMC_MspDeInit(MMC_HandleTypeDef *mmcHandle) {
+  if (mmcHandle->Instance == SDIO) {
+    /* USER CODE BEGIN SDIO_MspDeInit 0 */
 
-  if(mmcHandle->Instance==SDIO)
-  {
-  /* USER CODE BEGIN SDIO_MspDeInit 0 */
-
-  /* USER CODE END SDIO_MspDeInit 0 */
+    /* USER CODE END SDIO_MspDeInit 0 */
     /* Peripheral clock disable */
     __HAL_RCC_SDIO_CLK_DISABLE();
-  
-    /**SDIO GPIO Configuration    
+
+    /**SDIO GPIO Configuration
     PC8     ------> SDIO_D0
     PC9     ------> SDIO_D1
     PC10     ------> SDIO_D2
     PC11     ------> SDIO_D3
     PC12     ------> SDIO_CK
-    PD2     ------> SDIO_CMD 
+    PD2     ------> SDIO_CMD
     */
-    HAL_GPIO_DeInit(GPIOC, GPIO_PIN_8|GPIO_PIN_9|GPIO_PIN_10|GPIO_PIN_11 
-                          |GPIO_PIN_12);
+    HAL_GPIO_DeInit(GPIOC, GPIO_PIN_8 | GPIO_PIN_9 | GPIO_PIN_10 | GPIO_PIN_11 |
+                               GPIO_PIN_12);
 
     HAL_GPIO_DeInit(GPIOD, GPIO_PIN_2);
 
     /* SDIO DMA DeInit */
     HAL_DMA_DeInit(mmcHandle->hdmarx);
     HAL_DMA_DeInit(mmcHandle->hdmatx);
-  /* USER CODE BEGIN SDIO_MspDeInit 1 */
+    /* USER CODE BEGIN SDIO_MspDeInit 1 */
 
-  /* USER CODE END SDIO_MspDeInit 1 */
+    /* USER CODE END SDIO_MspDeInit 1 */
   }
-} 
+}
 
 /* USER CODE BEGIN 1 */
 

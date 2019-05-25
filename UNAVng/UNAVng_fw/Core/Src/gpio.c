@@ -1,21 +1,21 @@
 /**
-  ******************************************************************************
-  * File Name          : gpio.c
-  * Description        : This file provides code for the configuration
-  *                      of all used GPIO pins.
-  ******************************************************************************
-  * @attention
-  *
-  * <h2><center>&copy; Copyright (c) 2019 STMicroelectronics.
-  * All rights reserved.</center></h2>
-  *
-  * This software component is licensed by ST under Ultimate Liberty license
-  * SLA0044, the "License"; You may not use this file except in compliance with
-  * the License. You may obtain a copy of the License at:
-  *                             www.st.com/SLA0044
-  *
-  ******************************************************************************
-  */
+ ******************************************************************************
+ * File Name          : gpio.c
+ * Description        : This file provides code for the configuration
+ *                      of all used GPIO pins.
+ ******************************************************************************
+ * @attention
+ *
+ * <h2><center>&copy; Copyright (c) 2019 STMicroelectronics.
+ * All rights reserved.</center></h2>
+ *
+ * This software component is licensed by ST under Ultimate Liberty license
+ * SLA0044, the "License"; You may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at:
+ *                             www.st.com/SLA0044
+ *
+ ******************************************************************************
+ */
 
 /* Includes ------------------------------------------------------------------*/
 #include "gpio.h"
@@ -30,16 +30,14 @@
 
 /* USER CODE END 1 */
 
-/** Configure pins as 
-        * Analog 
-        * Input 
-        * Output
-        * EVENT_OUT
-        * EXTI
-*/
-void MX_GPIO_Init(void)
-{
-
+/** Configure pins as
+ * Analog
+ * Input
+ * Output
+ * EVENT_OUT
+ * EXTI
+ */
+void MX_GPIO_Init(void) {
   GPIO_InitTypeDef GPIO_InitStruct = {0};
 
   /* GPIO Ports Clock Enable */
@@ -51,16 +49,20 @@ void MX_GPIO_Init(void)
   __HAL_RCC_GPIOD_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, O_FLASH_CS_Pin|O_SPI_CS2_Pin|O_PWR_EN_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOB, O_FLASH_CS_Pin | O_SPI_CS2_Pin | O_PWR_EN_Pin,
+                    GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOE, O_SPI_CS3_Pin|O_MOT_ENABLE_Pin|O_PWR_MOT_EN_Pin|O_PWR_SBC_EN_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOE,
+                    O_SPI_CS3_Pin | O_MOT_ENABLE_Pin | O_PWR_MOT_EN_Pin |
+                        O_PWR_SBC_EN_Pin,
+                    GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(IO_AUX1_GPIO_Port, IO_AUX1_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pins : PEPin PEPin */
-  GPIO_InitStruct.Pin = I_KEY1_Pin|I_KEY0_Pin;
+  GPIO_InitStruct.Pin = I_KEY1_Pin | I_KEY0_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
@@ -78,21 +80,22 @@ void MX_GPIO_Init(void)
   HAL_GPIO_Init(I_KEY_UP_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pins : PBPin PBPin PBPin */
-  GPIO_InitStruct.Pin = O_FLASH_CS_Pin|O_SPI_CS2_Pin|O_PWR_EN_Pin;
+  GPIO_InitStruct.Pin = O_FLASH_CS_Pin | O_SPI_CS2_Pin | O_PWR_EN_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
   /*Configure GPIO pins : PEPin PEPin PEPin PEPin */
-  GPIO_InitStruct.Pin = O_SPI_CS3_Pin|O_MOT_ENABLE_Pin|O_PWR_MOT_EN_Pin|O_PWR_SBC_EN_Pin;
+  GPIO_InitStruct.Pin =
+      O_SPI_CS3_Pin | O_MOT_ENABLE_Pin | O_PWR_MOT_EN_Pin | O_PWR_SBC_EN_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
 
   /*Configure GPIO pins : PBPin PBPin */
-  GPIO_InitStruct.Pin = I_MOT_FAULT1_Pin|I_MOT_FAULT2_Pin;
+  GPIO_InitStruct.Pin = I_MOT_FAULT1_Pin | I_MOT_FAULT2_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
@@ -109,7 +112,6 @@ void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(IO_AUX1_GPIO_Port, &GPIO_InitStruct);
-
 }
 
 /* USER CODE BEGIN 2 */

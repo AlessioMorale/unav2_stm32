@@ -1,26 +1,25 @@
 
 #include "modules/rosnodemodule.h"
 #include "FreeRTOS.h"
-#include <messaging.h>
 #include <message_buffer.h>
+#include <messaging.h>
 #include <ros.h>
 
 namespace unav::modules {
 ros::NodeHandle RosNodeModule::nh;
 
-RosNodeModule::RosNodeModule():
-  pubJoints("unav2/status/joint", &msgjointstate),
-  pubPIDState("unav2/status/vel_pid", &msgpidstate),
-  pubAck("unav2/status/ack", &msgack)
-{ 
-}
+RosNodeModule::RosNodeModule()
+    : pubJoints("unav2/status/joint", &msgjointstate),
+      pubPIDState("unav2/status/vel_pid", &msgpidstate),
+      pubAck("unav2/status/ack", &msgack) {}
 
 void RosNodeModule::initialize() {
   getNodeHandle().initNode();
-  getMessaging().setup((uint8_t*)_messageBuffer, sizeof(outbound_message_t), MESSAGING_BUFFER_SIZE);  
-  incomingMessageQueue = getMessaging().subscribe(RosNodeModule::ModuleMessageId);
+  getMessaging().setup((uint8_t *)_messageBuffer, sizeof(outbound_message_t),
+                       MESSAGING_BUFFER_SIZE);
+  incomingMessageQueue =
+      getMessaging().subscribe(RosNodeModule::ModuleMessageId);
   BaseRosModule::initialize(osPriority::osPriorityNormal, 512);
-
 }
 
 void RosNodeModule::moduleThreadStart() {
@@ -28,26 +27,23 @@ void RosNodeModule::moduleThreadStart() {
   getNodeHandle().advertise(pubPIDState);
   getNodeHandle().advertise(pubAck);
 
- 
   TickType_t c = xTaskGetTickCount();
 
   while (true) {
     message_handle_t msg;
 
-    if(xQueueReceive(incomingMessageQueue, (void*)&msg, 5)){
+    while (xQueueReceive(incomingMessageQueue, (void *)&msg, 2)) {
       sendRosMessage(msg);
       getMessaging().releaseMessage(msg);
     }
-    vTaskDelayUntil(&c, 5);
+    vTaskDelayUntil(&c, 3);
     getNodeHandle().spinOnce();
   }
 }
 
-void RosNodeModule::sendRosMessage(message_handle_t msg)
-{
-  outbound_message_t *m = (outbound_message_t*)msg;
-  switch (m->payload.type)
-  {
+void RosNodeModule::sendRosMessage(message_handle_t msg) {
+  outbound_message_t *m = (outbound_message_t *)msg;
+  switch (m->payload.type) {
   case MessageType_outbound_JointState:
     msgjointstate.stamp = getNodeHandle().now();
     msgjointstate.position_length = MOTORS_COUNT;
@@ -81,13 +77,10 @@ void RosNodeModule::sendRosMessage(message_handle_t msg)
   case MessageType_outboudn_ack:
     msgack.data = m->payload.ackcontent.transactionId;
     pubAck.publish(&msgack);
-    break; 
+    break;
   default:
     getNodeHandle().logwarn("sendRosMessage: Invalid message");
     break;
   }
 }
 } // namespace unav::modules
-
-
-

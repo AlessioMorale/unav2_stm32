@@ -1,10 +1,10 @@
 #include "baserosmodule.h"
-#include "ros.h"
 #include "message_buffer.h"
+#include "ros.h"
+#include <messages.h>
+#include <std_msgs/UInt32.h>
 #include <unav2_msgs/JointState.h>
 #include <unav2_msgs/PIDState.h>
-#include <std_msgs/UInt32.h>
-#include <messages.h>
 #ifndef ROSNODEMODULE_H
 #define ROSNODEMODULE_H
 
@@ -16,12 +16,14 @@ public:
   static const uint32_t ModuleMessageId = 0x0100;
   RosNodeModule();
   void initialize();
+
 private:
   void sendRosMessage(message_handle_t msg);
   static ros::NodeHandle nh;
   ros::NodeHandle &getNodeHandle() { return nh; }
   QueueHandle_t incomingMessageQueue;
-  uint32_t _messageBuffer[MESSAGING_BUFFER_SIZE * (sizeof(outbound_message_t) / sizeof(uint32_t) + 1)];
+  outbound_message_t _messageBuffer[MESSAGING_BUFFER_SIZE];
+
 protected:
   unav2_msgs::JointState msgjointstate;
   unav2_msgs::PIDState msgpidstate;

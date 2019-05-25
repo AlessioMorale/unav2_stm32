@@ -1,4 +1,4 @@
-/* 
+/*
  * Software License Agreement (BSD License)
  *
  * Copyright (c) 2011, Willow Garage, Inc.
@@ -38,9 +38,8 @@
 #include "ros/node_handle.h"
 #include "ros_usbserial.h"
 
-namespace ros
-{
-  typedef NodeHandle_<rosUSBSerial> NodeHandle;
+namespace ros {
+typedef NodeHandle_<rosUSBSerial> NodeHandle;
 }
 
 #endif

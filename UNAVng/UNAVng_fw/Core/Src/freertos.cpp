@@ -1,43 +1,44 @@
 /* USER CODE BEGIN Header */
 /**
-  ******************************************************************************
-  * File Name          : freertos.c
-  * Description        : Code for freertos applications
-  ******************************************************************************
-  * @attention
-  *
-  * <h2><center>&copy; Copyright (c) 2019 STMicroelectronics.
-  * All rights reserved.</center></h2>
-  *
-  * This software component is licensed by ST under Ultimate Liberty license
-  * SLA0044, the "License"; You may not use this file except in compliance with
-  * the License. You may obtain a copy of the License at:
-  *                             www.st.com/SLA0044
-  *
-  ******************************************************************************
-  */
+ ******************************************************************************
+ * File Name          : freertos.c
+ * Description        : Code for freertos applications
+ ******************************************************************************
+ * @attention
+ *
+ * <h2><center>&copy; Copyright (c) 2019 STMicroelectronics.
+ * All rights reserved.</center></h2>
+ *
+ * This software component is licensed by ST under Ultimate Liberty license
+ * SLA0044, the "License"; You may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at:
+ *                             www.st.com/SLA0044
+ *
+ ******************************************************************************
+ */
 /* USER CODE END Header */
 
 /* Includes ------------------------------------------------------------------*/
 #include "FreeRTOS.h"
-#include "task.h"
-#include "main.h"
 #include "cmsis_os.h"
+#include "main.h"
+#include "task.h"
 #include "tim.h"
 #include "timing.h"
+
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
-#include "usb_device.h"     
+#include "usb_device.h"
 #include "usbd_cdc_if.h"
+#include <modules/motorcontrollermodule.h>
+#include <modules/rosmotormodule.h>
+#include <modules/rosnodemodule.h>
 #include <ros.h>
 #include <rosserial_msgs/Log.h>
-#include <std_msgs/Int32.h>
-#include <std_msgs/Int16.h>
 #include <std_msgs/Float32.h>
-#include <modules/rosnodemodule.h>
-#include <modules/rosmotormodule.h>
-#include <modules/motorcontrollermodule.h>
+#include <std_msgs/Int16.h>
+#include <std_msgs/Int32.h>
 
 
 /* USER CODE END Includes */
@@ -49,8 +50,6 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-
-
 
 /* USER CODE END PD */
 
@@ -70,21 +69,21 @@ unav::modules::MotorControllerModule motorController;
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
-extern "C" void StartDefaultTask(void const * argument);
+extern "C" void StartDefaultTask(void const *argument);
 extern "C" void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 
 void MX_USB_DEVICE_Init(void);
-   
+
 /* USER CODE END FunctionPrototypes */
 
 /**
-  * @brief  FreeRTOS initialization
-  * @param  None
-  * @retval None
-  */
+ * @brief  FreeRTOS initialization
+ * @param  None
+ * @retval None
+ */
 extern "C" void MX_FREERTOS_Init(void) {
   /* USER CODE BEGIN Init */
-       
+
   /* USER CODE END Init */
 
   /* USER CODE BEGIN RTOS_MUTEX */
@@ -109,42 +108,39 @@ extern "C" void MX_FREERTOS_Init(void) {
   defaultTaskHandle = osThreadCreate(osThread(defaultTask), NULL);
   rosnode.initialize();
   rosmotornode.initialize();
-  //motorController.initialize();
+  // motorController.initialize();
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
   /* USER CODE END RTOS_THREADS */
-
 }
 
 /* USER CODE BEGIN Header_StartDefaultTask */
 /**
-  * @brief  Function implementing the defaultTask thread.
-  * @param  argument: Not used 
-  * @retval None
-  */
+ * @brief  Function implementing the defaultTask thread.
+ * @param  argument: Not used
+ * @retval None
+ */
 /* USER CODE END Header_StartDefaultTask */
-extern "C" void StartDefaultTask(void const * argument)
-{
+extern "C" void StartDefaultTask(void const *argument) {
   /* init code for USB_DEVICE */
   MX_USB_DEVICE_Init();
 
   /* USER CODE BEGIN StartDefaultTask */
-  uint8_t data[ 20 ];
+  uint8_t data[20];
   size_t receivedBytes = 0;
-  const TickType_t blockTime = pdMS_TO_TICKS( 20 );
+  const TickType_t blockTime = pdMS_TO_TICKS(20);
 
   uint16_t count = 0;
   uint16_t delta = 100;
   TickType_t c = xTaskGetTickCount();
   /* Infinite loop */
-  for(;;)
-  {
+  for (;;) {
     count += delta;
-    if(count > 0xFF00 || count == 0){
+    if (count > 0xFF00 || count == 0) {
       delta *= -1;
     }
     __HAL_TIM_SET_COMPARE(&TIM_LED1, TIM_LED1_CH, count);
-    vTaskDelayUntil(&c, 1);    
+    vTaskDelayUntil(&c, 1);
   }
   /* USER CODE END StartDefaultTask */
 }
