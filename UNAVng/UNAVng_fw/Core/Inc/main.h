@@ -26,7 +26,8 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wold-style-cast"
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f4xx_hal.h"
 
@@ -51,7 +52,7 @@ extern "C" {
 /* USER CODE END EM */
 
 /* Exported functions prototypes ---------------------------------------------*/
-void Error_Handler(void);
+void Error_Handler(void) __attribute__((noreturn));
 
 /* USER CODE BEGIN EFP */
 
@@ -194,6 +195,7 @@ void Error_Handler(void);
 #ifdef __cplusplus
 }
 #endif
+#pragma GCC diagnostic pop
 
 #endif /* __MAIN_H */
 

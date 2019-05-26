@@ -9,7 +9,7 @@ public:
 
 protected:
   osThreadId moduleThread;
-  virtual void moduleThreadStart();
+  virtual void moduleThreadStart() __attribute__((noreturn));
   friend void BaseModuleTaskWrapper(void const *argument);
 };
 } // namespace unav::modules

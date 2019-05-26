@@ -18,7 +18,7 @@ public:
   void initialize();
 
 private:
-  void sendRosMessage(message_handle_t msg);
+  void sendRosMessage(outbound_message_t *msg);
   static ros::NodeHandle nh;
   ros::NodeHandle &getNodeHandle() { return nh; }
   QueueHandle_t incomingMessageQueue;
@@ -31,7 +31,7 @@ protected:
   ros::Publisher pubJoints;
   ros::Publisher pubPIDState;
   ros::Publisher pubAck;
-  void moduleThreadStart();
+  void moduleThreadStart() __attribute__((noreturn));
 };
 } // namespace unav::modules
 #endif

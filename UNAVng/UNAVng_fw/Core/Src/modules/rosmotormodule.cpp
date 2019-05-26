@@ -13,35 +13,32 @@ volatile bool commandUpdated = false;
 volatile bool pidUpdated = false;
 
 RosMotorModule::RosMotorModule()
-    : encoders({unav::drivers::Encoder(&TIM_ENC1),
-                unav::drivers::Encoder(&TIM_ENC2)}) {}
+    : encoders{unav::drivers::Encoder(&TIM_ENC1),
+               unav::drivers::Encoder(&TIM_ENC2)} {}
 
 void RosMotorModule::initialize() {
-  _incomingMessageQueue =
-      getMessaging().subscribe(RosMotorModule::ModuleMessageId);
+  subscribe(RosMotorModule::ModuleMessageId);
   BaseRosModule::initialize(osPriority::osPriorityAboveNormal, 1024);
 }
 
 void RosMotorModule::moduleThreadStart() {
-  uint32_t wait = 10;
+  const uint32_t wait{4};
 
   const float nominalDt = ((float)wait) / 1000.0f;
 
   float dt = nominalDt;
-  float filteredOutput[2] = {0.0f};
-  TickType_t c = xTaskGetTickCount();
+  float filteredEffort[2]{0.0f};
+  auto c = xTaskGetTickCount();
 
-  const uint32_t motor_channels[MOTORS_COUNT] = TIM_MOT_ARRAY_OF_CHANNELS;
-
-  pidstate_content_t pidstate;
+  const uint32_t motor_channels[MOTORS_COUNT] TIM_MOT_ARRAY_OF_CHANNELS;
 
   float cmd[] = {0};
 
-  const float ppr = 12.0f;
-  const float gearReduction = 51.5f;
-  const float reduction = (ppr * gearReduction * 2.0f);
-  const float motLPF = 0.0f;
-  const float encLPF = 0.0f;
+  const float ppr{12.0f};
+  const float gearReduction{51.5f};
+  const float reduction{(ppr * gearReduction * 2.0f)};
+  const float motLPF{0.0f};
+  const float encLPF{0.0f};
   const int8_t pid_publish_rate = 10;
   int8_t pid_rate_counter = 0;
   bool publish_pidstatus = false;
@@ -69,39 +66,38 @@ void RosMotorModule::moduleThreadStart() {
       pid_rate_counter = pid_publish_rate;
       publish_pidstatus = true;
     }
-    message_handle_t js = getMessaging().prepareMessage();
-    message_handle_t ps = NULL;
 
-    pidstate_content_t *pidstate = NULL;
-
-    jointstate_content_t *jointstate =
-        &((outbound_message_t *)js)->payload.jointstate;
+    outbound_message_t *js = prepareMessage();
+    jointstate_content_t *jointstate = &js->payload.jointstate;
     jointstate->type = MessageType_outbound_JointState;
 
+    outbound_message_t *ps{NULL};
+    pidstate_content_t *pidstate{NULL};
+
     if (publish_pidstatus) {
-      ps = getMessaging().prepareMessage();
-      pidstate = &((outbound_message_t *)ps)->payload.pidstate;
+      ps = prepareMessage();
+      pidstate = &ps->payload.pidstate;
       pidstate->type = MessageType_outbound_PIDState;
+      publish_pidstatus = false;
     }
 
     for (int32_t i = 0; i < MOTORS_COUNT; i++) {
-      float measuredSpeed = encoders[i].getVelocity();
+      const auto measuredSpeed = encoders[i].getVelocity();
       jointstate->vel[i] = measuredSpeed;
-      float motorOutput = pidControllers[i].apply(cmd[i], measuredSpeed, dt);
-      filteredOutput[i] =
-          alphaMotor * (motorOutput - filteredOutput[i]) + filteredOutput[i];
-      jointstate->eff[i] = filteredOutput[i];
-      uint32_t motoroutput = (uint32_t)(512.0 + filteredOutput[i] * 512.0);
-      float a = fabsf(motoroutput);
+      auto effort = pidControllers[i].apply(cmd[i], measuredSpeed, dt);
+      filteredEffort[i] =
+          alphaMotor * (effort - filteredEffort[i]) + filteredEffort[i];
+      jointstate->eff[i] = filteredEffort[i];
+      auto motoroutput = (uint32_t)(512.0 + filteredEffort[i] * 512.0);
+      auto a = fabsf(motoroutput);
       if (a < 0.05) {
         motoroutput = 0.0f;
       }
       __HAL_TIM_SET_COMPARE(&TIM_MOT, motor_channels[i], motoroutput);
       // handle diagnostics and status reporting
       jointstate->pos[i] = encoders[i].getPosition();
-      if (publish_pidstatus) {
-        unav::controls::pid_status_t s;
-        pidControllers[i].getStatus(&s);
+      if (pidstate) {
+        auto s = pidControllers[i].getStatus();
         pidstate->output[i] = s.output;
         pidstate->error[i] = s.error;
         pidstate->p_term[i] = s.p_term;
@@ -113,13 +109,10 @@ void RosMotorModule::moduleThreadStart() {
       }
     }
 
-    getMessaging().sendMessage(js,
-                               unav::modules::RosNodeModule::ModuleMessageId);
+    sendMessage(js, unav::modules::RosNodeModule::ModuleMessageId);
 
-    if (publish_pidstatus) {
-      getMessaging().sendMessage(ps,
-                                 unav::modules::RosNodeModule::ModuleMessageId);
-      publish_pidstatus = false;
+    if (pidstate) {
+      sendMessage(ps, unav::modules::RosNodeModule::ModuleMessageId);
     }
     vTaskDelayUntil(&c, wait);
   }

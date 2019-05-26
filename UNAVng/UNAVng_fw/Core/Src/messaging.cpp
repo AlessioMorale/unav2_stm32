@@ -1,4 +1,5 @@
 #include <messaging.h>
+#include <task.h>
 
 namespace unav {
 
@@ -61,10 +62,7 @@ QueueHandle_t Messaging::subscribe(uint32_t recipientId) {
   Error_Handler();
 }
 
-QueueHandle_t Messaging::getRecipientQueue(uint32_t recipientId) {
-  recipient_info_t *info = _recipients;
-  const recipient_info_t *last = &_recipients[MESSAGING_MAX_RECIPIENTS - 1];
-
+QueueHandle_t Messaging::getRecipientQueue(uint32_t recipientId) const {
   for (int32_t i = 0;
        i < MESSAGING_MAX_RECIPIENTS && _recipients[i].queue != nullptr; i++) {
     if (_recipients[i].recipientId == recipientId) {

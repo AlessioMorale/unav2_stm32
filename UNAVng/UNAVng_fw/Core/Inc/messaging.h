@@ -1,8 +1,6 @@
 #include <FreeRTOS.h>
-#include <message_buffer.h>
 #include <messages.h>
 #include <queue.h>
-#include <task.h>
 #if !defined(MESSAGING_H)
 #define MESSAGING_H
 namespace unav {
@@ -29,7 +27,7 @@ private:
   size_t _slotSize;
   void initFreeSlots();
   volatile bool freeSlotInitialized;
-  QueueHandle_t getRecipientQueue(uint32_t recipientIt);
+  QueueHandle_t getRecipientQueue(uint32_t recipientIt) const;
   recipient_info_t _recipients[MESSAGING_MAX_RECIPIENTS];
   uint32_t _maxMessagesCount;
   QueueHandle_t _freeMessagesQueue;

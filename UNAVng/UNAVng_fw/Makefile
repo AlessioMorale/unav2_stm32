@@ -202,6 +202,7 @@ CXXFLAGS                += -fno-rtti
 CXXFLAGS                += -fno-exceptions
 CXXFLAGS				+= -fno-use-cxa-atexit
 CXXFLAGS 				+= -fno-threadsafe-statics
+CXXFLAGS                += -std=c++17
 
 # C++ -- Warnings
 CXXFLAGS 				+= -Weffc++
@@ -212,15 +213,14 @@ CXXFLAGS 				+= -Wmissing-declarations
 CXXFLAGS 				+= -Woverloaded-virtual
 CXXFLAGS 				+= -Wsuggest-final-types
 CXXFLAGS 				+= -Wsuggest-final-methods
-CXXFLAGS 				+= -Wsuggest-override
-CXXFLAGS 				+= -Wsuggest-attribute=pure
+#CXXFLAGS 				+= -Wsuggest-override
 CXXFLAGS 				+= -Wsuggest-attribute=const
 CXXFLAGS 				+= -Wsuggest-attribute=noreturn
 CXXFLAGS 				+= -Wsuggest-attribute=format
 CXXFLAGS 				+= -Wmissing-format-attribute
-CXXFLAGS 				+= -Wold-style-cast
+#CXXFLAGS 				+= -Wold-style-cast
 CXXFLAGS 				+= -Wshadow
-CXXFLAGS 				+= -Wuseless-cast
+#CXXFLAGS 				+= -Wuseless-cast
 CXXFLAGS 				+= -Wctor-dtor-privacy
 CXXFLAGS 				+= -Wstrict-null-sentinel
 

@@ -11,7 +11,7 @@ public:
   void initialize();
 
 protected:
-  virtual void moduleThreadStart();
+  virtual void moduleThreadStart() __attribute__ ((noreturn));
 
 private:
   void setup();

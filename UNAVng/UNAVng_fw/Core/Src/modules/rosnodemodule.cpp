@@ -4,6 +4,7 @@
 #include <message_buffer.h>
 #include <messaging.h>
 #include <ros.h>
+#include <timing.h>
 
 namespace unav::modules {
 ros::NodeHandle RosNodeModule::nh;
@@ -17,8 +18,7 @@ void RosNodeModule::initialize() {
   getNodeHandle().initNode();
   getMessaging().setup((uint8_t *)_messageBuffer, sizeof(outbound_message_t),
                        MESSAGING_BUFFER_SIZE);
-  incomingMessageQueue =
-      getMessaging().subscribe(RosNodeModule::ModuleMessageId);
+  subscribe(RosNodeModule::ModuleMessageId);
   BaseRosModule::initialize(osPriority::osPriorityNormal, 512);
 }
 
@@ -26,30 +26,33 @@ void RosNodeModule::moduleThreadStart() {
   getNodeHandle().advertise(pubJoints);
   getNodeHandle().advertise(pubPIDState);
   getNodeHandle().advertise(pubAck);
-
+  auto t = timing_getMs();
 
   while (true) {
-    message_handle_t msg;
-
-    while (xQueueReceive(incomingMessageQueue, (void *)&msg, 2)) {
+    outbound_message_t *msg{nullptr};
+    while (waitMessage(&msg, 2)) {
       sendRosMessage(msg);
-      getMessaging().releaseMessage(msg);
+      releaseMessage(msg);
+      auto now = timing_getMs();
+      if (now - t > 5) {
+        t = now;
+        getNodeHandle().spinOnce();
+      }
     }
     getNodeHandle().spinOnce();
   }
 }
 
-void RosNodeModule::sendRosMessage(message_handle_t msg) {
-  outbound_message_t *m = (outbound_message_t *)msg;
-  switch (m->payload.type) {
+void RosNodeModule::sendRosMessage(outbound_message_t *msg) {
+  switch (msg->payload.type) {
   case MessageType_outbound_JointState:
     msgjointstate.stamp = getNodeHandle().now();
     msgjointstate.position_length = MOTORS_COUNT;
     msgjointstate.velocity_length = MOTORS_COUNT;
     msgjointstate.effort_length = MOTORS_COUNT;
-    msgjointstate.position = m->payload.jointstate.pos;
-    msgjointstate.velocity = m->payload.jointstate.vel;
-    msgjointstate.effort = m->payload.jointstate.eff;
+    msgjointstate.position = msg->payload.jointstate.pos;
+    msgjointstate.velocity = msg->payload.jointstate.vel;
+    msgjointstate.effort = msg->payload.jointstate.eff;
     pubJoints.publish(&msgjointstate);
     break;
   case MessageType_outbound_PIDState:
@@ -62,18 +65,18 @@ void RosNodeModule::sendRosMessage(message_handle_t msg) {
     msgpidstate.error_length = MOTORS_COUNT;
     msgpidstate.output_length = MOTORS_COUNT;
     msgpidstate.timestep_length = MOTORS_COUNT;
-    msgpidstate.output = m->payload.pidstate.output;
-    msgpidstate.error = m->payload.pidstate.error;
-    msgpidstate.timestep = m->payload.pidstate.timestep;
-    msgpidstate.p_term = m->payload.pidstate.p_term;
-    msgpidstate.i_term = m->payload.pidstate.i_term;
-    msgpidstate.d_term = m->payload.pidstate.d_term;
-    msgpidstate.i_min = m->payload.pidstate.i_min;
-    msgpidstate.i_max = m->payload.pidstate.i_max;
+    msgpidstate.output = msg->payload.pidstate.output;
+    msgpidstate.error = msg->payload.pidstate.error;
+    msgpidstate.timestep = msg->payload.pidstate.timestep;
+    msgpidstate.p_term = msg->payload.pidstate.p_term;
+    msgpidstate.i_term = msg->payload.pidstate.i_term;
+    msgpidstate.d_term = msg->payload.pidstate.d_term;
+    msgpidstate.i_min = msg->payload.pidstate.i_min;
+    msgpidstate.i_max = msg->payload.pidstate.i_max;
     pubPIDState.publish(&msgpidstate);
     break;
   case MessageType_outboudn_ack:
-    msgack.data = m->payload.ackcontent.transactionId;
+    msgack.data = msg->payload.ackcontent.transactionId;
     pubAck.publish(&msgack);
     break;
   default:
