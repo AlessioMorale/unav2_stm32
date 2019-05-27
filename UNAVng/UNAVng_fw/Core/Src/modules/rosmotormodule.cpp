@@ -22,9 +22,9 @@ void RosMotorModule::initialize() {
 }
 
 void RosMotorModule::moduleThreadStart() {
-  const uint32_t wait{4};
-
-  const float nominalDt = ((float)wait) / 1000.0f;
+  uint32_t wait{4};
+  int8_t mode = 0;
+  float nominalDt = ((float)wait) / 1000.0f;
 
   float dt = nominalDt;
   float filteredEffort[2]{0.0f};
@@ -39,7 +39,7 @@ void RosMotorModule::moduleThreadStart() {
   const float reduction{(ppr * gearReduction * 2.0f)};
   const float motLPF{0.0f};
   const float encLPF{0.0f};
-  const int8_t pid_publish_rate = 10;
+  int8_t pid_publish_rate = 10;
   int8_t pid_rate_counter = 0;
   bool publish_pidstatus = false;
 
@@ -67,17 +67,17 @@ void RosMotorModule::moduleThreadStart() {
       publish_pidstatus = true;
     }
 
-    outbound_message_t *js = prepareMessage();
+    message_t *js = prepareMessage();
     jointstate_content_t *jointstate = &js->payload.jointstate;
-    jointstate->type = MessageType_outbound_JointState;
+    jointstate->type = message_types_t::outbound_JointState;
 
-    outbound_message_t *ps{NULL};
+    message_t *ps{NULL};
     pidstate_content_t *pidstate{NULL};
 
     if (publish_pidstatus) {
       ps = prepareMessage();
       pidstate = &ps->payload.pidstate;
-      pidstate->type = MessageType_outbound_PIDState;
+      pidstate->type = message_types_t::outbound_PIDState;
       publish_pidstatus = false;
     }
 
@@ -113,6 +113,45 @@ void RosMotorModule::moduleThreadStart() {
 
     if (pidstate) {
       sendMessage(ps, unav::modules::RosNodeModule::ModuleMessageId);
+    }
+    message_t *receivedMsg = nullptr;
+    if (waitMessage(&receivedMsg, 0)) {
+      uint32_t transactionId = 0;
+      switch (receivedMsg->payload.type) {
+      case message_types_t::inbound_JointCommand: {
+        const jointcommand_content_t *jcmd = &receivedMsg->payload.jointcommand;
+        for (int i = 0; i < MOTORS_COUNT; i++) {
+          cmd[i] = jcmd->command[i];
+        }
+        mode = jcmd->mode;
+      } break;
+      case message_types_t::inbound_PIDConfig: {
+        const pidconfig_content_t *pcfg = &receivedMsg->payload.pidconfig;
+        for (int i = 0; i < MOTORS_COUNT; i++) {
+          pidControllers[i].setGains(pcfg->vel_kp, pcfg->vel_ki, pcfg->vel_kd,
+                                     pcfg->vel_kaw);
+        }
+        if (mode == 0 && pcfg->vel_frequency) {
+          wait = 1000 / pcfg->vel_frequency;
+          if (wait < 4) {
+            wait = 4;
+          }
+          nominalDt = ((float)wait) / 1000.0f;
+          pid_publish_rate = pcfg->vel_frequency / 10;
+        }
+        transactionId = pcfg->transactionId;
+      } break;
+      default:
+        break;
+      }
+      if (transactionId) {
+        ack_content_t *ack = &receivedMsg->payload.ackcontent;
+        ack->transactionId = transactionId;
+        ack->type = message_types_t::outboudn_ack;
+        sendMessage(receivedMsg, RosNodeModule::ModuleMessageId);
+      } else {
+        releaseMessage(receivedMsg);
+      }
     }
     vTaskDelayUntil(&c, wait);
   }

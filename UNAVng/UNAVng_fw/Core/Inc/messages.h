@@ -1,20 +1,21 @@
 #include <main.h>
 #include <std_msgs/UInt32.h>
 #pragma once
-typedef enum {
-  MessageType_NONE = 0,
-  MessageType_outboudn_ack = 1,
-  MessageType_outbound_PIDState = 10,
-  MessageType_outbound_JointState = 11,
-  MessageType_inbound_JointCommand = 40,
-  MessageType_inbound_BridgeConfig = 60,
-  MessageType_inbound_EncoderConfig = 61,
-  MessageType_inbound_LimitsConfig = 62,
-  MessageType_inbound_MechanicalConfig = 63,
-  MessageType_inbound_OperationConfig = 64,
-  MessageType_inbound_PIDConfig = 65,
-  MessageType_inbound_SafetyConfig = 66
-} message_types_t;
+namespace unav {
+enum class message_types_t : int32_t {
+  NONE = 0,
+  outboudn_ack = 1,
+  outbound_PIDState = 10,
+  outbound_JointState = 11,
+  inbound_JointCommand = 40,
+  inbound_BridgeConfig = 60,
+  inbound_EncoderConfig = 61,
+  inbound_LimitsConfig = 62,
+  inbound_MechanicalConfig = 63,
+  inbound_OperationConfig = 64,
+  inbound_PIDConfig = 65,
+  inbound_SafetyConfig = 66
+};
 
 typedef struct _pidstate_content {
   message_types_t type;
@@ -29,47 +30,48 @@ typedef struct _pidstate_content {
 } pidstate_content_t;
 
 typedef struct _jointstate_content {
-  uint32_t type;
+  message_types_t type;
   float vel[MOTORS_COUNT];
   float pos[MOTORS_COUNT];
   float eff[MOTORS_COUNT];
 } jointstate_content_t;
 
 typedef struct _ack_content {
-  uint32_t type;
+  message_types_t type;
   uint32_t transactionId;
 } ack_content_t;
 
-typedef struct _generic_outbound_message {
+typedef struct jointcommand_content {
+  message_types_t type;
+  float command[MOTORS_COUNT];
+  uint16_t seq;
+  int8_t mode;
+} jointcommand_content_t;
+
+typedef struct pidconfig_content {
+  message_types_t type;
+  uint32_t transactionId;
+  float vel_kp;
+  float vel_ki;
+  float vel_kd;
+  float vel_kaw;
+  float cur_kp;
+  float cur_ki;
+  float cur_kd;
+  float cur_kaw;
+  uint16_t vel_frequency;
+  uint16_t cur_frequency;
+  bool cur_enable;
+} pidconfig_content_t;
+
+typedef struct _generic_message {
   union {
-    uint32_t type;
+    message_types_t type;
     ack_content_t ackcontent;
     pidstate_content_t pidstate;
     jointstate_content_t jointstate;
+    jointcommand_content_t jointcommand;
+    pidconfig_content_t pidconfig;
   } payload;
-} outbound_message_t;
-
-/*
-    // advertise and subscribe all topics
-  getNodeHandle().subscribe(subCommand);
-  getNodeHandle().subscribe(subPID);
-
-    if(commandUpdated){
-      commandUpdated = false;
-      for(int i = 0; (i < MOTORS_COUNT) && (i < subCommand.msg.command_length);
-  i++){ cmd[i] = subCommand.msg.command[i];
-      }
-    }
-
-        if(pidUpdated){
-      pidUpdated = false;
-      for(int i = 0; (i < MOTORS_COUNT); i++){
-        pidControllers[i].setGains(subPID.msg.vel_kp, subPID.msg.vel_ki,
-  subPID.msg.vel_kd, subPID.msg.vel_kaw);
-      }
-    }
-  ros::Subscriber<unav2_msgs::JointCommand>
-  subCommand("unav2/control/joint_cmd", commandUpdatedCB);
-  ros::Subscriber<unav2_msgs::PIDConfig> subPID("unav2/config/pid",
-  pidUpdatedCB);
-  */
+} message_t;
+} // namespace unav
