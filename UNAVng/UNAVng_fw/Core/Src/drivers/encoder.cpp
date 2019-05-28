@@ -4,8 +4,9 @@
 namespace unav::drivers {
 
 Encoder::Encoder(TIM_HandleTypeDef *tim)
-    : inverseReduction(1.0f), alpha(1.0f), filteredEncVelocity(0.0f),
-      lastReading(0), encoderTimer(tim), position(0) {}
+    : inverseReduction{1.0f}, alpha{1.0f}, filteredEncVelocity{0.0f},
+      encoderTimer{tim}, lastReading{0}, position{0}, isEncoderAfterGear{
+                                                          false} {}
 Encoder::Encoder() : Encoder(nullptr) {}
 void Encoder::setup() {
   enc_period = __HAL_TIM_GET_AUTORELOAD(encoderTimer);
@@ -41,10 +42,40 @@ float Encoder::getVelocity() {
   }
 }
 
-float Encoder::getPosition() { return position; }
-float Encoder::setReduction(float reduction) {
+float Encoder::setIsEncoderAfterGear(bool isAfterGear) {
+  isEncoderAfterGear = isAfterGear;
+  recalcReduction();
+}
+
+void Encoder::setGear(float gear) {
+  this->gear = gear;
+  recalcReduction();
+}
+
+void Encoder::setCPR(uint16_t cpr) {
+  this->cpr = cpr;
+  recalcReduction();
+}
+
+void Encoder::setSingleChannel(bool isSingleChannel) {
+  this->isSingleChannel = isSingleChannel;
+  recalcReduction();
+}
+
+void Encoder::recalcReduction() {
+  float reduction = 1.0f;
+  if (cpr != 0) {
+    reduction *= ((float)cpr);
+  }
+  if (!isSingleChannel) {
+    reduction *= 2.0f;
+  }
+  if (!isEncoderAfterGear && gear != 0) {
+    reduction *= gear;
+  }
   inverseReduction = 1.0f / reduction;
 }
+
 float Encoder::applyFilter(float dt, float cutoff) {
   alpha = (cutoff > 0.0f) ? LPF_ALPHA(dt, cutoff) : 1.0f;
 }

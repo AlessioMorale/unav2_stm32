@@ -4,6 +4,7 @@
 #include <mathutils.h>
 #include <messages.h>
 #include <messaging.h>
+#include <modules/motorcontrollermodule.h>
 #include <modules/rosmotormodule.h>
 #include <modules/rosnodemodule.h>
 #include <stm32f4xx.h>
@@ -14,7 +15,9 @@ volatile bool pidUpdated = false;
 
 RosMotorModule::RosMotorModule()
     : encoders{unav::drivers::Encoder(&TIM_ENC1),
-               unav::drivers::Encoder(&TIM_ENC2)} {}
+               unav::drivers::Encoder(&TIM_ENC2)},
+      filteredEffort{0.0f}, mode{0}, cmd{0.0f},
+      pid_publish_rate{10}, pid_debug{false} {}
 
 void RosMotorModule::initialize() {
   subscribe(RosMotorModule::ModuleMessageId);
@@ -22,24 +25,14 @@ void RosMotorModule::initialize() {
 }
 
 void RosMotorModule::moduleThreadStart() {
-  uint32_t wait{4};
-  int8_t mode = 0;
-  float nominalDt = ((float)wait) / 1000.0f;
-
-  float dt = nominalDt;
-  float filteredEffort[2]{0.0f};
   auto c = xTaskGetTickCount();
 
   const uint32_t motor_channels[MOTORS_COUNT] TIM_MOT_ARRAY_OF_CHANNELS;
+  updateTimings(100.0f);
 
-  float cmd[] = {0};
-
-  const float ppr{12.0f};
-  const float gearReduction{51.5f};
-  const float reduction{(ppr * gearReduction * 2.0f)};
   const float motLPF{0.0f};
   const float encLPF{0.0f};
-  int8_t pid_publish_rate = 10;
+
   int8_t pid_rate_counter = 0;
   bool publish_pidstatus = false;
 
@@ -49,7 +42,8 @@ void RosMotorModule::moduleThreadStart() {
 
   for (int32_t i = 0; i < MOTORS_COUNT; i++) {
     encoders[i].setup();
-    encoders[i].setReduction(reduction);
+    encoders[i].setGear(1.0f);
+    encoders[i].setCPR(11);
     pidControllers[i].setGains(1, 0, 0, 1);
     pidControllers[i].setRange(-1.0f, 1.0f);
     encoders[i].applyFilter(nominalDt, encLPF);
@@ -60,92 +54,138 @@ void RosMotorModule::moduleThreadStart() {
   //}
   while (true) {
     dt = timer.interval();
-
-    pid_rate_counter--;
-    if (pid_rate_counter <= 0) {
-      pid_rate_counter = pid_publish_rate;
-      publish_pidstatus = true;
-    }
-
-    message_t *js = prepareMessage();
-    jointstate_content_t *jointstate = &js->payload.jointstate;
-    jointstate->type = message_types_t::outbound_JointState;
-
-    message_t *ps{NULL};
-    pidstate_content_t *pidstate{NULL};
-
-    if (publish_pidstatus) {
-      ps = prepareMessage();
-      pidstate = &ps->payload.pidstate;
-      pidstate->type = message_types_t::outbound_PIDState;
-      publish_pidstatus = false;
-    }
-
-    for (int32_t i = 0; i < MOTORS_COUNT; i++) {
-      const auto measuredSpeed = encoders[i].getVelocity();
-      jointstate->vel[i] = measuredSpeed;
-      auto effort = pidControllers[i].apply(cmd[i], measuredSpeed, dt);
-      filteredEffort[i] =
-          alphaMotor * (effort - filteredEffort[i]) + filteredEffort[i];
-      jointstate->eff[i] = filteredEffort[i];
-      auto motoroutput = (uint32_t)(512.0 + filteredEffort[i] * 512.0);
-      auto a = fabsf(motoroutput);
-      if (a < 0.05) {
-        motoroutput = 0.0f;
+    if (pid_debug) {
+      pid_rate_counter--;
+      if (pid_rate_counter <= 0) {
+        pid_rate_counter = pid_publish_rate;
+        publish_pidstatus = true;
       }
-      __HAL_TIM_SET_COMPARE(&TIM_MOT, motor_channels[i], motoroutput);
-      // handle diagnostics and status reporting
-      jointstate->pos[i] = encoders[i].getPosition();
+    }
+    if (mode != 0) {
+
+      message_t *js = prepareMessage();
+      jointstate_content_t *jointstate = &js->jointstate;
+      jointstate->type = message_types_t::outbound_JointState;
+
+      message_t *ps{nullptr};
+      pidstate_content_t *pidstate{nullptr};
+
+      if (publish_pidstatus) {
+        ps = prepareMessage();
+        pidstate = &ps->pidstate;
+        pidstate->type = message_types_t::outbound_PIDState;
+        publish_pidstatus = false;
+      }
+      for (int32_t i = 0; i < MOTORS_COUNT; i++) {
+        const auto measuredSpeed = encoders[i].getVelocity();
+        jointstate->vel[i] = measuredSpeed;
+        auto effort = pidControllers[i].apply(cmd[i], measuredSpeed, dt);
+        filteredEffort[i] =
+            alphaMotor * (effort - filteredEffort[i]) + filteredEffort[i];
+        jointstate->eff[i] = filteredEffort[i];
+        auto motoroutput =
+            (uint32_t)(((float)TIM_MOT_PERIOD_ZERO) +
+                       filteredEffort[i] * ((float)(TIM_MOT_PERIOD_MAX / 2)));
+        auto a = fabsf(motoroutput);
+        if (a < 0.05) {
+          motoroutput = 0.0f;
+        }
+        __HAL_TIM_SET_COMPARE(&TIM_MOT, motor_channels[i], motoroutput);
+        // handle diagnostics and status reporting
+        jointstate->pos[i] = encoders[i].getPosition();
+        if (pidstate) {
+          auto s = pidControllers[i].getStatus();
+          pidstate->output[i] = s.output;
+          pidstate->error[i] = s.error;
+          pidstate->p_term[i] = s.p_term;
+          pidstate->i_term[i] = s.i_term;
+          pidstate->i_max[i] = s.i_max;
+          pidstate->i_min[i] = s.i_min;
+          pidstate->d_term[i] = s.d_term;
+          pidstate->timestep[i] = s.timestep;
+        }
+      }
+      sendMessage(js, unav::modules::RosNodeModule::ModuleMessageId);
+
       if (pidstate) {
-        auto s = pidControllers[i].getStatus();
-        pidstate->output[i] = s.output;
-        pidstate->error[i] = s.error;
-        pidstate->p_term[i] = s.p_term;
-        pidstate->i_term[i] = s.i_term;
-        pidstate->i_max[i] = s.i_max;
-        pidstate->i_min[i] = s.i_min;
-        pidstate->d_term[i] = s.d_term;
-        pidstate->timestep[i] = s.timestep;
+        sendMessage(ps, unav::modules::RosNodeModule::ModuleMessageId);
+        pidstate = nullptr;
+      }
+    } else {
+      for (int i = 0; i < MOTORS_COUNT; i++) {
+        __HAL_TIM_SET_COMPARE(&TIM_MOT, motor_channels[i], TIM_MOT_PERIOD_ZERO);
       }
     }
 
-    sendMessage(js, unav::modules::RosNodeModule::ModuleMessageId);
+    checkMessages();
+    vTaskDelayUntil(&c, wait);
+  }
+}
 
-    if (pidstate) {
-      sendMessage(ps, unav::modules::RosNodeModule::ModuleMessageId);
-    }
-    message_t *receivedMsg = nullptr;
-    if (waitMessage(&receivedMsg, 0)) {
-      uint32_t transactionId = 0;
-      switch (receivedMsg->payload.type) {
-      case message_types_t::inbound_JointCommand: {
-        const jointcommand_content_t *jcmd = &receivedMsg->payload.jointcommand;
-        for (int i = 0; i < MOTORS_COUNT; i++) {
-          cmd[i] = jcmd->command[i];
-        }
-        mode = jcmd->mode;
-      } break;
-      case message_types_t::inbound_PIDConfig: {
-        const pidconfig_content_t *pcfg = &receivedMsg->payload.pidconfig;
-        for (int i = 0; i < MOTORS_COUNT; i++) {
-          pidControllers[i].setGains(pcfg->vel_kp, pcfg->vel_ki, pcfg->vel_kd,
-                                     pcfg->vel_kaw);
-        }
-        if (mode == 0 && pcfg->vel_frequency) {
-          wait = 1000 / pcfg->vel_frequency;
-          if (wait < 4) {
-            wait = 4;
-          }
-          nominalDt = ((float)wait) / 1000.0f;
-          pid_publish_rate = pcfg->vel_frequency / 10;
-        }
-        transactionId = pcfg->transactionId;
-      } break;
-      default:
-        break;
+void RosMotorModule::checkMessages() {
+  message_t *receivedMsg = nullptr;
+  bool relay = false;
+  if (waitMessage(&receivedMsg, 0)) {
+    uint32_t transactionId = 0;
+    switch (receivedMsg->type) {
+    case message_types_t::inbound_JointCommand: {
+      const jointcommand_content_t *jcmd = &receivedMsg->jointcommand;
+      for (int i = 0; i < MOTORS_COUNT; i++) {
+        cmd[i] = jcmd->command[i];
       }
+      mode = jcmd->mode;
+    } break;
+
+    case message_types_t::inbound_PIDConfig: {
+      const auto cfg = &receivedMsg->pidconfig;
+      updatePidConfig(cfg);
+      relay = true;
+    } break;
+
+    case message_types_t::inbound_EncoderConfig: {
+      const auto cfg = &receivedMsg->encoderconfig;
+      updateEncoderConfig(cfg);
+      transactionId = cfg->transactionId;
+    } break;
+
+    case message_types_t::inbound_BridgeConfig: {
+      const auto cfg = &receivedMsg->bridgeconfig;
+      updateBridgeConfig(cfg);
+      relay = true;
+    } break;
+
+    case message_types_t::inbound_MechanicalConfig: {
+      const auto cfg = &receivedMsg->mechanicalconfig;
+      updateMechanicalConfig(cfg);
+      transactionId = cfg->transactionId;
+    } break;
+
+    case message_types_t::inbound_SafetyConfig: {
+      const auto cfg = &receivedMsg->safetyconfig;
+      updateSafetyConfig(cfg);
+      relay = true;
+    } break;
+
+    case message_types_t::inbound_LimitsConfig: {
+      const auto cfg = &receivedMsg->limitsconfig;
+      updateLimitsConfig(cfg);
+      transactionId = cfg->transactionId;
+    } break;
+
+    case message_types_t::inbound_OperationConfig: {
+      const auto cfg = &receivedMsg->operationconfig;
+      updateOperationConfig(cfg);
+      transactionId = cfg->transactionId;
+    } break;
+    default:
+      break;
+    }
+
+    if (relay) {
+      sendMessage(receivedMsg, MotorControllerModule::ModuleMessageId);
+    } else {
       if (transactionId) {
-        ack_content_t *ack = &receivedMsg->payload.ackcontent;
+        ack_content_t *ack = &receivedMsg->ackcontent;
         ack->transactionId = transactionId;
         ack->type = message_types_t::outboudn_ack;
         sendMessage(receivedMsg, RosNodeModule::ModuleMessageId);
@@ -153,7 +193,49 @@ void RosMotorModule::moduleThreadStart() {
         releaseMessage(receivedMsg);
       }
     }
-    vTaskDelayUntil(&c, wait);
   }
 }
+
+void RosMotorModule::updatePidConfig(const pidconfig_content_t *cfg) {
+  for (int i = 0; i < MOTORS_COUNT; i++) {
+    pidControllers[i].setGains(cfg->vel_kp, cfg->vel_ki, cfg->vel_kd,
+                               cfg->vel_kaw);
+  }
+  updateTimings(cfg->vel_frequency);
+}
+
+void RosMotorModule::updateEncoderConfig(const encoderconfig_content_t *cfg) {
+  for (int i = 0; i < MOTORS_COUNT; i++) {
+    encoders[i].setCPR(cfg->cpr);
+    encoders[i].setSingleChannel(cfg->channels ==
+                                 encoderconfig_channels_t::one_channel);
+    encoders[i].setHasZIndex(cfg->has_z_index);
+    encoders[i].setIsEncoderAfterGear(cfg->position ==
+                                      encoderconfig_position_t::after_gear);
+  }
+}
+
+void RosMotorModule::updateBridgeConfig(const bridgeconfig_content_t *cfg) {}
+
+void RosMotorModule::updateLimitsConfig(const limitsconfig_content_t *cfg) {}
+
+void RosMotorModule::updateMechanicalConfig(
+    const mechanicalconfig_content_t *cfg) {}
+
+void RosMotorModule::updateOperationConfig(
+    const operationconfig_content_t *cfg) {}
+
+void RosMotorModule::updateSafetyConfig(const safetyconfig_content_t *cfg) {}
+
+void RosMotorModule::updateTimings(const float frequency) {
+  if (mode == 0 && frequency) {
+    wait = 1000 / frequency;
+    if (wait < 4) {
+      wait = 4;
+    }
+    nominalDt = ((float)wait) / 1000.0f;
+    pid_publish_rate = frequency / 10;
+  }
+}
+
 } // namespace unav::modules

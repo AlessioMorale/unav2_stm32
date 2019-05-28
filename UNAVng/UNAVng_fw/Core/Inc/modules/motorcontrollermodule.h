@@ -9,9 +9,10 @@ namespace unav::modules {
 class MotorControllerModule : protected BaseRosModule {
 public:
   void initialize();
+  static const uint32_t ModuleMessageId{0x0A02};
 
 protected:
-  virtual void moduleThreadStart() __attribute__ ((noreturn));
+  virtual void moduleThreadStart() __attribute__((noreturn));
 
 private:
   void setup();
