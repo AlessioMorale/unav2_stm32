@@ -119,7 +119,7 @@ typedef struct mechanicalconfig_content {
 enum class operationconfig_settingscommand_t : uint16_t {
   none = 0,
   store = 1,
-  reload = 2,
+  reload = 2
 };
 
 enum class operationconfig_opmode_t : uint16_t {

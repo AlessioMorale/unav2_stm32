@@ -16,28 +16,59 @@ RosNodeModule::RosNodeModule()
     : pubJoints("unav2/status/joint", &msgjointstate),
       pubPIDState("unav2/status/vel_pid", &msgpidstate),
       pubAck("unav2/status/ack", &msgack),
-      subCommand(
-          "unav2/control/joint_cmd",
-          [](const unav2_msgs::JointCommand &msg) {
-            if (rosNode) {
-              message_t *m = rosNode->prepareMessage();
-              unav::MessageConverter<unav2_msgs::JointCommand>::fromRosMsg(msg,
-                                                                           m);
-              rosNode->sendMessage(
-                  m, unav::modules::RosMotorModule::ModuleMessageId);
-            }
+      subJointCmd("unav2/control/joint_cmd",
+                  [](const unav2_msgs::JointCommand &msg) {
+                    rosNode->handleRosMessage<unav2_msgs::JointCommand>(
+                        msg, unav::modules::RosMotorModule::ModuleMessageId);
+                  }),
+      subPIDCfg("unav2/config/pid",
+                [](const unav2_msgs::PIDConfig &msg) {
+                  rosNode->handleRosMessage<unav2_msgs::PIDConfig>(
+                      msg, unav::modules::RosMotorModule::ModuleMessageId);
+                }),
+      subBridgeCfg("unav2/config/bridge",
+                   [](const unav2_msgs::BridgeConfig &msg) {
+                     rosNode->handleRosMessage<unav2_msgs::BridgeConfig>(
+                         msg, unav::modules::RosMotorModule::ModuleMessageId);
+                   }),
+      subEncoderCfg("unav2/config/encoder",
+                    [](const unav2_msgs::EncoderConfig &msg) {
+                      rosNode->handleRosMessage<unav2_msgs::EncoderConfig>(
+                          msg, unav::modules::RosMotorModule::ModuleMessageId);
+                    }),
+      subLimitCfg("unav2/config/limits",
+                  [](const unav2_msgs::LimitsConfig &msg) {
+                    rosNode->handleRosMessage<unav2_msgs::LimitsConfig>(
+                        msg, unav::modules::RosMotorModule::ModuleMessageId);
+                  }),
+      subMechanicalCfg(
+          "unav2/config/mechanical",
+          [](const unav2_msgs::MechanicalConfig &msg) {
+            rosNode->handleRosMessage<unav2_msgs::MechanicalConfig>(
+                msg, unav::modules::RosMotorModule::ModuleMessageId);
           }),
-      subPID("unav2/config/pid", [](const unav2_msgs::PIDConfig &msg) {
-        if (rosNode) {
-          message_t *m = rosNode->prepareMessage();
-          unav::MessageConverter<unav2_msgs::PIDConfig>::fromRosMsg(msg, m);
-          rosNode->sendMessage(m,
-                               unav::modules::RosMotorModule::ModuleMessageId);
-        }
-      }) {
+      subOperationCfg("unav2/config/operation",
+                      [](const unav2_msgs::OperationConfig &msg) {
+                        rosNode->handleRosMessage<unav2_msgs::OperationConfig>(
+                            msg,
+                            unav::modules::RosMotorModule::ModuleMessageId);
+                      }),
+      subSafetyCfg("unav2/config/safety",
+                   [](const unav2_msgs::SafetyConfig &msg) {
+                     rosNode->handleRosMessage<unav2_msgs::SafetyConfig>(
+                         msg, unav::modules::RosMotorModule::ModuleMessageId);
+                   })
+
+{
   rosNode = this;
 }
 
+template <typename T>
+void RosNodeModule::handleRosMessage(const T &msg, uint32_t destination) {
+  message_t *m = rosNode->prepareMessage();
+  unav::MessageConverter<T>::fromRosMsg(msg, m);
+  rosNode->sendMessage(m, destination);
+}
 void RosNodeModule::initialize() {
   getNodeHandle().initNode();
   getMessaging().setup((uint8_t *)_messageBuffer, sizeof(message_t),
@@ -51,8 +82,14 @@ void RosNodeModule::moduleThreadStart() {
   getNodeHandle().advertise(pubPIDState);
   getNodeHandle().advertise(pubAck);
 
-  getNodeHandle().subscribe(subCommand);
-  getNodeHandle().subscribe(subPID);
+  getNodeHandle().subscribe(subJointCmd);
+  getNodeHandle().subscribe(subBridgeCfg);
+  getNodeHandle().subscribe(subEncoderCfg);
+  getNodeHandle().subscribe(subLimitCfg);
+  getNodeHandle().subscribe(subMechanicalCfg);
+  getNodeHandle().subscribe(subOperationCfg);
+  getNodeHandle().subscribe(subPIDCfg);
+  getNodeHandle().subscribe(subSafetyCfg);
 
   auto t = timing_getMs();
 

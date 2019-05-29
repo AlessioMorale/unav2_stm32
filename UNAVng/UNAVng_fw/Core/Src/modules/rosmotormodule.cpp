@@ -61,6 +61,7 @@ void RosMotorModule::moduleThreadStart() {
         publish_pidstatus = true;
       }
     }
+
     if (mode != 0) {
 
       message_t *js = prepareMessage();
@@ -139,6 +140,7 @@ void RosMotorModule::checkMessages() {
     case message_types_t::inbound_PIDConfig: {
       const auto cfg = &receivedMsg->pidconfig;
       updatePidConfig(cfg);
+      transactionId = cfg->transactionId;
       relay = true;
     } break;
 
@@ -151,6 +153,7 @@ void RosMotorModule::checkMessages() {
     case message_types_t::inbound_BridgeConfig: {
       const auto cfg = &receivedMsg->bridgeconfig;
       updateBridgeConfig(cfg);
+      transactionId = cfg->transactionId;
       relay = true;
     } break;
 
@@ -163,6 +166,7 @@ void RosMotorModule::checkMessages() {
     case message_types_t::inbound_SafetyConfig: {
       const auto cfg = &receivedMsg->safetyconfig;
       updateSafetyConfig(cfg);
+      transactionId = cfg->transactionId;
       relay = true;
     } break;
 
@@ -170,17 +174,19 @@ void RosMotorModule::checkMessages() {
       const auto cfg = &receivedMsg->limitsconfig;
       updateLimitsConfig(cfg);
       transactionId = cfg->transactionId;
+      relay = true;
     } break;
 
     case message_types_t::inbound_OperationConfig: {
       const auto cfg = &receivedMsg->operationconfig;
       updateOperationConfig(cfg);
       transactionId = cfg->transactionId;
+      relay = true;
     } break;
     default:
       break;
     }
-
+    relay = false;
     if (relay) {
       sendMessage(receivedMsg, MotorControllerModule::ModuleMessageId);
     } else {
@@ -223,7 +229,9 @@ void RosMotorModule::updateMechanicalConfig(
     const mechanicalconfig_content_t *cfg) {}
 
 void RosMotorModule::updateOperationConfig(
-    const operationconfig_content_t *cfg) {}
+    const operationconfig_content_t *cfg) {
+  pid_debug = cfg->pid_debug;
+}
 
 void RosMotorModule::updateSafetyConfig(const safetyconfig_content_t *cfg) {}
 
