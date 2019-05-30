@@ -1,7 +1,7 @@
 
 #include "modules/rosnodemodule.h"
 #include "FreeRTOS.h"
-#include "modules/rosmotormodule.h"
+#include "modules/motormanagermodule.h"
 #include <message_buffer.h>
 #include <messageconverter.h>
 #include <messaging.h>
@@ -19,44 +19,44 @@ RosNodeModule::RosNodeModule()
       subJointCmd("unav2/control/joint_cmd",
                   [](const unav2_msgs::JointCommand &msg) {
                     rosNode->handleRosMessage<unav2_msgs::JointCommand>(
-                        msg, unav::modules::RosMotorModule::ModuleMessageId);
+                        msg, unav::modules::MotorManagerModule::ModuleMessageId);
                   }),
       subPIDCfg("unav2/config/pid",
                 [](const unav2_msgs::PIDConfig &msg) {
                   rosNode->handleRosMessage<unav2_msgs::PIDConfig>(
-                      msg, unav::modules::RosMotorModule::ModuleMessageId);
+                      msg, unav::modules::MotorManagerModule::ModuleMessageId);
                 }),
       subBridgeCfg("unav2/config/bridge",
                    [](const unav2_msgs::BridgeConfig &msg) {
                      rosNode->handleRosMessage<unav2_msgs::BridgeConfig>(
-                         msg, unav::modules::RosMotorModule::ModuleMessageId);
+                         msg, unav::modules::MotorManagerModule::ModuleMessageId);
                    }),
       subEncoderCfg("unav2/config/encoder",
                     [](const unav2_msgs::EncoderConfig &msg) {
                       rosNode->handleRosMessage<unav2_msgs::EncoderConfig>(
-                          msg, unav::modules::RosMotorModule::ModuleMessageId);
+                          msg, unav::modules::MotorManagerModule::ModuleMessageId);
                     }),
       subLimitCfg("unav2/config/limits",
                   [](const unav2_msgs::LimitsConfig &msg) {
                     rosNode->handleRosMessage<unav2_msgs::LimitsConfig>(
-                        msg, unav::modules::RosMotorModule::ModuleMessageId);
+                        msg, unav::modules::MotorManagerModule::ModuleMessageId);
                   }),
       subMechanicalCfg(
           "unav2/config/mechanical",
           [](const unav2_msgs::MechanicalConfig &msg) {
             rosNode->handleRosMessage<unav2_msgs::MechanicalConfig>(
-                msg, unav::modules::RosMotorModule::ModuleMessageId);
+                msg, unav::modules::MotorManagerModule::ModuleMessageId);
           }),
       subOperationCfg("unav2/config/operation",
                       [](const unav2_msgs::OperationConfig &msg) {
                         rosNode->handleRosMessage<unav2_msgs::OperationConfig>(
                             msg,
-                            unav::modules::RosMotorModule::ModuleMessageId);
+                            unav::modules::MotorManagerModule::ModuleMessageId);
                       }),
       subSafetyCfg("unav2/config/safety",
                    [](const unav2_msgs::SafetyConfig &msg) {
                      rosNode->handleRosMessage<unav2_msgs::SafetyConfig>(
-                         msg, unav::modules::RosMotorModule::ModuleMessageId);
+                         msg, unav::modules::MotorManagerModule::ModuleMessageId);
                    })
 
 {

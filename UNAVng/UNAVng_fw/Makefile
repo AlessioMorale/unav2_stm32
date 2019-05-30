@@ -75,7 +75,7 @@ rosserial/time.cpp \
 Core/Src/modules/basemodule.cpp \
 Core/Src/modules/baserosmodule.cpp \
 Core/Src/modules/rosnodemodule.cpp \
-Core/Src/modules/rosmotormodule.cpp \
+Core/Src/modules/motormanagermodule.cpp \
 Core/Src/modules/motorcontrollermodule.cpp \
 Core/Src/controls/pid.cpp \
 Core/Src/drivers/encoder.cpp \

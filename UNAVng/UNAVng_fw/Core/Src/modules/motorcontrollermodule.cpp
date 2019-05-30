@@ -25,6 +25,8 @@ void MotorControllerModule::initialize() {
   if (adcSemaphore == 0) {
     Error_Handler();
   }
+  subscribe(MotorControllerModule::ModuleMessageId);  
+  subscribe(MotorControllerModule::ModulePriorityMessageId);  
   BaseModule::initialize(osPriority::osPriorityAboveNormal, 512);
   setup();
 }
@@ -39,7 +41,7 @@ void MotorControllerModule::moduleThreadStart() {
 
   vTaskDelay(1000);
   while (true) {
-    auto ret = xSemaphoreTake(adcSemaphore, 5);
+    auto ret = xSemaphoreTake(adcSemaphore, 1);
     if (ret == pdPASS) {
       // auto data = ((float)(dmaBuffer[0] + dmaBuffer[2])) / 2.0f;
       // pubAdcValue.publish(&adcValue);

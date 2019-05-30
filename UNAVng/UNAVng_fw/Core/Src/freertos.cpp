@@ -31,7 +31,7 @@
 #include "usb_device.h"
 #include "usbd_cdc_if.h"
 #include <modules/motorcontrollermodule.h>
-#include <modules/rosmotormodule.h>
+#include <modules/motormanagermodule.h>
 #include <modules/rosnodemodule.h>
 #include <ros.h>
 #include <rosserial_msgs/Log.h>
@@ -61,7 +61,7 @@
 
 osThreadId defaultTaskHandle;
 unav::modules::RosNodeModule rosnode;
-unav::modules::RosMotorModule rosmotornode;
+unav::modules::MotorManagerModule rosmotornode;
 unav::modules::MotorControllerModule motorController;
 /* USER CODE END Variables */
 
