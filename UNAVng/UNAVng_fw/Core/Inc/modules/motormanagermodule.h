@@ -12,10 +12,10 @@
 #define ROSMOTORMODULE_H
 
 namespace unav::modules {
-class RosMotorModule : public BaseRosModule {
+class MotorManagerModule : public BaseRosModule {
 public:
   static const uint32_t ModuleMessageId{0x0A01};
-  RosMotorModule();
+  MotorManagerModule();
   virtual void initialize();
 
 protected:

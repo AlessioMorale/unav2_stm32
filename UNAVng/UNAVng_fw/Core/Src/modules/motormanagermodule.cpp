@@ -5,7 +5,7 @@
 #include <messages.h>
 #include <messaging.h>
 #include <modules/motorcontrollermodule.h>
-#include <modules/rosmotormodule.h>
+#include <modules/motormanagermodule.h>
 #include <modules/rosnodemodule.h>
 #include <stm32f4xx.h>
 #include <timers.h>
@@ -13,18 +13,18 @@ namespace unav::modules {
 volatile bool commandUpdated = false;
 volatile bool pidUpdated = false;
 
-RosMotorModule::RosMotorModule()
+MotorManagerModule::MotorManagerModule()
     : encoders{unav::drivers::Encoder(&TIM_ENC1),
                unav::drivers::Encoder(&TIM_ENC2)},
       filteredEffort{0.0f}, mode{0}, cmd{0.0f},
       pid_publish_rate{10}, pid_debug{false} {}
 
-void RosMotorModule::initialize() {
-  subscribe(RosMotorModule::ModuleMessageId);
+void MotorManagerModule::initialize() {
+  subscribe(MotorManagerModule::ModuleMessageId);
   BaseRosModule::initialize(osPriority::osPriorityAboveNormal, 1024);
 }
 
-void RosMotorModule::moduleThreadStart() {
+void MotorManagerModule::moduleThreadStart() {
   auto c = xTaskGetTickCount();
 
   const uint32_t motor_channels[MOTORS_COUNT] TIM_MOT_ARRAY_OF_CHANNELS;
@@ -123,7 +123,7 @@ void RosMotorModule::moduleThreadStart() {
   }
 }
 
-void RosMotorModule::checkMessages() {
+void MotorManagerModule::checkMessages() {
   message_t *receivedMsg = nullptr;
   bool relay = false;
   if (waitMessage(&receivedMsg, 0)) {
@@ -202,7 +202,7 @@ void RosMotorModule::checkMessages() {
   }
 }
 
-void RosMotorModule::updatePidConfig(const pidconfig_content_t *cfg) {
+void MotorManagerModule::updatePidConfig(const pidconfig_content_t *cfg) {
   for (int i = 0; i < MOTORS_COUNT; i++) {
     pidControllers[i].setGains(cfg->vel_kp, cfg->vel_ki, cfg->vel_kd,
                                cfg->vel_kaw);
@@ -210,7 +210,7 @@ void RosMotorModule::updatePidConfig(const pidconfig_content_t *cfg) {
   updateTimings(cfg->vel_frequency);
 }
 
-void RosMotorModule::updateEncoderConfig(const encoderconfig_content_t *cfg) {
+void MotorManagerModule::updateEncoderConfig(const encoderconfig_content_t *cfg) {
   for (int i = 0; i < MOTORS_COUNT; i++) {
     encoders[i].setCPR(cfg->cpr);
     encoders[i].setSingleChannel(cfg->channels ==
@@ -221,21 +221,21 @@ void RosMotorModule::updateEncoderConfig(const encoderconfig_content_t *cfg) {
   }
 }
 
-void RosMotorModule::updateBridgeConfig(const bridgeconfig_content_t *cfg) {}
+void MotorManagerModule::updateBridgeConfig(const bridgeconfig_content_t *cfg) {}
 
-void RosMotorModule::updateLimitsConfig(const limitsconfig_content_t *cfg) {}
+void MotorManagerModule::updateLimitsConfig(const limitsconfig_content_t *cfg) {}
 
-void RosMotorModule::updateMechanicalConfig(
+void MotorManagerModule::updateMechanicalConfig(
     const mechanicalconfig_content_t *cfg) {}
 
-void RosMotorModule::updateOperationConfig(
+void MotorManagerModule::updateOperationConfig(
     const operationconfig_content_t *cfg) {
   pid_debug = cfg->pid_debug;
 }
 
-void RosMotorModule::updateSafetyConfig(const safetyconfig_content_t *cfg) {}
+void MotorManagerModule::updateSafetyConfig(const safetyconfig_content_t *cfg) {}
 
-void RosMotorModule::updateTimings(const float frequency) {
+void MotorManagerModule::updateTimings(const float frequency) {
   if (mode == 0 && frequency) {
     wait = 1000 / frequency;
     if (wait < 4) {
