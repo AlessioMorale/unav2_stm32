@@ -22,7 +22,7 @@ namespace unav::modules {
 
 class RosNodeModule : public BaseRosModule {
 public:
-  static const uint32_t ModuleMessageId = 0x0100;
+  static const uint32_t ModuleMessageId = BaseRosModule::RosNodeModuleMessageId;
   RosNodeModule();
   void initialize();
 

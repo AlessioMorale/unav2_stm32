@@ -50,7 +50,24 @@ public:
     jointcommand_content_t *c = &msg->jointcommand;
     c->type = message_types_t::inbound_JointCommand;
     c->seq = rosmsg.seq;
-    c->mode = rosmsg.mode;
+    switch(rosmsg.mode){
+      case unav2_msgs::JointCommand::FAILSAFE:
+        c->mode = jointcommand_mode_t::failsafe;
+        break;
+      case unav2_msgs::JointCommand::DISABLED: 
+        c->mode = jointcommand_mode_t::disabled;
+      break;
+      case unav2_msgs::JointCommand::POSITION:
+        c->mode = jointcommand_mode_t::position;
+      break;
+      case unav2_msgs::JointCommand::VELOCITY:
+        c->mode = jointcommand_mode_t::velocity;
+      break;
+      case unav2_msgs::JointCommand::EFFORT:
+        c->mode = jointcommand_mode_t::effort;
+      break;
+    }
+    
     for (int i = 0; i < MOTORS_COUNT && i < rosmsg.command_length; i++) {
       c->command[i] = rosmsg.command[i];
     }
