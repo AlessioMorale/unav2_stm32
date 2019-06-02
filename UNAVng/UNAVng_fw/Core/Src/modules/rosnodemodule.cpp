@@ -14,12 +14,14 @@ RosNodeModule *rosNode;
 
 RosNodeModule::RosNodeModule()
     : pubJoints("unav2/status/joint", &msgjointstate),
-      pubPIDState("unav2/status/vel_pid", &msgpidstate),
+      pubVelPIDState("unav2/status/vel_pid", &msgpidstate),
+      pubCurPIDState("unav2/status/cur_pid", &msgpidstate),
       pubAck("unav2/status/ack", &msgack),
       subJointCmd("unav2/control/joint_cmd",
                   [](const unav2_msgs::JointCommand &msg) {
                     rosNode->handleRosMessage<unav2_msgs::JointCommand>(
-                        msg, unav::modules::MotorManagerModule::ModuleMessageId);
+                        msg,
+                        unav::modules::MotorManagerModule::ModuleMessageId);
                   }),
       subPIDCfg("unav2/config/pid",
                 [](const unav2_msgs::PIDConfig &msg) {
@@ -29,17 +31,20 @@ RosNodeModule::RosNodeModule()
       subBridgeCfg("unav2/config/bridge",
                    [](const unav2_msgs::BridgeConfig &msg) {
                      rosNode->handleRosMessage<unav2_msgs::BridgeConfig>(
-                         msg, unav::modules::MotorManagerModule::ModuleMessageId);
+                         msg,
+                         unav::modules::MotorManagerModule::ModuleMessageId);
                    }),
       subEncoderCfg("unav2/config/encoder",
                     [](const unav2_msgs::EncoderConfig &msg) {
                       rosNode->handleRosMessage<unav2_msgs::EncoderConfig>(
-                          msg, unav::modules::MotorManagerModule::ModuleMessageId);
+                          msg,
+                          unav::modules::MotorManagerModule::ModuleMessageId);
                     }),
       subLimitCfg("unav2/config/limits",
                   [](const unav2_msgs::LimitsConfig &msg) {
                     rosNode->handleRosMessage<unav2_msgs::LimitsConfig>(
-                        msg, unav::modules::MotorManagerModule::ModuleMessageId);
+                        msg,
+                        unav::modules::MotorManagerModule::ModuleMessageId);
                   }),
       subMechanicalCfg(
           "unav2/config/mechanical",
@@ -56,7 +61,8 @@ RosNodeModule::RosNodeModule()
       subSafetyCfg("unav2/config/safety",
                    [](const unav2_msgs::SafetyConfig &msg) {
                      rosNode->handleRosMessage<unav2_msgs::SafetyConfig>(
-                         msg, unav::modules::MotorManagerModule::ModuleMessageId);
+                         msg,
+                         unav::modules::MotorManagerModule::ModuleMessageId);
                    })
 
 {
@@ -79,7 +85,8 @@ void RosNodeModule::initialize() {
 
 void RosNodeModule::moduleThreadStart() {
   getNodeHandle().advertise(pubJoints);
-  getNodeHandle().advertise(pubPIDState);
+  getNodeHandle().advertise(pubCurPIDState);
+  getNodeHandle().advertise(pubVelPIDState);
   getNodeHandle().advertise(pubAck);
 
   getNodeHandle().subscribe(subJointCmd);
@@ -116,9 +123,13 @@ void RosNodeModule::sendRosMessage(message_t *msg) {
                                                              msgjointstate);
     pubJoints.publish(&msgjointstate);
     break;
-  case unav::message_types_t::outbound_PIDState:
+  case unav::message_types_t::outbound_VelPIDState:
     unav::MessageConverter<unav2_msgs::PIDState>::toRosMsg(msg, msgpidstate);
-    pubPIDState.publish(&msgpidstate);
+    pubVelPIDState.publish(&msgpidstate);
+    break;
+  case unav::message_types_t::outbound_CurPIDState:
+    unav::MessageConverter<unav2_msgs::PIDState>::toRosMsg(msg, msgpidstate);
+    pubCurPIDState.publish(&msgpidstate);
     break;
   case unav::message_types_t::outboudn_ack:
     msgack.data = msg->ackcontent.transactionId;

@@ -5,8 +5,9 @@ namespace unav {
 enum class message_types_t : int32_t {
   NONE = 0,
   outboudn_ack = 1,
-  outbound_PIDState = 10,
-  outbound_JointState = 11,
+  outbound_VelPIDState = 10,
+  outbound_CurPIDState = 11,
+  outbound_JointState = 12,
   inbound_JointCommand = 40,
   inbound_BridgeConfig = 60,
   inbound_EncoderConfig = 61,

@@ -40,7 +40,8 @@ protected:
   unav2_msgs::PIDState msgpidstate;
   std_msgs::UInt32 msgack;
   ros::Publisher pubJoints;
-  ros::Publisher pubPIDState;
+  ros::Publisher pubVelPIDState;
+  ros::Publisher pubCurPIDState;
   ros::Publisher pubAck;
   ros::Subscriber<unav2_msgs::JointCommand> subJointCmd;
   ros::Subscriber<unav2_msgs::BridgeConfig> subBridgeCfg;

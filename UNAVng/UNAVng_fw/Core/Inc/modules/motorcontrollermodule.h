@@ -2,7 +2,7 @@
 #include <main.h>
 #include <messages.h>
 #include <modules/baserosmodule.h>
-
+#include <utils/timer.h>
 #ifndef MOTORCONTROLLERMODULE_H
 #define MOTORCONTROLLERMODULE_H
 namespace unav::modules {
@@ -11,18 +11,13 @@ public:
   MotorControllerModule();
   void initialize();
   static const uint32_t ModuleMessageId{0x0A02};
-  static const uint32_t ModulePriorityMessageId{0x0A03};
 
 protected:
   virtual void moduleThreadStart() __attribute__((noreturn));
 
 private:
   void setup();
-  bool waitPriorityMessage(message_t **msg, TickType_t wait) {
-    return (xQueueReceive(_incomingPriorityMessageQueue, (void *)msg, wait) ==
-            pdTRUE);
-  }
-  void checkMessages();
+  void checkMessages(bool wait);
   void updatePidConfig(const pidconfig_content_t *cfg);
   void updateLimitsConfig(const limitsconfig_content_t *cfg);
   void updateSafetyConfig(const safetyconfig_content_t *cfg);
@@ -31,7 +26,12 @@ private:
   bool curLoopEnabled;
   QueueHandle_t _incomingPriorityMessageQueue;
   float cmd[MOTORS_COUNT];
+  unav::utils::Timer timer;
   motorcontrol_mode_t mode;
+  uint8_t pid_publish_rate;
+  bool pid_debug;
+  float nominalDt;
+  float dt;
   unav::controls::PID pidControllers[MOTORS_COUNT];
   bool MotorEnabled;
   const uint32_t Channels[MOTORS_COUNT] = MOTOR_CUR_ADC2_ARRAY_OF_CHANNELS;

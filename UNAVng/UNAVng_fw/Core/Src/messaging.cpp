@@ -39,7 +39,9 @@ message_handle_t Messaging::prepareMessage() {
     initFreeSlots();
   }
   message_handle_t message;
-  xQueueReceive(_freeMessagesQueue, &message, portMAX_DELAY);
+  if (xQueueReceive(_freeMessagesQueue, &message, 0) != pdTRUE) {
+    Error_Handler();
+  };
   return message;
 }
 

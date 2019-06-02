@@ -46,9 +46,6 @@ void MotorManagerModule::moduleThreadStart() {
     encoders[i].applyFilter(nominalDt, encLPF);
   }
 
-  // while(!(pidUpdated)){
-  //  vTaskDelay(100);
-  //}
   while (true) {
     dt = timer.interval();
     if (pid_debug) {
@@ -71,11 +68,11 @@ void MotorManagerModule::moduleThreadStart() {
       if (publish_pidstatus) {
         ps = prepareMessage();
         pidstate = &ps->pidstate;
-        pidstate->type = message_types_t::outbound_PIDState;
+        pidstate->type = message_types_t::outbound_VelPIDState;
         publish_pidstatus = false;
       }
       // motor control message sent to motorcontroller module
-      auto mc = prepareMessage();
+      auto *mc = prepareMessage();
       auto motorcontrol = &mc->motorcontrol;
       motorcontrol->mode = controlMode;
       motorcontrol->type = message_types_t::internal_motor_control;
@@ -109,8 +106,8 @@ void MotorManagerModule::moduleThreadStart() {
           pidstate->timestep[i] = s.timestep;
         }
       }
-      sendMessage(
-          mc, unav::modules::MotorControllerModule::ModulePriorityMessageId);
+      // sendMessage(mc, MotorControllerModule::ModuleMessageId);
+      releaseMessage(mc);
       sendMessage(js, RosNodeModuleMessageId);
 
       if (pidstate) {
@@ -153,7 +150,6 @@ void MotorManagerModule::checkMessages() {
     case message_types_t::inbound_PIDConfig: {
       const auto cfg = &receivedMsg->pidconfig;
       updatePidConfig(cfg);
-      transactionId = cfg->transactionId;
       relay = true;
     } break;
 
@@ -166,7 +162,6 @@ void MotorManagerModule::checkMessages() {
     case message_types_t::inbound_BridgeConfig: {
       const auto cfg = &receivedMsg->bridgeconfig;
       updateBridgeConfig(cfg);
-      transactionId = cfg->transactionId;
       relay = true;
     } break;
 
@@ -179,14 +174,12 @@ void MotorManagerModule::checkMessages() {
     case message_types_t::inbound_SafetyConfig: {
       const auto cfg = &receivedMsg->safetyconfig;
       updateSafetyConfig(cfg);
-      transactionId = cfg->transactionId;
       relay = true;
     } break;
 
     case message_types_t::inbound_LimitsConfig: {
       const auto cfg = &receivedMsg->limitsconfig;
       updateLimitsConfig(cfg);
-      transactionId = cfg->transactionId;
       relay = true;
     } break;
 
@@ -194,20 +187,15 @@ void MotorManagerModule::checkMessages() {
       const auto cfg = &receivedMsg->operationconfig;
       updateOperationConfig(cfg);
       transactionId = cfg->transactionId;
-      relay = true;
     } break;
     default:
       break;
     }
-    relay = false;
     if (relay) {
       sendMessage(receivedMsg, MotorControllerModule::ModuleMessageId);
     } else {
       if (transactionId) {
-        ack_content_t *ack = &receivedMsg->ackcontent;
-        ack->transactionId = transactionId;
-        ack->type = message_types_t::outboudn_ack;
-        sendMessage(receivedMsg, RosNodeModuleMessageId);
+        sendAck(receivedMsg, transactionId);
       } else {
         releaseMessage(receivedMsg);
       }
