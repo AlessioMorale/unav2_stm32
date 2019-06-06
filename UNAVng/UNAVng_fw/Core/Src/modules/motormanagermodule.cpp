@@ -106,8 +106,8 @@ void MotorManagerModule::moduleThreadStart() {
           pidstate->timestep[i] = s.timestep;
         }
       }
-      // sendMessage(mc, MotorControllerModule::ModuleMessageId);
-      releaseMessage(mc);
+
+      sendMessage(mc, MotorControllerModule::ModuleMessageId);
       sendMessage(js, RosNodeModuleMessageId);
 
       if (pidstate) {
@@ -186,7 +186,7 @@ void MotorManagerModule::checkMessages() {
     case message_types_t::inbound_OperationConfig: {
       const auto cfg = &receivedMsg->operationconfig;
       updateOperationConfig(cfg);
-      transactionId = cfg->transactionId;
+      relay = true;
     } break;
     default:
       break;

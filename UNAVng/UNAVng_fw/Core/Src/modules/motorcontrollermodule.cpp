@@ -32,7 +32,7 @@ void MotorControllerModule::initialize() {
     Error_Handler();
   }
   subscribe(MotorControllerModule::ModuleMessageId);
-  BaseModule::initialize(osPriority::osPriorityAboveNormal, 512);
+  BaseModule::initialize(osPriority::osPriorityAboveNormal, 1024);
   setup();
 }
 
@@ -73,7 +73,7 @@ void MotorControllerModule::moduleThreadStart() {
 
     checkMessages(!curLoopEnabled);
     switch (mode) {
-    case motorcontrol_mode_t::normal:
+    case motorcontrol_mode_t::normal: {
       if (curLoopEnabled) {
         if (false) {
           auto ret = xSemaphoreTake(adcSemaphore, 1);
@@ -93,20 +93,23 @@ void MotorControllerModule::moduleThreadStart() {
               (uint32_t)(TIM_MOT_PERIOD_ZERO +
                          (int32_t)(cmd[i] * ((float)(TIM_MOT_PERIOD_MAX / 2))));
         }
+        for (int i = 0; i < MOTORS_COUNT; i++) {
+          __HAL_TIM_SET_COMPARE(&TIM_MOT, motor_channels[i], motoroutput[i]);
+          if (pidstate) {
+            pidstate->output[i] = (float)motoroutput[i];
+          }
+        }
       }
-      break;
+    } break;
     // todo!
     case motorcontrol_mode_t::disabled:
-    case motorcontrol_mode_t::failsafe:
+    case motorcontrol_mode_t::failsafe: {
       for (int i = 0; i < MOTORS_COUNT; i++) {
         motoroutput[i] = TIM_MOT_PERIOD_ZERO;
       }
-      break;
+    } break;
     }
 
-    for (int i = 0; i < MOTORS_COUNT; i++) {
-      __HAL_TIM_SET_COMPARE(&TIM_MOT, motor_channels[i], motoroutput[i]);
-    }
     if (pidstate) {
       sendMessage(ps, RosNodeModuleMessageId);
       pidstate = nullptr;
@@ -128,17 +131,17 @@ void MotorControllerModule::setup() {
 
 void MotorControllerModule::checkMessages(bool wait) {
   message_t *receivedMsg = nullptr;
-  portBASE_TYPE waittime = wait ? 1 : 0;
+  portBASE_TYPE waittime = wait ? 50 : 0;
   uint32_t transactionId = 0;
   if (waitMessage(&receivedMsg, waittime)) {
     switch (receivedMsg->type) {
     case message_types_t::internal_motor_control: {
-      auto c = &receivedMsg->motorcontrol;
+      auto *c = &receivedMsg->motorcontrol;
       mode = c->mode;
       for (int x = 0; x < MOTORS_COUNT; x++) {
         cmd[x] = c->command[x];
       }
-    }
+    } break;
     case message_types_t::inbound_PIDConfig: {
       const auto cfg = &receivedMsg->pidconfig;
       updatePidConfig(cfg);
@@ -154,6 +157,12 @@ void MotorControllerModule::checkMessages(bool wait) {
     case message_types_t::inbound_SafetyConfig: {
       const auto cfg = &receivedMsg->safetyconfig;
       updateSafetyConfig(cfg);
+      transactionId = cfg->transactionId;
+    } break;
+
+    case message_types_t::inbound_OperationConfig: {
+      const auto cfg = &receivedMsg->operationconfig;
+      updateOperationConfig(cfg);
       transactionId = cfg->transactionId;
     } break;
 
@@ -173,6 +182,7 @@ void MotorControllerModule::checkMessages(bool wait) {
     }
   }
 }
+
 void MotorControllerModule::updatePidConfig(const pidconfig_content_t *cfg) {
   for (int i = 0; i < MOTORS_COUNT; i++) {
     pidControllers[i].setGains(cfg->cur_kp, cfg->cur_ki, cfg->cur_kd,
@@ -180,13 +190,22 @@ void MotorControllerModule::updatePidConfig(const pidconfig_content_t *cfg) {
   }
   updateTimings(cfg->cur_frequency);
 }
+
 void MotorControllerModule::updateLimitsConfig(
     const limitsconfig_content_t *cfg) {}
+
 void MotorControllerModule::updateSafetyConfig(
     const safetyconfig_content_t *cfg) {}
+
 void MotorControllerModule::updateBridgeConfig(
     const bridgeconfig_content_t *cfg) {}
+
 void MotorControllerModule::updateTimings(const float frequency) {}
+
+void MotorControllerModule::updateOperationConfig(
+    const operationconfig_content_t *cfg) {
+  pid_debug = cfg->pid_debug;
+}
 
 extern "C" {
 

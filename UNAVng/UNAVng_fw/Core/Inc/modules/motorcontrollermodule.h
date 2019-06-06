@@ -22,6 +22,7 @@ private:
   void updateLimitsConfig(const limitsconfig_content_t *cfg);
   void updateSafetyConfig(const safetyconfig_content_t *cfg);
   void updateBridgeConfig(const bridgeconfig_content_t *cfg);
+  void updateOperationConfig(const operationconfig_content_t *cfg);
   void updateTimings(const float frequency);
   bool curLoopEnabled;
   QueueHandle_t _incomingPriorityMessageQueue;
