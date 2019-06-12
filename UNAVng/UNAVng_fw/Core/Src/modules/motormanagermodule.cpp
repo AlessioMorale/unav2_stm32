@@ -1,6 +1,9 @@
+#define INSTRUMENT_MODULE
+
 #include "FreeRTOS.h"
 #include "main.h"
 #include "tim.h"
+#include <instrumentation/instrumentation_helper.h>
 #include <mathutils.h>
 #include <messages.h>
 #include <messaging.h>
@@ -9,9 +12,12 @@
 #include <modules/rosnodemodule.h>
 #include <stm32f4xx.h>
 #include <timers.h>
+
 namespace unav::modules {
 volatile bool commandUpdated = false;
 volatile bool pidUpdated = false;
+
+PERF_DEFINE_COUNTER(perf_action_latency);
 
 MotorManagerModule::MotorManagerModule()
     : encoders{unav::drivers::Encoder(&TIM_ENC1),
@@ -20,6 +26,7 @@ MotorManagerModule::MotorManagerModule()
       pid_debug{false}, controlMode{motorcontrol_mode_t::disabled} {}
 
 void MotorManagerModule::initialize() {
+  PERF_INIT_COUNTER(perf_action_latency, 0xA0AC1A7E);
   subscribe(MotorManagerModule::ModuleMessageId);
   BaseRosModule::initialize(osPriority::osPriorityAboveNormal, 1024);
 }
@@ -45,8 +52,11 @@ void MotorManagerModule::moduleThreadStart() {
     pidControllers[i].setRange(-1.0f, 1.0f);
     encoders[i].applyFilter(nominalDt, encLPF);
   }
+  const uint32_t motor_channels[MOTORS_COUNT] TIM_MOT_ARRAY_OF_CHANNELS;
 
   while (true) {
+    uint32_t motoroutput[MOTORS_COUNT]{TIM_MOT_PERIOD_ZERO};
+
     dt = timer.interval();
     if (pid_debug) {
       pid_rate_counter--;
@@ -93,6 +103,9 @@ void MotorManagerModule::moduleThreadStart() {
         // channel case.
         motorcontrol->command[i] = filteredEffort[i];
         // handle diagnostics and status reporting
+        motoroutput[i] =
+            (uint32_t)(TIM_MOT_PERIOD_ZERO +
+                       (int32_t)(cmd[i] * ((float)(TIM_MOT_PERIOD_MAX / 2))));
         jointstate->pos[i] = encoders[i].getPosition();
         if (pidstate) {
           auto s = pidControllers[i].getStatus();
@@ -106,7 +119,7 @@ void MotorManagerModule::moduleThreadStart() {
           pidstate->timestep[i] = s.timestep;
         }
       }
-
+      PERF_TIMED_SECTION_START(perf_action_latency);
       sendMessage(mc, MotorControllerModule::ModuleMessageId);
       sendMessage(js, RosNodeModuleMessageId);
 

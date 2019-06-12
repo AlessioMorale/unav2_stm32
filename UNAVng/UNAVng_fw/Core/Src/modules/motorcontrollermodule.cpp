@@ -1,3 +1,5 @@
+#define INSTRUMENT_MODULE
+
 #include "FreeRTOS.h"
 #include "adc.h"
 #include "gpio.h"
@@ -6,12 +8,15 @@
 #include "timing.h"
 #include <mathutils.h>
 
+#include <instrumentation/instrumentation_helper.h>
 #include <modules/motorcontrollermodule.h>
 #include <ros.h>
 #include <std_msgs/Float32.h>
 #include <stm32f4xx.h>
-namespace unav::modules {
 
+namespace unav::modules {
+PERF_USE_EXTERNAL_COUNTER(perf_action_latency);
+PERF_DEFINE_COUNTER(perf_loop_period);
 extern "C" void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc);
 
 QueueHandle_t adcSemaphore = NULL;
@@ -31,6 +36,7 @@ void MotorControllerModule::initialize() {
   if (adcSemaphore == 0) {
     Error_Handler();
   }
+  PERF_INIT_COUNTER(perf_loop_period, 0xB0101009);
   subscribe(MotorControllerModule::ModuleMessageId);
   BaseModule::initialize(osPriority::osPriorityAboveNormal, 1024);
   setup();
@@ -93,6 +99,9 @@ void MotorControllerModule::moduleThreadStart() {
               (uint32_t)(TIM_MOT_PERIOD_ZERO +
                          (int32_t)(cmd[i] * ((float)(TIM_MOT_PERIOD_MAX / 2))));
         }
+
+        PERF_MEASURE_PERIOD(perf_loop_period);
+
         for (int i = 0; i < MOTORS_COUNT; i++) {
           __HAL_TIM_SET_COMPARE(&TIM_MOT, motor_channels[i], motoroutput[i]);
           if (pidstate) {
@@ -136,11 +145,13 @@ void MotorControllerModule::checkMessages(bool wait) {
   if (waitMessage(&receivedMsg, waittime)) {
     switch (receivedMsg->type) {
     case message_types_t::internal_motor_control: {
+      PERF_TIMED_SECTION_END(perf_action_latency);
       auto *c = &receivedMsg->motorcontrol;
       mode = c->mode;
       for (int x = 0; x < MOTORS_COUNT; x++) {
         cmd[x] = c->command[x];
       }
+
     } break;
     case message_types_t::inbound_PIDConfig: {
       const auto cfg = &receivedMsg->pidconfig;
