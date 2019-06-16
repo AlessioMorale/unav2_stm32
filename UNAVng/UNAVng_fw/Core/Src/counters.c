@@ -1,0 +1,3 @@
+#include <counters.h>
+
+COUNTERS_KEY_TABLE(COUNTERS_DEFINE)

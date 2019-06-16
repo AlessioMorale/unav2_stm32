@@ -15,6 +15,7 @@ namespace unav::modules {
 class MotorManagerModule : public BaseRosModule {
 public:
   static const uint32_t ModuleMessageId{0x0A01};
+
   MotorManagerModule();
   virtual void initialize();
 

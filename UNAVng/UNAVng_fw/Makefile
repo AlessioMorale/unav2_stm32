@@ -67,6 +67,7 @@ Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c \
 Middlewares/Third_Party/FreeRTOS/Source/portable/MemMang/heap_4.c \
 Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/port.c \
 Core/Src/instrumentation/instrumentation.c \
+Core/Src/counters.c \
 Core/Src/freertos_support.c
 
 

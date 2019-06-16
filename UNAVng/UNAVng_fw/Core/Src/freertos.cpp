@@ -24,7 +24,7 @@
 #include "tim.h"
 #include "timing.h"
 #include <FreeRTOS.h>
-#include <instrumentation/instrumentation.h>
+
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
@@ -104,7 +104,6 @@ extern "C" void MX_FREERTOS_Init(void) {
   /* definition and creation of defaultTask */
   osThreadDef(defaultTask, StartDefaultTask, osPriorityNormal, 0, 256);
   defaultTaskHandle = osThreadCreate(osThread(defaultTask), NULL);
-  instrumentation_init(INSTRUMENTATION_MAX_COUNTERS);
   rosnode.initialize();
   rosmotornode.initialize();
   motorController.initialize();

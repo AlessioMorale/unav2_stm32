@@ -18,14 +18,14 @@ void instrumentation_init(int8_t maxCounters) {
   }
 }
 
-counter_t instrumentation_createCounter(uint32_t id) {
+counter_t instrumentation_createCounter(const char *key) {
   assert(perf_counters &&
          (instrumentation_max_counters > last_used_perf_counter));
 
-  counter_t counter_handle = instrumentation_searchCounter(id);
+  counter_t counter_handle = instrumentation_searchCounter(key);
   if (!counter_handle) {
     perf_counter_t *newcounter = &perf_counters[++last_used_perf_counter];
-    newcounter->id = id;
+    newcounter->key = key;
     newcounter->max = INT32_MIN + 1;
     newcounter->min = INT32_MAX - 1;
     counter_handle = (counter_t)newcounter;
@@ -33,13 +33,13 @@ counter_t instrumentation_createCounter(uint32_t id) {
   return counter_handle;
 }
 
-counter_t instrumentation_searchCounter(uint32_t id) {
+counter_t instrumentation_searchCounter(const char *key) {
   assert(perf_counters);
   uint8_t i = 0;
-  while (i < last_used_perf_counter && perf_counters[i].id != id) {
+  while (i < last_used_perf_counter && perf_counters[i].key != key) {
     i++;
   }
-  if (perf_counters[i].id != id) {
+  if (perf_counters[i].key != key) {
     return NULL;
   }
   return (counter_t)&perf_counters[i];

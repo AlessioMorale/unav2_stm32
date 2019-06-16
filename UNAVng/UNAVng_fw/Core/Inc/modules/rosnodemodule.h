@@ -1,9 +1,12 @@
 #include "baserosmodule.h"
 #include "message_buffer.h"
 #include "ros.h"
+#include <counters.h>
+#include <instrumentation/instrumentation.h>
 #include <messages.h>
 #include <std_msgs/UInt32.h>
 #include <unav2_msgs/BridgeConfig.h>
+#include <unav2_msgs/Diagnostic.h>
 #include <unav2_msgs/EncoderConfig.h>
 #include <unav2_msgs/JointCommand.h>
 #include <unav2_msgs/JointState.h>
@@ -12,6 +15,7 @@
 #include <unav2_msgs/OperationConfig.h>
 #include <unav2_msgs/PIDConfig.h>
 #include <unav2_msgs/PIDState.h>
+#include <unav2_msgs/PerfCounter.h>
 #include <unav2_msgs/SafetyConfig.h>
 
 #ifndef ROSNODEMODULE_H
@@ -25,6 +29,7 @@ public:
   static const uint32_t ModuleMessageId = BaseRosModule::RosNodeModuleMessageId;
   RosNodeModule();
   void initialize();
+  unav2_msgs::PerfCounter msgPerfCounter[COUNTERS_COUNT];
 
 private:
   void sendRosMessage(message_t *msg);
@@ -34,15 +39,16 @@ private:
   message_t _messageBuffer[MESSAGING_BUFFER_SIZE];
   template <typename T>
   void handleRosMessage(const T &msg, uint32_t destination);
-
-protected:
+  void publishDiagnostic();
   unav2_msgs::JointState msgjointstate;
   unav2_msgs::PIDState msgpidstate;
+  unav2_msgs::Diagnostic msgDiagnostic;
   std_msgs::UInt32 msgack;
   ros::Publisher pubJoints;
   ros::Publisher pubVelPIDState;
   ros::Publisher pubCurPIDState;
   ros::Publisher pubAck;
+  ros::Publisher pubDiagnostic;
   ros::Subscriber<unav2_msgs::JointCommand> subJointCmd;
   ros::Subscriber<unav2_msgs::BridgeConfig> subBridgeCfg;
   ros::Subscriber<unav2_msgs::EncoderConfig> subEncoderCfg;
@@ -52,6 +58,7 @@ protected:
   ros::Subscriber<unav2_msgs::PIDConfig> subPIDCfg;
   ros::Subscriber<unav2_msgs::SafetyConfig> subSafetyCfg;
 
+protected:
   void moduleThreadStart() __attribute__((noreturn));
 };
 } // namespace unav::modules

@@ -17,6 +17,7 @@ RosNodeModule::RosNodeModule()
       pubVelPIDState("unav2/status/vel_pid", &msgpidstate),
       pubCurPIDState("unav2/status/cur_pid", &msgpidstate),
       pubAck("unav2/status/ack", &msgack),
+      pubDiagnostic("unav2/diagnostic", &msgDiagnostic),
       subJointCmd("unav2/control/joint_cmd",
                   [](const unav2_msgs::JointCommand &msg) {
                     rosNode->handleRosMessage<unav2_msgs::JointCommand>(
@@ -72,10 +73,14 @@ RosNodeModule::RosNodeModule()
 template <typename T>
 void RosNodeModule::handleRosMessage(const T &msg, uint32_t destination) {
   message_t *m = rosNode->prepareMessage();
+  msgDiagnostic.counters = msgPerfCounter;
+  msgDiagnostic.counters_length = COUNTERS_COUNT;
   unav::MessageConverter<T>::fromRosMsg(msg, m);
   rosNode->sendMessage(m, destination);
 }
+
 void RosNodeModule::initialize() {
+  instrumentation_init(COUNTERS_COUNT);
   getNodeHandle().initNode();
   getMessaging().setup((uint8_t *)_messageBuffer, sizeof(message_t),
                        MESSAGING_BUFFER_SIZE);
@@ -84,6 +89,7 @@ void RosNodeModule::initialize() {
 }
 
 void RosNodeModule::moduleThreadStart() {
+  getNodeHandle().advertise(pubDiagnostic);
   getNodeHandle().advertise(pubJoints);
   getNodeHandle().advertise(pubCurPIDState);
   getNodeHandle().advertise(pubVelPIDState);
@@ -99,7 +105,7 @@ void RosNodeModule::moduleThreadStart() {
   getNodeHandle().subscribe(subSafetyCfg);
 
   auto t = timing_getMs();
-
+  auto t_diag = timing_getMs();
   while (true) {
     message_t *msg{nullptr};
     while (waitMessage(&msg, 2)) {
@@ -111,8 +117,23 @@ void RosNodeModule::moduleThreadStart() {
         getNodeHandle().spinOnce();
       }
     }
+    auto now = timing_getMs();
+    if (now - t_diag > 100) {
+      t_diag = now;
+      publishDiagnostic();
+    }
     getNodeHandle().spinOnce();
   }
+}
+
+void RosNodeModule::publishDiagnostic() {
+  instrumentation_forEachCounter(
+      [](const perf_counter_t *counter, const int8_t index, void *context) {
+        MessageConverter<unav2_msgs::PerfCounter>::toRosMsg(
+            counter, rosNode->msgPerfCounter[index]);
+      },
+      nullptr);
+  pubDiagnostic.publish(&msgDiagnostic);
 }
 
 void RosNodeModule::sendRosMessage(message_t *msg) {

@@ -3,6 +3,7 @@
 #include "FreeRTOS.h"
 #include "main.h"
 #include "tim.h"
+#include <counters.h>
 #include <instrumentation/instrumentation_helper.h>
 #include <mathutils.h>
 #include <messages.h>
@@ -12,7 +13,6 @@
 #include <modules/rosnodemodule.h>
 #include <stm32f4xx.h>
 #include <timers.h>
-
 namespace unav::modules {
 volatile bool commandUpdated = false;
 volatile bool pidUpdated = false;
@@ -26,7 +26,7 @@ MotorManagerModule::MotorManagerModule()
       pid_debug{false}, controlMode{motorcontrol_mode_t::disabled} {}
 
 void MotorManagerModule::initialize() {
-  PERF_INIT_COUNTER(perf_action_latency, 0xA0AC1A7E);
+  PERF_INIT_COUNTER(perf_action_latency, counters_action_latency_key);
   subscribe(MotorManagerModule::ModuleMessageId);
   BaseRosModule::initialize(osPriority::osPriorityAboveNormal, 1024);
 }

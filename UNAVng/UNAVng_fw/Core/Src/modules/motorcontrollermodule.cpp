@@ -8,12 +8,12 @@
 #include "timing.h"
 #include <mathutils.h>
 
+#include <counters.h>
 #include <instrumentation/instrumentation_helper.h>
 #include <modules/motorcontrollermodule.h>
 #include <ros.h>
 #include <std_msgs/Float32.h>
 #include <stm32f4xx.h>
-
 namespace unav::modules {
 PERF_USE_EXTERNAL_COUNTER(perf_action_latency);
 PERF_DEFINE_COUNTER(perf_loop_period);
@@ -36,7 +36,7 @@ void MotorControllerModule::initialize() {
   if (adcSemaphore == 0) {
     Error_Handler();
   }
-  PERF_INIT_COUNTER(perf_loop_period, 0xB0101009);
+  PERF_INIT_COUNTER(perf_loop_period, counters_mc_loop_time_key);
   subscribe(MotorControllerModule::ModuleMessageId);
   BaseModule::initialize(osPriority::osPriorityAboveNormal, 1024);
   setup();

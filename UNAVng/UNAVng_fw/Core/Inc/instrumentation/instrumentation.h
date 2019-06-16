@@ -7,7 +7,7 @@
 extern "C" {
 #endif
 typedef struct {
-  char *id;
+  const char *key;
   int32_t max;
   int32_t min;
   int32_t value;
@@ -141,7 +141,7 @@ void instrumentation_init(int8_t maxCounters);
  * @param id the unique id to assign to the counter
  * @return the counter handle to be used to manage its content
  */
-counter_t instrumentation_createCounter(uint32_t id);
+counter_t instrumentation_createCounter(const char *key);
 
 /**
  * search a counter index by its unique Id
@@ -149,7 +149,7 @@ counter_t instrumentation_createCounter(uint32_t id);
  * If a counter with the same id exists, the previous instance is returned
  * @return the counter handle to be used to manage its content
  */
-counter_t instrumentation_searchCounter(uint32_t id);
+counter_t instrumentation_searchCounter(const char *key);
 
 typedef void (*instrumentationCounterCallback)(const perf_counter_t *counter,
                                                const int8_t index,

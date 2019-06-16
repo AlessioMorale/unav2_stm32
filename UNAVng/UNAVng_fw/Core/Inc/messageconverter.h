@@ -1,5 +1,7 @@
+#include <instrumentation/instrumentation.h>
 #include <messages.h>
 #include <unav2_msgs/BridgeConfig.h>
+#include <unav2_msgs/Diagnostic.h>
 #include <unav2_msgs/EncoderConfig.h>
 #include <unav2_msgs/JointCommand.h>
 #include <unav2_msgs/JointState.h>
@@ -8,8 +10,8 @@
 #include <unav2_msgs/OperationConfig.h>
 #include <unav2_msgs/PIDConfig.h>
 #include <unav2_msgs/PIDState.h>
+#include <unav2_msgs/PerfCounter.h>
 #include <unav2_msgs/SafetyConfig.h>
-
 #pragma once
 namespace unav {
 
@@ -50,24 +52,24 @@ public:
     jointcommand_content_t *c = &msg->jointcommand;
     c->type = message_types_t::inbound_JointCommand;
     c->seq = rosmsg.seq;
-    switch(rosmsg.mode){
-      case unav2_msgs::JointCommand::FAILSAFE:
-        c->mode = jointcommand_mode_t::failsafe;
-        break;
-      case unav2_msgs::JointCommand::DISABLED: 
-        c->mode = jointcommand_mode_t::disabled;
+    switch (rosmsg.mode) {
+    case unav2_msgs::JointCommand::FAILSAFE:
+      c->mode = jointcommand_mode_t::failsafe;
       break;
-      case unav2_msgs::JointCommand::POSITION:
-        c->mode = jointcommand_mode_t::position;
+    case unav2_msgs::JointCommand::DISABLED:
+      c->mode = jointcommand_mode_t::disabled;
       break;
-      case unav2_msgs::JointCommand::VELOCITY:
-        c->mode = jointcommand_mode_t::velocity;
+    case unav2_msgs::JointCommand::POSITION:
+      c->mode = jointcommand_mode_t::position;
       break;
-      case unav2_msgs::JointCommand::EFFORT:
-        c->mode = jointcommand_mode_t::effort;
+    case unav2_msgs::JointCommand::VELOCITY:
+      c->mode = jointcommand_mode_t::velocity;
+      break;
+    case unav2_msgs::JointCommand::EFFORT:
+      c->mode = jointcommand_mode_t::effort;
       break;
     }
-    
+
     for (int i = 0; i < MOTORS_COUNT && i < rosmsg.command_length; i++) {
       c->command[i] = rosmsg.command[i];
     }
@@ -218,6 +220,17 @@ public:
     rosmsg.d_term = const_cast<float *>(msg->pidstate.d_term);
     rosmsg.i_min = const_cast<float *>(msg->pidstate.i_min);
     rosmsg.i_max = const_cast<float *>(msg->pidstate.i_max);
+  }
+};
+template <> class MessageConverter<unav2_msgs::PerfCounter> {
+public:
+  static void toRosMsg(const perf_counter_t *c,
+                       unav2_msgs::PerfCounter &rosmsg) {
+    rosmsg.key = c->key;
+    rosmsg.value = c->value;
+    rosmsg.min = c->min;
+    rosmsg.max = c->max;
+    rosmsg.lastUpdateTS = c->lastUpdateTS;
   }
 };
 } // namespace unav
