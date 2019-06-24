@@ -8,7 +8,8 @@ description","UOM", scale)
 #define COUNTERS_KEY_TABLE(ENTRY)                                              \
   ENTRY(action_latency, "AcLate", "System", "Action latency", "uS", 1)         \
   ENTRY(mc_loop_time, "McLoop", "Motor Controller",                            \
-        "Motor controller loop time", "uS", 1)
+        "Motor controller loop time", "uS", 1)                                 \
+  ENTRY(sys_free_msg, "SysFrMsg", "System", "Free messages slots", "", 1)
 
 #define COUNTERS_DECLARE_KEY(x, y, ...) extern const char *counters_##x##_key;
 #define COUNTERS_DEFINE_KEY(x, y, ...) const char *counters_##x##_key = y;
