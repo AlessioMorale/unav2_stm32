@@ -16,16 +16,7 @@ protected:
   virtual void moduleThreadStart() __attribute__((noreturn));
 
 private:
-  void setup();
-  void checkMessages(bool wait);
-  void updatePidConfig(const pidconfig_content_t *cfg);
-  void updateLimitsConfig(const limitsconfig_content_t *cfg);
-  void updateSafetyConfig(const safetyconfig_content_t *cfg);
-  void updateBridgeConfig(const bridgeconfig_content_t *cfg);
-  void updateOperationConfig(const operationconfig_content_t *cfg);
-  void updateTimings(const float frequency);
   bool curLoopEnabled;
-  QueueHandle_t _incomingPriorityMessageQueue;
   float cmd[MOTORS_COUNT];
   unav::utils::Timer timer;
   motorcontrol_mode_t mode;
@@ -39,6 +30,15 @@ private:
   const uint32_t AdcSamplingTime = ADC_SAMPLETIME_15CYCLES;
 #define ConversionPerChannel 1
   volatile uint16_t adcConversionBuffer[MOTORS_COUNT * ConversionPerChannel];
+
+  void setup();
+  void checkMessages(bool wait);
+  void updatePidConfig(const pidconfig_content_t *cfg);
+  void updateLimitsConfig(const limitsconfig_content_t *cfg);
+  void updateSafetyConfig(const safetyconfig_content_t *cfg);
+  void updateBridgeConfig(const bridgeconfig_content_t *cfg);
+  void updateOperationConfig(const operationconfig_content_t *cfg);
+  void updateTimings(const float frequency);
 };
 } // namespace unav::modules
 #endif // MOTORCONTROLLERMODULE_H

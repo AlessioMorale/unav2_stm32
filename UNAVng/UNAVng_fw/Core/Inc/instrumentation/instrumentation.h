@@ -68,7 +68,7 @@ static inline void instrumentation_timedEnd(counter_t counter_handle) {
   vPortEnterCritical();
   perf_counter_t *counter = (perf_counter_t *)counter_handle;
 
-  counter->value = timing_getUs() - counter->lastUpdateTS;
+  counter->value = (int32_t)(timing_getUs() - counter->lastUpdateTS);
   counter->max--;
   if (counter->value > counter->max) {
     counter->max = counter->value;

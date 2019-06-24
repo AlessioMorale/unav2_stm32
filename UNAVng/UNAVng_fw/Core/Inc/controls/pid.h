@@ -25,14 +25,13 @@ public:
   float apply(float setpoint, float measure, float dT);
   void zero();
   void setRange(float min, float max);
-  pid_status_t getStatus();
+  const pid_status_t getStatus();
 
 private:
   float _kp;
   float _ki;
   float _kd;
   float _iLimit;
-  float _iAccumulator;
   float _lastError;
   float _min;
   float _max;

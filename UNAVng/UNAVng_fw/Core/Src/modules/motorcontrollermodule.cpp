@@ -25,17 +25,19 @@ const char msg_start[]{"start"};
 DMA_HandleTypeDef hdma_adc;
 
 MotorControllerModule::MotorControllerModule()
-    : cmd{0.0f}, adcConversionBuffer{0}, MotorEnabled{false}, mode{0},
-      curLoopEnabled{false}, pid_debug{false} {}
+    : curLoopEnabled{false}, cmd{0.0f},
+      timer(), mode{unav::motorcontrol_mode_t::disabled}, pid_publish_rate{0},
+      pid_debug(false), nominalDt{0.0f}, dt{0.0f}, MotorEnabled{false},
+      adcConversionBuffer{0} {}
 
 void MotorControllerModule::initialize() {
 
   adcSemaphore = xSemaphoreCreateBinary();
-  if (adcSemaphore == 0) {
+  if (adcSemaphore == nullptr) {
     Error_Handler();
   }
   subscribe(MotorControllerModule::ModuleMessageId);
-  BaseModule::initialize(osPriority::osPriorityAboveNormal, 1024);
+  BaseModule::initializeTask(osPriority::osPriorityAboveNormal, 1024);
   setup();
 }
 

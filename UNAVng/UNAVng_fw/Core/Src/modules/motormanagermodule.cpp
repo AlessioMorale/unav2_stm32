@@ -14,19 +14,19 @@
 #include <stm32f4xx.h>
 #include <timers.h>
 namespace unav::modules {
-volatile bool commandUpdated = false;
-volatile bool pidUpdated = false;
-
+volatile static bool commandUpdated = false;
+volatile static bool pidUpdated = false;
 
 MotorManagerModule::MotorManagerModule()
     : encoders{unav::drivers::Encoder(&TIM_ENC1),
                unav::drivers::Encoder(&TIM_ENC2)},
-      filteredEffort{0.0f}, mode{0}, cmd{0.0f}, pid_publish_rate{10},
-      pid_debug{false}, controlMode{motorcontrol_mode_t::disabled} {}
+      filteredEffort{0.0f}, mode{unav::jointcommand_mode_t::disabled},
+      cmd{0.0f}, pid_publish_rate{10}, pid_debug{false},
+      controlMode{motorcontrol_mode_t::disabled} {}
 
 void MotorManagerModule::initialize() {
   subscribe(MotorManagerModule::ModuleMessageId);
-  BaseRosModule::initialize(osPriority::osPriorityAboveNormal, 1024);
+  BaseRosModule::initializeTask(osPriority::osPriorityAboveNormal, 1024);
 }
 
 void MotorManagerModule::moduleThreadStart() {

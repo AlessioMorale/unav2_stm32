@@ -13,7 +13,9 @@ typedef struct {
 
 class Messaging {
 public:
-  Messaging() : freeSlotInitialized(false) {}
+  Messaging()
+      : _messagebuffer{nullptr}, _slotSize{0}, freeSlotInitialized{false},
+        _recipients{0}, _maxMessagesCount{0}, _freeMessagesQueue{nullptr} {}
 
   void setup(uint8_t *buffer, size_t slotSize, uint32_t slotsCount);
   message_handle_t prepareMessage();
@@ -25,12 +27,13 @@ public:
 private:
   uint8_t *_messagebuffer;
   size_t _slotSize;
-  void initFreeSlots();
   volatile bool freeSlotInitialized;
-  QueueHandle_t getRecipientQueue(uint32_t recipientIt) const;
   recipient_info_t _recipients[MESSAGING_MAX_RECIPIENTS];
   uint32_t _maxMessagesCount;
   QueueHandle_t _freeMessagesQueue;
+
+  void initFreeSlots();
+  QueueHandle_t getRecipientQueue(uint32_t recipientIt) const;
 };
 } // namespace unav
 #endif // MESSAGING_H

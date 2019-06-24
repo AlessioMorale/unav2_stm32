@@ -26,12 +26,13 @@ public:
   void sendAck(message_t *msg, uint32_t transactionId);
 
 protected:
+  BaseRosModule() : _incomingMessageQueue{nullptr} {}
   unav::Messaging &getMessaging() { return _messaging; }
   QueueHandle_t _incomingMessageQueue;
   void subscribe(uint32_t recipientId) {
     _incomingMessageQueue = _messaging.subscribe(recipientId);
   }
-  virtual void moduleThreadStart() __attribute__((noreturn));
+  virtual void moduleThreadStart() __attribute__((noreturn)) = 0;
 };
 } // namespace unav::modules
 #endif
