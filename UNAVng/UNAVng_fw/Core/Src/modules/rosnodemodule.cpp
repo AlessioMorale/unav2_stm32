@@ -2,12 +2,12 @@
 #include "modules/rosnodemodule.h"
 #include "FreeRTOS.h"
 #include "modules/motormanagermodule.h"
+#include <counters.h>
 #include <message_buffer.h>
 #include <messageconverter.h>
 #include <messaging.h>
 #include <ros.h>
 #include <timing.h>
-
 namespace unav::modules {
 ros::NodeHandle RosNodeModule::nh;
 RosNodeModule *rosNode;
@@ -73,14 +73,14 @@ RosNodeModule::RosNodeModule()
 template <typename T>
 void RosNodeModule::handleRosMessage(const T &msg, uint32_t destination) {
   message_t *m = rosNode->prepareMessage();
-  msgDiagnostic.counters = msgPerfCounter;
-  msgDiagnostic.counters_length = COUNTERS_COUNT;
   unav::MessageConverter<T>::fromRosMsg(msg, m);
   rosNode->sendMessage(m, destination);
 }
 
 void RosNodeModule::initialize() {
   instrumentation_init(COUNTERS_COUNT);
+  initCounters();
+
   getNodeHandle().initNode();
   getMessaging().setup((uint8_t *)_messageBuffer, sizeof(message_t),
                        MESSAGING_BUFFER_SIZE);
@@ -133,6 +133,8 @@ void RosNodeModule::publishDiagnostic() {
             counter, rosNode->msgPerfCounter[index]);
       },
       nullptr);
+  msgDiagnostic.counters = msgPerfCounter;
+  msgDiagnostic.counters_length = COUNTERS_COUNT;
   pubDiagnostic.publish(&msgDiagnostic);
 }
 

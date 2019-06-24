@@ -90,7 +90,7 @@
 #define PERF_TIMED_SECTION_START(x) instrumentation_timedStart(x)
 #define PERF_TIMED_SECTION_END(x) instrumentation_timedEnd(x)
 #define PERF_MEASURE_PERIOD(x) instrumentation_trackPeriod(x)
-#define PERF_TRACK_VALUE(x, y) instrumentation_updateCounter(x, y)
+#define PERF_TRACK_VALUE(x, y) instrumentation_setCounter(x, y)
 #define PERF_INCREMENT_VALUE(x) instrumentation_incrementCounter(x, 1)
 #define PERF_DECREMENT_VALUE(x) instrumentation_incrementCounter(x, -1)
 

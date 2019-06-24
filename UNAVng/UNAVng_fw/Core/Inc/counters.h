@@ -1,4 +1,5 @@
 #pragma once
+#define INSTRUMENT_MODULE
 #include "instrumentation/instrumentation_helper.h"
 
 /* each entry contains:

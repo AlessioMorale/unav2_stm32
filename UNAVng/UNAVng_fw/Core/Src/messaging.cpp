@@ -46,9 +46,9 @@ message_handle_t Messaging::prepareMessage() {
 }
 
 void Messaging::releaseMessage(message_handle_t message) {
-  xQueueSend(_freeMessagesQueue, &message, portMAX_DELAY);
   auto freeSlots = uxQueueMessagesWaiting(_freeMessagesQueue);
-  PERF_TRACK_VALUE(sys_free_msg, freeSlots);
+  PERF_TRACK_VALUE(perf_sys_free_msg, freeSlots);
+  xQueueSend(_freeMessagesQueue, &message, portMAX_DELAY);
 }
 
 QueueHandle_t Messaging::subscribe(uint32_t recipientId) {

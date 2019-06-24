@@ -25,7 +25,8 @@ extern int8_t last_used_perf_counter;
  * Instrumentation_SearchCounter @see Instrumentation_CreateCounter
  * @param newValue the updated value.
  */
-static inline void perf_setCounter(counter_t counter_handle, int32_t newValue) {
+static inline void instrumentation_setCounter(counter_t counter_handle,
+                                              int32_t newValue) {
   assert(perf_counters && counter_handle);
   vPortEnterCritical();
   perf_counter_t *counter = (perf_counter_t *)counter_handle;
