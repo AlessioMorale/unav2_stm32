@@ -17,7 +17,6 @@ namespace unav::modules {
 volatile bool commandUpdated = false;
 volatile bool pidUpdated = false;
 
-PERF_DEFINE_COUNTER(perf_action_latency);
 
 MotorManagerModule::MotorManagerModule()
     : encoders{unav::drivers::Encoder(&TIM_ENC1),
@@ -26,7 +25,6 @@ MotorManagerModule::MotorManagerModule()
       pid_debug{false}, controlMode{motorcontrol_mode_t::disabled} {}
 
 void MotorManagerModule::initialize() {
-  PERF_INIT_COUNTER(perf_action_latency, counters_action_latency_key);
   subscribe(MotorManagerModule::ModuleMessageId);
   BaseRosModule::initialize(osPriority::osPriorityAboveNormal, 1024);
 }

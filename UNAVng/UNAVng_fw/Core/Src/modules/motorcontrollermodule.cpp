@@ -15,8 +15,6 @@
 #include <std_msgs/Float32.h>
 #include <stm32f4xx.h>
 namespace unav::modules {
-PERF_USE_EXTERNAL_COUNTER(perf_action_latency);
-PERF_DEFINE_COUNTER(perf_loop_period);
 extern "C" void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc);
 
 QueueHandle_t adcSemaphore = NULL;
@@ -36,7 +34,6 @@ void MotorControllerModule::initialize() {
   if (adcSemaphore == 0) {
     Error_Handler();
   }
-  PERF_INIT_COUNTER(perf_loop_period, counters_mc_loop_time_key);
   subscribe(MotorControllerModule::ModuleMessageId);
   BaseModule::initialize(osPriority::osPriorityAboveNormal, 1024);
   setup();
@@ -100,7 +97,7 @@ void MotorControllerModule::moduleThreadStart() {
                          (int32_t)(cmd[i] * ((float)(TIM_MOT_PERIOD_MAX / 2))));
         }
 
-        PERF_MEASURE_PERIOD(perf_loop_period);
+        PERF_MEASURE_PERIOD(perf_mc_loop_time);
 
         for (int i = 0; i < MOTORS_COUNT; i++) {
           __HAL_TIM_SET_COMPARE(&TIM_MOT, motor_channels[i], motoroutput[i]);

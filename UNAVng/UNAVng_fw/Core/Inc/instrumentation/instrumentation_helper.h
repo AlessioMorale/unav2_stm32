@@ -77,11 +77,12 @@
  * include the following macro together with modules variable declaration
  */
 #define PERF_DEFINE_COUNTER(x) counter_t x
-#define PERF_USE_EXTERNAL_COUNTER(x) extern counter_t x
+#define PERF_DECLARE_COUNTER(x) extern PERF_DEFINE_COUNTER(x)
+#define PERF_USE_EXTERNAL_COUNTER(x) PERF_DECLARE_COUNTER(x)
 /**
  * initialize a counter and assing an id
  */
-#define PERF_INIT_COUNTER(x, id, ...) x = instrumentation_createCounter(id)
+#define PERF_INIT_COUNTER(x, id) x = instrumentation_createCounter(id)
 
 /**
  * those are the monitoring macros
@@ -95,10 +96,11 @@
 
 #else
 
+#define PERF_DECLARE_COUNTER(x)
 #define PERF_DEFINE_COUNTER(x)
 #define PERF_USE_EXTERNAL_COUNTER(x)
 #define PERF_SET_MODULE_ID(x)
-#define PERF_INIT_COUNTER(x, id, ...)
+#define PERF_INIT_COUNTER(x, id)
 #define PERF_TIMED_SECTION_START(x)
 #define PERF_TIMED_SECTION_END(x)
 #define PERF_MEASURE_PERIOD(x)

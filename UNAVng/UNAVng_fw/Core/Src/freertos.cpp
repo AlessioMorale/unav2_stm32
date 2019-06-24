@@ -104,6 +104,8 @@ extern "C" void MX_FREERTOS_Init(void) {
   /* definition and creation of defaultTask */
   osThreadDef(defaultTask, StartDefaultTask, osPriorityNormal, 0, 256);
   defaultTaskHandle = osThreadCreate(osThread(defaultTask), NULL);
+  initCounters();
+
   rosnode.initialize();
   rosmotornode.initialize();
   motorController.initialize();
