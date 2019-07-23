@@ -39,16 +39,6 @@
 #include <std_msgs/Int16.h>
 #include <std_msgs/Int32.h>
 
-/* USER CODE END Includes */
-
-/* Private typedef -----------------------------------------------------------*/
-/* USER CODE BEGIN PTD */
-
-/* USER CODE END PTD */
-
-/* Private define ------------------------------------------------------------*/
-/* USER CODE BEGIN PD */
-
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -104,9 +94,10 @@ extern "C" void MX_FREERTOS_Init(void) {
   /* definition and creation of defaultTask */
   osThreadDef(defaultTask, StartDefaultTask, osPriorityNormal, 0, 256);
   defaultTaskHandle = osThreadCreate(osThread(defaultTask), NULL);
+
   rosnode.initialize();
   rosmotornode.initialize();
-  // motorController.initialize();
+  motorController.initialize();
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
   /* USER CODE END RTOS_THREADS */

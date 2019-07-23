@@ -5,8 +5,9 @@ namespace unav {
 enum class message_types_t : int32_t {
   NONE = 0,
   outboudn_ack = 1,
-  outbound_PIDState = 10,
-  outbound_JointState = 11,
+  outbound_VelPIDState = 10,
+  outbound_CurPIDState = 11,
+  outbound_JointState = 12,
   inbound_JointCommand = 40,
   inbound_BridgeConfig = 60,
   inbound_EncoderConfig = 61,
@@ -14,7 +15,8 @@ enum class message_types_t : int32_t {
   inbound_MechanicalConfig = 63,
   inbound_OperationConfig = 64,
   inbound_PIDConfig = 65,
-  inbound_SafetyConfig = 66
+  inbound_SafetyConfig = 66,
+  internal_motor_control = 100
 };
 
 typedef struct _pidstate_content {
@@ -41,11 +43,19 @@ typedef struct _ack_content {
   uint32_t transactionId;
 } ack_content_t;
 
+enum class jointcommand_mode_t {
+  failsafe = -1,
+  disabled = 0,
+  position = 1,
+  velocity = 2,
+  effort = 3
+};
+
 typedef struct jointcommand_content {
   message_types_t type;
   float command[MOTORS_COUNT];
   uint16_t seq;
-  int8_t mode;
+  jointcommand_mode_t mode;
 } jointcommand_content_t;
 
 typedef struct pidconfig_content {
@@ -152,6 +162,18 @@ typedef struct safetyconfig_content {
   int16_t timeout;
 } safetyconfig_content_t;
 
+enum class motorcontrol_mode_t : int8_t {
+  failsafe = -1,
+  disabled = 0,
+  normal = 1
+};
+
+typedef struct motorcontrol_content {
+  message_types_t type;
+  float command[MOTORS_COUNT];
+  motorcontrol_mode_t mode;
+} motorcontrol_content_t;
+
 typedef struct _generic_message {
   union {
     message_types_t type;
@@ -166,6 +188,7 @@ typedef struct _generic_message {
     mechanicalconfig_content_t mechanicalconfig;
     operationconfig_content_t operationconfig;
     safetyconfig_content_t safetyconfig;
+    motorcontrol_content_t motorcontrol;
   };
 } message_t;
 

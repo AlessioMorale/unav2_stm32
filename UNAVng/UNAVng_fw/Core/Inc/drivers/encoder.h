@@ -13,7 +13,6 @@ public:
   /**
    * Default constructur for Encoder (does nothing).
    */
-  Encoder();
   Encoder(TIM_HandleTypeDef *tim);
   void setup();
   bool isCountingUp();
@@ -24,23 +23,28 @@ public:
   void setCPR(uint16_t ppr);
   void setSingleChannel(bool isSingleChannel);
   void setHasZIndex(bool hasZIndex) {}
-  float applyFilter(float dt, float cutoff);
+  void applyFilter(float dt, float cutoff);
   float setIsEncoderAfterGear(bool isAfterGear);
 
 private:
+  typedef struct encoderConfgi {
+    uint16_t cpr;
+    float gear;
+    bool isEncoderAfterGear;
+    bool isSingleChannel;
+    bool hasZIndex;
+  } encoderConfig_t;
+  Encoder();
   TIM_HandleTypeDef *encoderTimer;
   unav::utils::Timer timer;
   float alpha;
-  uint16_t cpr;
-  float gear;
-  float inverseReduction;
   float filteredEncVelocity;
   int32_t enc_period;
   uint32_t lastReading;
   float position;
-  bool isEncoderAfterGear;
-  bool isSingleChannel;
-  bool hasZIndex;
+  float inverseReduction;
+  encoderConfig_t config;
+
   void recalcReduction();
 };
 } // namespace unav::drivers

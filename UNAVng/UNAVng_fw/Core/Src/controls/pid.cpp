@@ -25,7 +25,7 @@ void PID::zero() {
   _status.i_min = 0;
 }
 
-pid_status_t PID::getStatus() { return _status; }
+const pid_status_t PID::getStatus() { return _status; }
 
 float PID::apply(float setpoint, float measure, float dT) {
   _status.timestep = dT;

@@ -6,7 +6,7 @@ namespace unav::utils {
 
 class Timer {
 public:
-  Timer() { lastTime = timing_getUs(); };
+  Timer() : lastTime(timing_getUs()){};
   /**
    * @brief read the time passed since the last call to interval o the
    * initialization.

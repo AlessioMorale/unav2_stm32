@@ -190,6 +190,9 @@ void Error_Handler(void) __attribute__((noreturn));
 #define O_PWR_MOT_EN_STATUS_DISABLE GPIO_PIN_RESET
 #define O_PWR_SBC_EN_STATUS_ENABLE GPIO_PIN_SET
 #define O_PWR_SBC_EN_STATUS_DISABLE GPIO_PIN_RESET
+
+#define INSTRUMENTATION_MAX_COUNTERS 10
+
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus

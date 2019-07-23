@@ -15,6 +15,7 @@ namespace unav::modules {
 class MotorManagerModule : public BaseRosModule {
 public:
   static const uint32_t ModuleMessageId{0x0A01};
+
   MotorManagerModule();
   virtual void initialize();
 
@@ -26,15 +27,16 @@ private:
   unav::drivers::Encoder encoders[MOTORS_COUNT];
   unav::controls::PID pidControllers[MOTORS_COUNT];
   uint32_t wait;
-  int8_t mode;
+  jointcommand_mode_t mode;
   float nominalDt;
   float dt;
   float filteredEffort[2];
   float cmd[MOTORS_COUNT];
   float encoder_ppr;
   float gearReduction{51.5f};
-  int8_t pid_publish_rate;
+  uint8_t pid_publish_rate;
   bool pid_debug;
+  motorcontrol_mode_t controlMode;
 
   void updatePidConfig(const pidconfig_content_t *cfg);
   void updateEncoderConfig(const encoderconfig_content_t *cfg);

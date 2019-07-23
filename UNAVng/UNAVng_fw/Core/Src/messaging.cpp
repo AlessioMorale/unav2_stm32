@@ -1,6 +1,6 @@
+#include <counters.h>
 #include <messaging.h>
 #include <task.h>
-
 namespace unav {
 
 void Messaging::setup(uint8_t *buffer, size_t slotSize, uint32_t slotsCount) {
@@ -18,7 +18,7 @@ void Messaging::initFreeSlots() {
   void *p;
   if (!freeSlotInitialized) {
     freeSlotInitialized = true;
-    for (int i = 0; i < _maxMessagesCount; i++) {
+    for (uint32_t i = 0; i < _maxMessagesCount; i++) {
       p = _messagebuffer + _slotSize * i;
       xQueueSend(_freeMessagesQueue, (void *)&p, portMAX_DELAY);
     }
@@ -39,11 +39,15 @@ message_handle_t Messaging::prepareMessage() {
     initFreeSlots();
   }
   message_handle_t message;
-  xQueueReceive(_freeMessagesQueue, &message, portMAX_DELAY);
+  if (xQueueReceive(_freeMessagesQueue, &message, 0) != pdTRUE) {
+    Error_Handler();
+  };
   return message;
 }
 
 void Messaging::releaseMessage(message_handle_t message) {
+  auto freeSlots = uxQueueMessagesWaiting(_freeMessagesQueue);
+  PERF_TRACK_VALUE(perf_sys_free_msg, freeSlots);
   xQueueSend(_freeMessagesQueue, &message, portMAX_DELAY);
 }
 

@@ -10,6 +10,7 @@ private:
   static unav::Messaging _messaging;
 
 public:
+  static const uint32_t RosNodeModuleMessageId = 0x0100;
   message_t *prepareMessage() {
     return (message_t *)_messaging.prepareMessage();
   }
@@ -22,14 +23,16 @@ public:
   bool waitMessage(message_t **msg, TickType_t wait) {
     return (xQueueReceive(_incomingMessageQueue, (void *)msg, wait) == pdTRUE);
   }
+  void sendAck(message_t *msg, uint32_t transactionId);
 
 protected:
+  BaseRosModule() : _incomingMessageQueue{nullptr} {}
   unav::Messaging &getMessaging() { return _messaging; }
   QueueHandle_t _incomingMessageQueue;
   void subscribe(uint32_t recipientId) {
     _incomingMessageQueue = _messaging.subscribe(recipientId);
   }
-  virtual void moduleThreadStart() __attribute__((noreturn));
+  virtual void moduleThreadStart() __attribute__((noreturn)) = 0;
 };
 } // namespace unav::modules
 #endif

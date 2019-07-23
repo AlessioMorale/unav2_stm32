@@ -1,6 +1,10 @@
+#define INSTRUMENT_MODULE
+
 #include "FreeRTOS.h"
 #include "main.h"
 #include "tim.h"
+#include <counters.h>
+#include <instrumentation/instrumentation_helper.h>
 #include <mathutils.h>
 #include <messages.h>
 #include <messaging.h>
@@ -10,24 +14,23 @@
 #include <stm32f4xx.h>
 #include <timers.h>
 namespace unav::modules {
-volatile bool commandUpdated = false;
-volatile bool pidUpdated = false;
+volatile static bool commandUpdated = false;
+volatile static bool pidUpdated = false;
 
 MotorManagerModule::MotorManagerModule()
     : encoders{unav::drivers::Encoder(&TIM_ENC1),
                unav::drivers::Encoder(&TIM_ENC2)},
-      filteredEffort{0.0f}, mode{0}, cmd{0.0f},
-      pid_publish_rate{10}, pid_debug{false} {}
+      filteredEffort{0.0f}, mode{unav::jointcommand_mode_t::disabled},
+      cmd{0.0f}, pid_publish_rate{10}, pid_debug{false},
+      controlMode{motorcontrol_mode_t::disabled} {}
 
 void MotorManagerModule::initialize() {
   subscribe(MotorManagerModule::ModuleMessageId);
-  BaseRosModule::initialize(osPriority::osPriorityAboveNormal, 1024);
+  BaseRosModule::initializeTask(osPriority::osPriorityAboveNormal, 1024);
 }
 
 void MotorManagerModule::moduleThreadStart() {
   auto c = xTaskGetTickCount();
-
-  const uint32_t motor_channels[MOTORS_COUNT] TIM_MOT_ARRAY_OF_CHANNELS;
   updateTimings(100.0f);
 
   const float motLPF{0.0f};
@@ -35,7 +38,6 @@ void MotorManagerModule::moduleThreadStart() {
 
   int8_t pid_rate_counter = 0;
   bool publish_pidstatus = false;
-
   // assigning arrays to the message
 
   const float alphaMotor = motLPF > 0 ? LPF_ALPHA(nominalDt, motLPF) : 1.0f;
@@ -48,11 +50,11 @@ void MotorManagerModule::moduleThreadStart() {
     pidControllers[i].setRange(-1.0f, 1.0f);
     encoders[i].applyFilter(nominalDt, encLPF);
   }
+  const uint32_t motor_channels[MOTORS_COUNT] TIM_MOT_ARRAY_OF_CHANNELS;
 
-  // while(!(pidUpdated)){
-  //  vTaskDelay(100);
-  //}
   while (true) {
+    uint32_t motoroutput[MOTORS_COUNT]{TIM_MOT_PERIOD_ZERO};
+
     dt = timer.interval();
     if (pid_debug) {
       pid_rate_counter--;
@@ -62,7 +64,7 @@ void MotorManagerModule::moduleThreadStart() {
       }
     }
 
-    if (mode != 0) {
+    if (mode > jointcommand_mode_t::disabled) {
 
       message_t *js = prepareMessage();
       jointstate_content_t *jointstate = &js->jointstate;
@@ -74,9 +76,15 @@ void MotorManagerModule::moduleThreadStart() {
       if (publish_pidstatus) {
         ps = prepareMessage();
         pidstate = &ps->pidstate;
-        pidstate->type = message_types_t::outbound_PIDState;
+        pidstate->type = message_types_t::outbound_VelPIDState;
         publish_pidstatus = false;
       }
+      // motor control message sent to motorcontroller module
+      auto *mc = prepareMessage();
+      auto motorcontrol = &mc->motorcontrol;
+      motorcontrol->mode = controlMode;
+      motorcontrol->type = message_types_t::internal_motor_control;
+
       for (int32_t i = 0; i < MOTORS_COUNT; i++) {
         const auto measuredSpeed = encoders[i].getVelocity();
         jointstate->vel[i] = measuredSpeed;
@@ -84,15 +92,18 @@ void MotorManagerModule::moduleThreadStart() {
         filteredEffort[i] =
             alphaMotor * (effort - filteredEffort[i]) + filteredEffort[i];
         jointstate->eff[i] = filteredEffort[i];
-        auto motoroutput =
-            (uint32_t)(((float)TIM_MOT_PERIOD_ZERO) +
-                       filteredEffort[i] * ((float)(TIM_MOT_PERIOD_MAX / 2)));
-        auto a = fabsf(motoroutput);
-        if (a < 0.05) {
-          motoroutput = 0.0f;
+
+        auto a = fabsf(filteredEffort[i]);
+        if (a < 0.05f) {
+          filteredEffort[i] = 0.0f;
         }
-        __HAL_TIM_SET_COMPARE(&TIM_MOT, motor_channels[i], motoroutput);
+        // TODO! provide encoder class with direction info to handle single
+        // channel case.
+        motorcontrol->command[i] = filteredEffort[i];
         // handle diagnostics and status reporting
+        motoroutput[i] =
+            (uint32_t)(TIM_MOT_PERIOD_ZERO +
+                       (int32_t)(cmd[i] * ((float)(TIM_MOT_PERIOD_MAX / 2))));
         jointstate->pos[i] = encoders[i].getPosition();
         if (pidstate) {
           auto s = pidControllers[i].getStatus();
@@ -106,16 +117,15 @@ void MotorManagerModule::moduleThreadStart() {
           pidstate->timestep[i] = s.timestep;
         }
       }
-      sendMessage(js, unav::modules::RosNodeModule::ModuleMessageId);
+      PERF_TIMED_SECTION_START(perf_action_latency);
+      sendMessage(mc, MotorControllerModule::ModuleMessageId);
+      sendMessage(js, RosNodeModuleMessageId);
 
       if (pidstate) {
-        sendMessage(ps, unav::modules::RosNodeModule::ModuleMessageId);
+        sendMessage(ps, RosNodeModuleMessageId);
         pidstate = nullptr;
       }
     } else {
-      for (int i = 0; i < MOTORS_COUNT; i++) {
-        __HAL_TIM_SET_COMPARE(&TIM_MOT, motor_channels[i], TIM_MOT_PERIOD_ZERO);
-      }
     }
 
     checkMessages();
@@ -135,12 +145,22 @@ void MotorManagerModule::checkMessages() {
         cmd[i] = jcmd->command[i];
       }
       mode = jcmd->mode;
+      switch (mode) {
+      case jointcommand_mode_t::disabled:
+        controlMode = motorcontrol_mode_t::disabled;
+        break;
+      case jointcommand_mode_t::failsafe:
+        controlMode = motorcontrol_mode_t::failsafe;
+        break;
+      default:
+        controlMode = motorcontrol_mode_t::normal;
+        break;
+      }
     } break;
 
     case message_types_t::inbound_PIDConfig: {
       const auto cfg = &receivedMsg->pidconfig;
       updatePidConfig(cfg);
-      transactionId = cfg->transactionId;
       relay = true;
     } break;
 
@@ -153,7 +173,6 @@ void MotorManagerModule::checkMessages() {
     case message_types_t::inbound_BridgeConfig: {
       const auto cfg = &receivedMsg->bridgeconfig;
       updateBridgeConfig(cfg);
-      transactionId = cfg->transactionId;
       relay = true;
     } break;
 
@@ -166,35 +185,28 @@ void MotorManagerModule::checkMessages() {
     case message_types_t::inbound_SafetyConfig: {
       const auto cfg = &receivedMsg->safetyconfig;
       updateSafetyConfig(cfg);
-      transactionId = cfg->transactionId;
       relay = true;
     } break;
 
     case message_types_t::inbound_LimitsConfig: {
       const auto cfg = &receivedMsg->limitsconfig;
       updateLimitsConfig(cfg);
-      transactionId = cfg->transactionId;
       relay = true;
     } break;
 
     case message_types_t::inbound_OperationConfig: {
       const auto cfg = &receivedMsg->operationconfig;
       updateOperationConfig(cfg);
-      transactionId = cfg->transactionId;
       relay = true;
     } break;
     default:
       break;
     }
-    relay = false;
     if (relay) {
       sendMessage(receivedMsg, MotorControllerModule::ModuleMessageId);
     } else {
       if (transactionId) {
-        ack_content_t *ack = &receivedMsg->ackcontent;
-        ack->transactionId = transactionId;
-        ack->type = message_types_t::outboudn_ack;
-        sendMessage(receivedMsg, RosNodeModule::ModuleMessageId);
+        sendAck(receivedMsg, transactionId);
       } else {
         releaseMessage(receivedMsg);
       }
@@ -210,7 +222,8 @@ void MotorManagerModule::updatePidConfig(const pidconfig_content_t *cfg) {
   updateTimings(cfg->vel_frequency);
 }
 
-void MotorManagerModule::updateEncoderConfig(const encoderconfig_content_t *cfg) {
+void MotorManagerModule::updateEncoderConfig(
+    const encoderconfig_content_t *cfg) {
   for (int i = 0; i < MOTORS_COUNT; i++) {
     encoders[i].setCPR(cfg->cpr);
     encoders[i].setSingleChannel(cfg->channels ==
@@ -221,9 +234,11 @@ void MotorManagerModule::updateEncoderConfig(const encoderconfig_content_t *cfg)
   }
 }
 
-void MotorManagerModule::updateBridgeConfig(const bridgeconfig_content_t *cfg) {}
+void MotorManagerModule::updateBridgeConfig(const bridgeconfig_content_t *cfg) {
+}
 
-void MotorManagerModule::updateLimitsConfig(const limitsconfig_content_t *cfg) {}
+void MotorManagerModule::updateLimitsConfig(const limitsconfig_content_t *cfg) {
+}
 
 void MotorManagerModule::updateMechanicalConfig(
     const mechanicalconfig_content_t *cfg) {}
@@ -233,16 +248,17 @@ void MotorManagerModule::updateOperationConfig(
   pid_debug = cfg->pid_debug;
 }
 
-void MotorManagerModule::updateSafetyConfig(const safetyconfig_content_t *cfg) {}
+void MotorManagerModule::updateSafetyConfig(const safetyconfig_content_t *cfg) {
+}
 
 void MotorManagerModule::updateTimings(const float frequency) {
-  if (mode == 0 && frequency) {
+  if (mode == jointcommand_mode_t::disabled && frequency) {
     wait = 1000 / frequency;
     if (wait < 4) {
       wait = 4;
     }
     nominalDt = ((float)wait) / 1000.0f;
-    pid_publish_rate = frequency / 10;
+    pid_publish_rate = (uint8_t)frequency / 10.0f;
   }
 }
 
