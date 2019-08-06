@@ -25,9 +25,9 @@
 
 #ifdef __cplusplus
 extern "C" {
-#endif
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wold-style-cast"
+#endif
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f4xx_hal.h"
 
