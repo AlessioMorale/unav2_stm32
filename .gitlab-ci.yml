@@ -4,6 +4,6 @@ before_script:
 build:
   image: alessiomorale/gcc-arm-none-eabi-ci:latest
   script:
-    - cd UNAVng/UNAVng_fw
+    - cd firmware
     - make -j4
     
