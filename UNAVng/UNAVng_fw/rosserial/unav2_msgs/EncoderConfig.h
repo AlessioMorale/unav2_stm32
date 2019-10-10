@@ -20,6 +20,10 @@ namespace unav2_msgs
       _has_z_index_type has_z_index;
       typedef uint8_t _channels_type;
       _channels_type channels;
+      typedef bool _invert0_type;
+      _invert0_type invert0;
+      typedef bool _invert1_type;
+      _invert1_type invert1;
       typedef uint32_t _transactionId_type;
       _transactionId_type transactionId;
       enum { ENCODER_POS_AFTER_GEAR = 0 };
@@ -32,6 +36,8 @@ namespace unav2_msgs
       position(0),
       has_z_index(0),
       channels(0),
+      invert0(0),
+      invert1(0),
       transactionId(0)
     {
     }
@@ -58,6 +64,20 @@ namespace unav2_msgs
       offset += sizeof(this->has_z_index);
       *(outbuffer + offset + 0) = (this->channels >> (8 * 0)) & 0xFF;
       offset += sizeof(this->channels);
+      union {
+        bool real;
+        uint8_t base;
+      } u_invert0;
+      u_invert0.real = this->invert0;
+      *(outbuffer + offset + 0) = (u_invert0.base >> (8 * 0)) & 0xFF;
+      offset += sizeof(this->invert0);
+      union {
+        bool real;
+        uint8_t base;
+      } u_invert1;
+      u_invert1.real = this->invert1;
+      *(outbuffer + offset + 0) = (u_invert1.base >> (8 * 0)) & 0xFF;
+      offset += sizeof(this->invert1);
       *(outbuffer + offset + 0) = (this->transactionId >> (8 * 0)) & 0xFF;
       *(outbuffer + offset + 1) = (this->transactionId >> (8 * 1)) & 0xFF;
       *(outbuffer + offset + 2) = (this->transactionId >> (8 * 2)) & 0xFF;
@@ -90,6 +110,22 @@ namespace unav2_msgs
       offset += sizeof(this->has_z_index);
       this->channels =  ((uint8_t) (*(inbuffer + offset)));
       offset += sizeof(this->channels);
+      union {
+        bool real;
+        uint8_t base;
+      } u_invert0;
+      u_invert0.base = 0;
+      u_invert0.base |= ((uint8_t) (*(inbuffer + offset + 0))) << (8 * 0);
+      this->invert0 = u_invert0.real;
+      offset += sizeof(this->invert0);
+      union {
+        bool real;
+        uint8_t base;
+      } u_invert1;
+      u_invert1.base = 0;
+      u_invert1.base |= ((uint8_t) (*(inbuffer + offset + 0))) << (8 * 0);
+      this->invert1 = u_invert1.real;
+      offset += sizeof(this->invert1);
       this->transactionId =  ((uint32_t) (*(inbuffer + offset)));
       this->transactionId |= ((uint32_t) (*(inbuffer + offset + 1))) << (8 * 1);
       this->transactionId |= ((uint32_t) (*(inbuffer + offset + 2))) << (8 * 2);
@@ -99,7 +135,7 @@ namespace unav2_msgs
     }
 
     const char * getType(){ return "unav2_msgs/EncoderConfig"; };
-    const char * getMD5(){ return "841060deae474e2a7ff006d0c89916e7"; };
+    const char * getMD5(){ return "45ce62a661c87ca5cb4e26ab33026523"; };
 
   };
 

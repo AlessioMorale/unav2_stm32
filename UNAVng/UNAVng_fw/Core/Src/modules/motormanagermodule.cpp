@@ -283,6 +283,7 @@ void MotorManagerModule::updateEncoderConfig(
     encoders[i].setHasZIndex(cfg->has_z_index);
     encoders[i].setIsEncoderAfterGear(cfg->position ==
                                       encoderconfig_position_t::after_gear);
+    encoders[i].setInverted(i == 0 ? cfg->invert0 : cfg->invert1);
   }
 }
 
@@ -296,7 +297,7 @@ void MotorManagerModule::updateLimitsConfig(const limitsconfig_content_t *cfg) {
 void MotorManagerModule::updateMechanicalConfig(
     const mechanicalconfig_content_t *cfg) {
   bool inverted[]{
-      cfg->rotation0, cfg->rotation1, cfg->rotation2, cfg->rotation3
+      cfg->rotation0, cfg->rotation1
       };
   for (int i = 0; i < MOTORS_COUNT; i++)
   {

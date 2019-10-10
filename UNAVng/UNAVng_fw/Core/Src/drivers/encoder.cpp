@@ -41,7 +41,10 @@ float Encoder::getVelocity() {
     return 0.0f;
   }
 }
-
+void Encoder::setInverted(bool inverted){
+  config.isInverted = inverted;
+  recalcReduction();
+}
 float Encoder::setIsEncoderAfterGear(bool isAfterGear) {
   config.isEncoderAfterGear = isAfterGear;
   recalcReduction();
@@ -70,8 +73,11 @@ void Encoder::recalcReduction() {
   if (!config.isSingleChannel) {
     reduction *= 2.0f;
   }
-  if (!config.isEncoderAfterGear && config.gear < 0.01f) {
+  if (!config.isEncoderAfterGear && config.gear > 0.01f) {
     reduction *= config.gear;
+  }
+  if(config.isInverted){
+    reduction *= -1.0f;
   }
   inverseReduction = 1.0f / reduction;
 }
