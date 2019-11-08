@@ -177,6 +177,14 @@ void Error_Handler(void) __attribute__((noreturn));
 #define TIM_MOT_ARRAY_OF_CHANNELS                                              \
   { TIM_MOT1_CH, TIM_CHANNEL_2 }
 
+#define TIM_MOT_ARRAY_OF_GPIOS                                                 \
+  {                                                                            \
+    TIM_MOT1_A_GPIO_Port, TIM_MOT1_B_GPIO_Port,                                \ 
+    TIM_MOT2_A_GPIO_Port,TIM_MOT2_B_GPIO_Port                                  \
+  }
+  
+#define TIM_MOT_ARRAY_OF_PINS  { TIM_MOT1_A_Pin, TIM_MOT1_B_Pin, TIM_MOT2_A_Pin, TIM_MOT2_B_Pin }
+
 #define TIM_LED1 htim13
 #define TIM_LED2 htim14
 #define TIM_LED1_CH TIM_CHANNEL_1

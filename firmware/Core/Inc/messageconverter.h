@@ -91,6 +91,8 @@ public:
     c->channels = rosmsg.channels == rosmsg.ENCODER_CHANNELS_ONE
                       ? encoderconfig_channels_t::one_channel
                       : encoderconfig_channels_t::two_channels;
+    c->invert0 = rosmsg.invert0;
+    c->invert1 = rosmsg.invert1;
   }
 };
 
@@ -119,8 +121,6 @@ public:
     c->ratio = rosmsg.ratio;
     c->rotation0 = rosmsg.rotation0;
     c->rotation1 = rosmsg.rotation1;
-    c->rotation2 = rosmsg.rotation2;
-    c->rotation3 = rosmsg.rotation3;
   }
 };
 

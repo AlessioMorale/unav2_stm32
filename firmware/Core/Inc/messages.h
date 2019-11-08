@@ -103,6 +103,8 @@ typedef struct encoderconfig_content {
   encoderconfig_position_t position;
   bool has_z_index;
   encoderconfig_channels_t channels;
+  bool invert0;
+  bool invert1;
 } encoderconfig_content_t;
 
 typedef struct limitsconfig_content {
@@ -121,8 +123,6 @@ typedef struct mechanicalconfig_content {
   float ratio;
   bool rotation0;
   bool rotation1;
-  bool rotation2;
-  bool rotation3;
 
 } mechanicalconfig_content_t;
 

@@ -18,10 +18,6 @@ namespace unav2_msgs
       _rotation0_type rotation0;
       typedef bool _rotation1_type;
       _rotation1_type rotation1;
-      typedef bool _rotation2_type;
-      _rotation2_type rotation2;
-      typedef bool _rotation3_type;
-      _rotation3_type rotation3;
       typedef uint32_t _transactionId_type;
       _transactionId_type transactionId;
 
@@ -29,8 +25,6 @@ namespace unav2_msgs
       ratio(0),
       rotation0(0),
       rotation1(0),
-      rotation2(0),
-      rotation3(0),
       transactionId(0)
     {
     }
@@ -62,20 +56,6 @@ namespace unav2_msgs
       u_rotation1.real = this->rotation1;
       *(outbuffer + offset + 0) = (u_rotation1.base >> (8 * 0)) & 0xFF;
       offset += sizeof(this->rotation1);
-      union {
-        bool real;
-        uint8_t base;
-      } u_rotation2;
-      u_rotation2.real = this->rotation2;
-      *(outbuffer + offset + 0) = (u_rotation2.base >> (8 * 0)) & 0xFF;
-      offset += sizeof(this->rotation2);
-      union {
-        bool real;
-        uint8_t base;
-      } u_rotation3;
-      u_rotation3.real = this->rotation3;
-      *(outbuffer + offset + 0) = (u_rotation3.base >> (8 * 0)) & 0xFF;
-      offset += sizeof(this->rotation3);
       *(outbuffer + offset + 0) = (this->transactionId >> (8 * 0)) & 0xFF;
       *(outbuffer + offset + 1) = (this->transactionId >> (8 * 1)) & 0xFF;
       *(outbuffer + offset + 2) = (this->transactionId >> (8 * 2)) & 0xFF;
@@ -114,22 +94,6 @@ namespace unav2_msgs
       u_rotation1.base |= ((uint8_t) (*(inbuffer + offset + 0))) << (8 * 0);
       this->rotation1 = u_rotation1.real;
       offset += sizeof(this->rotation1);
-      union {
-        bool real;
-        uint8_t base;
-      } u_rotation2;
-      u_rotation2.base = 0;
-      u_rotation2.base |= ((uint8_t) (*(inbuffer + offset + 0))) << (8 * 0);
-      this->rotation2 = u_rotation2.real;
-      offset += sizeof(this->rotation2);
-      union {
-        bool real;
-        uint8_t base;
-      } u_rotation3;
-      u_rotation3.base = 0;
-      u_rotation3.base |= ((uint8_t) (*(inbuffer + offset + 0))) << (8 * 0);
-      this->rotation3 = u_rotation3.real;
-      offset += sizeof(this->rotation3);
       this->transactionId =  ((uint32_t) (*(inbuffer + offset)));
       this->transactionId |= ((uint32_t) (*(inbuffer + offset + 1))) << (8 * 1);
       this->transactionId |= ((uint32_t) (*(inbuffer + offset + 2))) << (8 * 2);
@@ -139,7 +103,7 @@ namespace unav2_msgs
     }
 
     const char * getType(){ return "unav2_msgs/MechanicalConfig"; };
-    const char * getMD5(){ return "def15c5978e0c2a6052f1fe086e8580a"; };
+    const char * getMD5(){ return "79af9aebe53ea8303292896b6acd440a"; };
 
   };
 

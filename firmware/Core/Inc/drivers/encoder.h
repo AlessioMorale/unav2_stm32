@@ -21,6 +21,7 @@ public:
   float getPosition() { return position; };
   void setGear(float gear);
   void setCPR(uint16_t ppr);
+  void setInverted(bool inverted);
   void setSingleChannel(bool isSingleChannel);
   void setHasZIndex(bool hasZIndex) {}
   void applyFilter(float dt, float cutoff);
@@ -33,6 +34,7 @@ private:
     bool isEncoderAfterGear;
     bool isSingleChannel;
     bool hasZIndex;
+    bool isInverted;
   } encoderConfig_t;
   Encoder();
   TIM_HandleTypeDef *encoderTimer;

@@ -102,7 +102,7 @@ void MotorControllerModule::moduleThreadStart() {
         PERF_MEASURE_PERIOD(perf_mc_loop_time);
 
         for (int i = 0; i < MOTORS_COUNT; i++) {
-          __HAL_TIM_SET_COMPARE(&TIM_MOT, motor_channels[i], motoroutput[i]);
+          //__HAL_TIM_SET_COMPARE(&TIM_MOT, motor_channels[i], motoroutput[i]);
           if (pidstate) {
             pidstate->output[i] = (float)motoroutput[i];
           }
