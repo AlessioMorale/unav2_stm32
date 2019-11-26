@@ -2,7 +2,7 @@
 #include "cmsis_os.h"
 
 namespace unav::modules {
-void BaseModule::initializeTask(osPriority priority, int tasksize) {
+void BaseModule::initializeTask(osPriority priority, size_t tasksize) {
   osThreadDef(moduleThread, BaseModuleTaskWrapper, priority, 0, tasksize);
   moduleThread =
       osThreadCreate(osThread(moduleThread), static_cast<void *>(this));

@@ -5,7 +5,7 @@ namespace unav::modules {
 extern "C" void BaseModuleTaskWrapper(void const *argument);
 class BaseModule {
 public:
-  virtual void initializeTask(osPriority priority, int tasksize);
+  virtual void initializeTask(osPriority priority, size_t tasksize);
 
 protected:
   osThreadId moduleThread;

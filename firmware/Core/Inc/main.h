@@ -179,7 +179,7 @@ void Error_Handler(void) __attribute__((noreturn));
 
 #define TIM_MOT_ARRAY_OF_GPIOS                                                 \
   {                                                                            \
-    TIM_MOT1_A_GPIO_Port, TIM_MOT1_B_GPIO_Port,                                \ 
+    TIM_MOT1_A_GPIO_Port, TIM_MOT1_B_GPIO_Port,                                \
     TIM_MOT2_A_GPIO_Port,TIM_MOT2_B_GPIO_Port                                  \
   }
   
