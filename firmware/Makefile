@@ -13,7 +13,7 @@
 ######################################
 # target
 ######################################
-TARGET = UNAVng_fw
+TARGET = unavng_fw
 
 
 ######################################
@@ -31,58 +31,58 @@ OPT = -Og
 # Build path
 BUILD_DIR = build
 
-HALPATH = Drivers/STM32F4xx_HAL_Driver
-USBDEVPATH = USB_DEVICE
-MIDDLEWARESPATH = Middlewares
+HALPATH = drivers/STM32F4xx_HAL_Driver
+USBDEVPATH = usb_device
+MIDDLEWARESPATH = middlewares
 FREERTOSPATH = FreeRTOS
 ######################################
 # source
 ######################################
 # C sources
 C_SOURCES =  \
-Core/Src/gpio.c \
-Core/Src/main.c \
-Core/Src/rtc.c \
-Core/Src/sdio.c \
-Core/Src/spi.c \
-Core/Src/tim.c \
-Core/Src/stm32f4xx_it.c \
-Core/Src/stm32f4xx_hal_msp.c \
-Core/Src/system_stm32f4xx.c \
-Core/Src/stm32f4xx_hal_timebase_tim.c \
-Core/Src/timing.c \
-Core/Src/mathutils.c \
-Core/Src/adc.c \
-Core/Src/dma.c \
-Core/Src/i2c.c \
-Core/Src/usart.c \
-Middlewares/Third_Party/FreeRTOS/Source/croutine.c \
-Middlewares/Third_Party/FreeRTOS/Source/event_groups.c \
-Middlewares/Third_Party/FreeRTOS/Source/list.c \
-Middlewares/Third_Party/FreeRTOS/Source/queue.c \
-Middlewares/Third_Party/FreeRTOS/Source/stream_buffer.c \
-Middlewares/Third_Party/FreeRTOS/Source/tasks.c \
-Middlewares/Third_Party/FreeRTOS/Source/timers.c \
-Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c \
-Middlewares/Third_Party/FreeRTOS/Source/portable/MemMang/heap_4.c \
-Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/port.c \
-Core/Src/instrumentation/instrumentation.c \
-Core/Src/counters.c \
-Core/Src/freertos_support.c
+core/src/gpio.c \
+core/src/main.c \
+core/src/rtc.c \
+core/src/sdio.c \
+core/src/spi.c \
+core/src/tim.c \
+core/src/stm32f4xx_it.c \
+core/src/stm32f4xx_hal_msp.c \
+core/src/system_stm32f4xx.c \
+core/src/stm32f4xx_hal_timebase_tim.c \
+core/src/timing.c \
+core/src/mathutils.c \
+core/src/adc.c \
+core/src/dma.c \
+core/src/i2c.c \
+core/src/usart.c \
+middlewares/Third_Party/FreeRTOS/Source/croutine.c \
+middlewares/Third_Party/FreeRTOS/Source/event_groups.c \
+middlewares/Third_Party/FreeRTOS/Source/list.c \
+middlewares/Third_Party/FreeRTOS/Source/queue.c \
+middlewares/Third_Party/FreeRTOS/Source/stream_buffer.c \
+middlewares/Third_Party/FreeRTOS/Source/tasks.c \
+middlewares/Third_Party/FreeRTOS/Source/timers.c \
+middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c \
+middlewares/Third_Party/FreeRTOS/Source/portable/MemMang/heap_4.c \
+middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/port.c \
+core/src/instrumentation/instrumentation.c \
+core/src/counters.c \
+core/src/freertos_support.c
 
 
 CPP_SOURCES = \
-Core/Src/freertos.cpp \
+core/src/freertos.cpp \
 rosserial/time.cpp \
-Core/Src/modules/basemodule.cpp \
-Core/Src/modules/baserosmodule.cpp \
-Core/Src/modules/rosnodemodule.cpp \
-Core/Src/modules/motormanagermodule.cpp \
-Core/Src/modules/motorcontrollermodule.cpp \
-Core/Src/controls/pid.cpp \
-Core/Src/drivers/encoder.cpp \
-Core/Src/utils/timer.cpp \
-Core/Src/messaging.cpp
+core/src/modules/basemodule.cpp \
+core/src/modules/baserosmodule.cpp \
+core/src/modules/rosnodemodule.cpp \
+core/src/modules/motormanagermodule.cpp \
+core/src/modules/motorcontrollermodule.cpp \
+core/src/controls/pid.cpp \
+core/src/drivers/encoder.cpp \
+core/src/utils/timer.cpp \
+core/src/messaging.cpp
 
 
 
@@ -145,12 +145,12 @@ AS_INCLUDES =
 
 # C includes
 C_INCLUDES +=  \
--ICore/Inc \
--IDrivers/CMSIS/Device/ST/STM32F4xx/Include \
--IDrivers/CMSIS/Include \
--IMiddlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/ \
--IMiddlewares/Third_Party/FreeRTOS/Source/include \
--IMiddlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F \
+-Icore/include \
+-Idrivers/CMSIS/Device/ST/STM32F4xx/Include \
+-Idrivers/CMSIS/Include \
+-Imiddlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/ \
+-Imiddlewares/Third_Party/FreeRTOS/Source/include \
+-Imiddlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F \
 -Irosserial
 
 CFLAGS                  += -Wall
