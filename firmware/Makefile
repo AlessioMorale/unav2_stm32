@@ -231,7 +231,7 @@ LDFLAGS = $(MCU) -specs=nano.specs -T$(LDSCRIPT) $(LIBDIR) $(LIBS) -Wl,-Map=$(BU
 # CppUTest
 #######################################
 #--- Inputs ----#
-COMPONENT_NAME = CppUTestExamples
+COMPONENT_NAME = uNav_CppUTest
 CPPUTEST_HOME = ./testing/cpputest/
 
 CPPUTEST_USE_EXTENSIONS = Y
@@ -257,6 +257,11 @@ INCLUDE_DIRS =\
 	middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F \
 	rosserial
 
+testing/cpputest//lib/libCppUTest.a:
+	cd $(CPPUTEST_HOME) && ./autogen.sh
+	cd $(CPPUTEST_HOME) && ./configure
+	$(MAKE) -C $(CPPUTEST_HOME) -j8
+	$(MAKE) -C $(CPPUTEST_HOME) check
 include $(CPPUTEST_HOME)/build/MakefileWorker.mk
 
 
