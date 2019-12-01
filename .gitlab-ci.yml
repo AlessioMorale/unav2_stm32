@@ -1,4 +1,5 @@
 before_script:
+  - apt update && apt install autoconf libtool g++ -y
   - git submodule sync --recursive
   - git submodule update --init --recursive
 build:
