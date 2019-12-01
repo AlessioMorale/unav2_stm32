@@ -47,3 +47,8 @@ CMakeLists.txt
 .vscode
 # various project files
 .project
+
+#cpputest
+*/uNav_CppUTest_tests
+*/uNav_CppUTest_tests.txt
+**/tests.d
