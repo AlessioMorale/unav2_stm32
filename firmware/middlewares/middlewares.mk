@@ -9,8 +9,8 @@ $(USBDEVLIBRARYPATH)/Class/CDC/Src/usbd_cdc.c
 C_SOURCES += \
 $(usbdevlibsrc)
 
-C_INCLUDES += -I$(USBDEVLIBRARYPATH)/Core/Inc \
--I$(USBDEVLIBRARYPATH)/Class/CDC/Inc \
-
+C_INCLUDE_DIRS += \
+$(USBDEVLIBRARYPATH)/Core/Inc \
+$(USBDEVLIBRARYPATH)/Class/CDC/Inc
 
 

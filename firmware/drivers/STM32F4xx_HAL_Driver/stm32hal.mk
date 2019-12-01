@@ -30,6 +30,6 @@ $(HALPATH)/Src/stm32f4xx_hal_adc_ex.c
 
 C_SOURCES += $(stm32libsrc)
 
-C_INCLUDES +=  \
--I$(HALPATH)/Inc \
--I$(HALPATH)/Inc/Legacy \
+C_INCLUDE_DIRS +=  \
+$(HALPATH)/Inc \
+$(HALPATH)/Inc/Legacy \

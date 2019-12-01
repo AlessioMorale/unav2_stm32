@@ -144,14 +144,14 @@ C_DEFS =  \
 AS_INCLUDES = 
 
 # C includes
-C_INCLUDES +=  \
--Icore/include \
--Idrivers/CMSIS/Device/ST/STM32F4xx/Include \
--Idrivers/CMSIS/Include \
--Imiddlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/ \
--Imiddlewares/Third_Party/FreeRTOS/Source/include \
--Imiddlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F \
--Irosserial
+C_INCLUDE_DIRS +=  \
+core/include \
+drivers/CMSIS/Device/ST/STM32F4xx/Include \
+drivers/CMSIS/Include \
+middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/ \
+middlewares/Third_Party/FreeRTOS/Source/include \
+middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F \
+rosserial
 
 CFLAGS                  += -Wall
 CFLAGS 					+= -Wextra
@@ -166,6 +166,10 @@ CFLAGS 					+= -Wdisabled-optimization
 CFLAGS                	+= -Wno-unused-parameter
 CFLAGS                  += -Wa,-alh=$(@:.o=.lst)
 
+C_INCLUDE_DIRS_EXPANDED = $(wildcard $(C_INCLUDE_DIRS))
+C_INCLUDES += $(foreach dir, $(C_INCLUDE_DIRS_EXPANDED), -I$(dir))
+AS_INCLUDES_DIRS_EXPANDED = $(wildcard $(AS_INCLUDES_DIRS))
+AS_INCLUDES += $(foreach dir, $(AS_INCLUDES_DIRS_EXPANDED), -I$(dir))
 
 # compile gcc flags
 ASFLAGS = $(MCU) $(AS_DEFS) $(AS_INCLUDES) $(OPT) -fdata-sections -ffunction-sections -fno-common
@@ -182,19 +186,6 @@ endif
 # Generate dependency information
 CFLAGS += -MMD -MP -MF"$(@:%.o=%.d)" -Wall
 
-
-#######################################
-# LDFLAGS
-#######################################
-# link script
-LDSCRIPT = STM32F407VGTx_FLASH.ld
-
-# libraries
-LIBS = -lc -lm -lnosys 
-LIBDIR = 
-LDFLAGS = $(MCU) -specs=nano.specs -T$(LDSCRIPT) $(LIBDIR) $(LIBS) -Wl,-Map=$(BUILD_DIR)/$(TARGET).map,--cref -Wl,--gc-sections -Wl,--undefined=uxTopUsedPriority
-# default action: build all
-all: $(BUILD_DIR)/$(TARGET).elf $(BUILD_DIR)/$(TARGET).hex $(BUILD_DIR)/$(TARGET).bin
 # C++ Compiler -- Required & Optimization Flags
 
 CXXFLAGS                += $(CFLAGS)
@@ -225,6 +216,52 @@ CXXFLAGS 				+= -Wshadow
 CXXFLAGS 				+= -Wctor-dtor-privacy
 CXXFLAGS 				+= -Wstrict-null-sentinel
 
+#######################################
+# LDFLAGS
+#######################################
+# link script
+LDSCRIPT = STM32F407VGTx_FLASH.ld
+
+# libraries
+LIBS = -lc -lm -lnosys 
+LIBDIR = 
+LDFLAGS = $(MCU) -specs=nano.specs -T$(LDSCRIPT) $(LIBDIR) $(LIBS) -Wl,-Map=$(BUILD_DIR)/$(TARGET).map,--cref -Wl,--gc-sections -Wl,--undefined=uxTopUsedPriority
+
+#######################################
+# CppUTest
+#######################################
+#--- Inputs ----#
+COMPONENT_NAME = CppUTestExamples
+CPPUTEST_HOME = ./testing/cpputest/
+
+CPPUTEST_USE_EXTENSIONS = Y
+CPP_PLATFORM = Gcc
+
+SRC_DIRS = \
+	src/CppUTest \
+	src/Platforms/$(CPP_PLATFORM)
+SRC_FILES = \
+
+
+TEST_SRC_DIRS = \
+	testing/src
+
+INCLUDE_DIRS =\
+	.\
+	$(CPPUTEST_HOME)/include\
+	core/include \
+	drivers/CMSIS/Device/ST/STM32F4xx/Include \
+	drivers/CMSIS/Include \
+	middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/ \
+	middlewares/Third_Party/FreeRTOS/Source/include \
+	middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F \
+	rosserial
+
+include $(CPPUTEST_HOME)/build/MakefileWorker.mk
+
+
+# default action: build all
+all: $(BUILD_DIR)/$(TARGET).elf $(BUILD_DIR)/$(TARGET).hex $(BUILD_DIR)/$(TARGET).bin
 
 #######################################
 # build the application
@@ -260,7 +297,7 @@ $(BUILD_DIR)/%.bin: $(BUILD_DIR)/%.elf | $(BUILD_DIR)
 	$(BIN) $< $@	
 	
 $(BUILD_DIR):
-	mkdir $@		
+	mkdir $@
 
 #######################################
 # clean up
@@ -277,3 +314,4 @@ clean:
 flash:  $(BUILD_DIR)/$(TARGET).elf
 	openocd -f openocd.cfg -c "program  $(BUILD_DIR)/$(TARGET).elf verify reset" -c "shutdown"
 # *** EOF ***
+

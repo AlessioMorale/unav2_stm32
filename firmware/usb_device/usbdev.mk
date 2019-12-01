@@ -4,6 +4,6 @@ $(USBDEVPATH)/App/usbd_desc.c \
 $(USBDEVPATH)/Target/usbd_conf.c
 
 C_SOURCES += $(usbsrcs)
-C_INCLUDES +=  \
--I$(USBDEVPATH)/App \
--I$(USBDEVPATH)/Target
+C_INCLUDE_DIRS +=  \
+$(USBDEVPATH)/App \
+$(USBDEVPATH)/Target
