@@ -1,9 +1,8 @@
 before_script:
-  - apt update && apt install autoconf libtool g++ -y
   - git submodule sync --recursive
   - git submodule update --init --recursive
 build:
-  image: alessiomorale/gcc-arm-none-eabi-ci:latest
+  image: alessiomorale/gcc-arm-none-eabi-ci:release-1.1.0
   script:
     - cd firmware
     - make -j4
