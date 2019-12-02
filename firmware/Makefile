@@ -258,10 +258,13 @@ INCLUDE_DIRS =\
 	rosserial
 
 testing/cpputest//lib/libCppUTest.a:
+	@echo Building CppUTest library
 	cd $(CPPUTEST_HOME) && ./autogen.sh
-	cd $(CPPUTEST_HOME) && ./configure
-	$(MAKE) -C $(CPPUTEST_HOME) -j8
-	$(MAKE) -C $(CPPUTEST_HOME) check
+	cd $(CPPUTEST_HOME) && ./configure > /dev/null
+	$(MAKE) -C $(CPPUTEST_HOME) -s -j8
+	$(MAKE) -C $(CPPUTEST_HOME) -s check
+	@echo CppUTest library built
+	@echo -
 include $(CPPUTEST_HOME)/build/MakefileWorker.mk
 
 
