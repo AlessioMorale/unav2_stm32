@@ -5,5 +5,6 @@ build:
   image: alessiomorale/gcc-arm-none-eabi-ci:release-1.1.0
   script:
     - cd firmware
-    - make -j4
+    - make cpputest -j4
+    - make test all -j4
     
