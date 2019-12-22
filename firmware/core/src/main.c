@@ -32,6 +32,7 @@
 #include "usart.h"
 #include "usb_device.h"
 
+
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include <timing.h>
@@ -124,38 +125,25 @@ int main(void) {
   MX_ADC2_Init();
   MX_I2C1_Init();
   MX_RTC_Init();
-  // MX_SDIO_MMC_Init();
+  // MX_SDIO_SD_Init();
   MX_SPI1_Init();
   MX_TIM1_Init();
   MX_TIM3_Init();
   MX_TIM4_Init();
   MX_TIM9_Init();
-  MX_TIM11_Init();
   MX_TIM12_Init();
-  MX_TIM13_Init();
-  MX_TIM14_Init();
   MX_USART1_UART_Init();
   MX_USART2_UART_Init();
-  MX_USART3_UART_Init();
   MX_TIM8_Init();
-  MX_ADC3_Init();
   /* USER CODE BEGIN 2 */
-  HAL_TIM_PWM_Start(&TIM_LED1, TIM_LED1_CH);
-  HAL_TIM_PWM_Start(&TIM_LED2, TIM_LED2_CH);
 
   HAL_TIM_Encoder_Start(&TIM_ENC1, TIM_CHANNEL_ALL);
   HAL_TIM_Encoder_Start(&TIM_ENC2, TIM_CHANNEL_ALL);
-
-  __HAL_TIM_SET_AUTORELOAD(&TIM_LED1, TIM_LED_PERIOD_MAX);
-  __HAL_TIM_SET_AUTORELOAD(&TIM_LED2, TIM_LED_PERIOD_MAX);
-  __HAL_TIM_SET_COMPARE(&TIM_LED1, TIM_LED1_CH, 0xFFF);
 
   timing_Init();
   HAL_GPIO_WritePin(O_PWR_EN_GPIO_Port, O_PWR_EN_Pin, O_PWR_EN_STATUS_ENABLE);
   HAL_GPIO_WritePin(O_PWR_MOT_EN_GPIO_Port, O_PWR_MOT_EN_Pin,
                     O_PWR_MOT_EN_STATUS_ENABLE);
-  HAL_GPIO_WritePin(O_PWR_SBC_EN_GPIO_Port, O_PWR_SBC_EN_Pin,
-                    O_PWR_SBC_EN_STATUS_ENABLE);
   /* USER CODE END 2 */
 
   /* Call init function for freertos objects (in freertos.c) */

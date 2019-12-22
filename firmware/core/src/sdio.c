@@ -20,35 +20,37 @@
 /* Includes ------------------------------------------------------------------*/
 #include "sdio.h"
 
-/* USER CODE BEGIN 0 */
+    /* USER CODE BEGIN 0 */
 
-/* USER CODE END 0 */
+    /* USER CODE END 0 */
 
-MMC_HandleTypeDef hmmc;
+    SD_HandleTypeDef hsd;
 DMA_HandleTypeDef hdma_sdio_rx;
 DMA_HandleTypeDef hdma_sdio_tx;
 
 /* SDIO init function */
 
-void MX_SDIO_MMC_Init(void) {
-  hmmc.Instance = SDIO;
-  hmmc.Init.ClockEdge = SDIO_CLOCK_EDGE_RISING;
-  hmmc.Init.ClockBypass = SDIO_CLOCK_BYPASS_DISABLE;
-  hmmc.Init.ClockPowerSave = SDIO_CLOCK_POWER_SAVE_DISABLE;
-  hmmc.Init.BusWide = SDIO_BUS_WIDE_1B;
-  hmmc.Init.HardwareFlowControl = SDIO_HARDWARE_FLOW_CONTROL_ENABLE;
-  hmmc.Init.ClockDiv = 1;
-  if (HAL_MMC_Init(&hmmc) != HAL_OK) {
+void MX_SDIO_SD_Init(void) {
+
+  hsd.Instance = SDIO;
+  hsd.Init.ClockEdge = SDIO_CLOCK_EDGE_RISING;
+  hsd.Init.ClockBypass = SDIO_CLOCK_BYPASS_DISABLE;
+  hsd.Init.ClockPowerSave = SDIO_CLOCK_POWER_SAVE_DISABLE;
+  hsd.Init.BusWide = SDIO_BUS_WIDE_1B;
+  hsd.Init.HardwareFlowControl = SDIO_HARDWARE_FLOW_CONTROL_ENABLE;
+  hsd.Init.ClockDiv = 1;
+  if (HAL_SD_Init(&hsd) != HAL_OK) {
     Error_Handler();
   }
-  if (HAL_MMC_ConfigWideBusOperation(&hmmc, SDIO_BUS_WIDE_4B) != HAL_OK) {
+  if (HAL_SD_ConfigWideBusOperation(&hsd, SDIO_BUS_WIDE_4B) != HAL_OK) {
     Error_Handler();
   }
 }
 
-void HAL_MMC_MspInit(MMC_HandleTypeDef *mmcHandle) {
+void HAL_SD_MspInit(SD_HandleTypeDef *sdHandle) {
+
   GPIO_InitTypeDef GPIO_InitStruct = {0};
-  if (mmcHandle->Instance == SDIO) {
+  if (sdHandle->Instance == SDIO) {
     /* USER CODE BEGIN SDIO_MspInit 0 */
 
     /* USER CODE END SDIO_MspInit 0 */
@@ -99,7 +101,7 @@ void HAL_MMC_MspInit(MMC_HandleTypeDef *mmcHandle) {
       Error_Handler();
     }
 
-    __HAL_LINKDMA(mmcHandle, hdmarx, hdma_sdio_rx);
+    __HAL_LINKDMA(sdHandle, hdmarx, hdma_sdio_rx);
 
     /* SDIO_TX Init */
     hdma_sdio_tx.Instance = DMA2_Stream3;
@@ -119,7 +121,7 @@ void HAL_MMC_MspInit(MMC_HandleTypeDef *mmcHandle) {
       Error_Handler();
     }
 
-    __HAL_LINKDMA(mmcHandle, hdmatx, hdma_sdio_tx);
+    __HAL_LINKDMA(sdHandle, hdmatx, hdma_sdio_tx);
 
     /* USER CODE BEGIN SDIO_MspInit 1 */
 
@@ -127,8 +129,9 @@ void HAL_MMC_MspInit(MMC_HandleTypeDef *mmcHandle) {
   }
 }
 
-void HAL_MMC_MspDeInit(MMC_HandleTypeDef *mmcHandle) {
-  if (mmcHandle->Instance == SDIO) {
+void HAL_SD_MspDeInit(SD_HandleTypeDef *sdHandle) {
+
+  if (sdHandle->Instance == SDIO) {
     /* USER CODE BEGIN SDIO_MspDeInit 0 */
 
     /* USER CODE END SDIO_MspDeInit 0 */
@@ -149,8 +152,8 @@ void HAL_MMC_MspDeInit(MMC_HandleTypeDef *mmcHandle) {
     HAL_GPIO_DeInit(GPIOD, GPIO_PIN_2);
 
     /* SDIO DMA DeInit */
-    HAL_DMA_DeInit(mmcHandle->hdmarx);
-    HAL_DMA_DeInit(mmcHandle->hdmatx);
+    HAL_DMA_DeInit(sdHandle->hdmarx);
+    HAL_DMA_DeInit(sdHandle->hdmatx);
     /* USER CODE BEGIN SDIO_MspDeInit 1 */
 
     /* USER CODE END SDIO_MspDeInit 1 */

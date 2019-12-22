@@ -28,6 +28,7 @@ SPI_HandleTypeDef hspi1;
 
 /* SPI1 init function */
 void MX_SPI1_Init(void) {
+
   hspi1.Instance = SPI1;
   hspi1.Init.Mode = SPI_MODE_MASTER;
   hspi1.Init.Direction = SPI_DIRECTION_2LINES;
@@ -46,6 +47,7 @@ void MX_SPI1_Init(void) {
 }
 
 void HAL_SPI_MspInit(SPI_HandleTypeDef *spiHandle) {
+
   GPIO_InitTypeDef GPIO_InitStruct = {0};
   if (spiHandle->Instance == SPI1) {
     /* USER CODE BEGIN SPI1_MspInit 0 */
@@ -74,6 +76,7 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef *spiHandle) {
 }
 
 void HAL_SPI_MspDeInit(SPI_HandleTypeDef *spiHandle) {
+
   if (spiHandle->Instance == SPI1) {
     /* USER CODE BEGIN SPI1_MspDeInit 0 */
 

@@ -28,6 +28,7 @@ I2C_HandleTypeDef hi2c1;
 
 /* I2C1 init function */
 void MX_I2C1_Init(void) {
+
   hi2c1.Instance = I2C1;
   hi2c1.Init.ClockSpeed = 100000;
   hi2c1.Init.DutyCycle = I2C_DUTYCYCLE_2;
@@ -43,6 +44,7 @@ void MX_I2C1_Init(void) {
 }
 
 void HAL_I2C_MspInit(I2C_HandleTypeDef *i2cHandle) {
+
   GPIO_InitTypeDef GPIO_InitStruct = {0};
   if (i2cHandle->Instance == I2C1) {
     /* USER CODE BEGIN I2C1_MspInit 0 */
@@ -70,6 +72,7 @@ void HAL_I2C_MspInit(I2C_HandleTypeDef *i2cHandle) {
 }
 
 void HAL_I2C_MspDeInit(I2C_HandleTypeDef *i2cHandle) {
+
   if (i2cHandle->Instance == I2C1) {
     /* USER CODE BEGIN I2C1_MspDeInit 0 */
 

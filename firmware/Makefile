@@ -141,7 +141,7 @@ middlewares/Third_Party/FreeRTOS/Source/include \
 middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F \
 rosserial
 
-ARM_CFLAGS                  += -Wall
+ARM_CFLAGS          += -Wall
 ARM_CFLAGS 					+= -Wextra
 ARM_CFLAGS 					+= -Wfatal-errors
 ARM_CFLAGS 					+= -Wpacked
@@ -208,7 +208,7 @@ ARM_CXXFLAGS 				+= -Wstrict-null-sentinel
 # LDFLAGS
 #######################################
 # link script
-ARM_LDSCRIPT = STM32F407VGTx_FLASH.ld
+ARM_LDSCRIPT = unav_firmware.ld
 
 # libraries
 ARM_LIBS = -lc -lm -lnosys 

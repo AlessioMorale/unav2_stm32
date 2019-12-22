@@ -59,16 +59,16 @@ void Error_Handler(void) __attribute__((noreturn));
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
-#define I_KEY1_Pin GPIO_PIN_3
-#define I_KEY1_GPIO_Port GPIOE
-#define I_KEY0_Pin GPIO_PIN_4
-#define I_KEY0_GPIO_Port GPIOE
+#define I_KEY2_Pin GPIO_PIN_3
+#define I_KEY2_GPIO_Port GPIOE
+#define I_KEY3_Pin GPIO_PIN_4
+#define I_KEY3_GPIO_Port GPIOE
 #define TIM_FAN_PWM_Pin GPIO_PIN_5
 #define TIM_FAN_PWM_GPIO_Port GPIOE
-#define TIM_AUX3_PWM_Pin GPIO_PIN_6
-#define TIM_AUX3_PWM_GPIO_Port GPIOE
-#define I_FAN_INDEX_Pin GPIO_PIN_13
-#define I_FAN_INDEX_GPIO_Port GPIOC
+#define I_FAN_INDEX_Pin GPIO_PIN_6
+#define I_FAN_INDEX_GPIO_Port GPIOE
+#define O_LED1_Pin GPIO_PIN_13
+#define O_LED1_GPIO_Port GPIOC
 #define ADC_MOT1_CUR_Pin GPIO_PIN_0
 #define ADC_MOT1_CUR_GPIO_Port GPIOC
 #define ADC_MOT2_CUR_Pin GPIO_PIN_1
@@ -77,16 +77,12 @@ void Error_Handler(void) __attribute__((noreturn));
 #define I_KEY_UP_GPIO_Port GPIOA
 #define ADC_TEMP_Pin GPIO_PIN_2
 #define ADC_TEMP_GPIO_Port GPIOA
-#define O_LED1_Pin GPIO_PIN_6
-#define O_LED1_GPIO_Port GPIOA
+#define O_LED3_Pin GPIO_PIN_6
+#define O_LED3_GPIO_Port GPIOA
 #define O_LED2_Pin GPIO_PIN_7
 #define O_LED2_GPIO_Port GPIOA
-#define ADC_BATT_CUR_Pin GPIO_PIN_4
-#define ADC_BATT_CUR_GPIO_Port GPIOC
-#define ADC_BATT_VOL_Pin GPIO_PIN_5
-#define ADC_BATT_VOL_GPIO_Port GPIOC
-#define O_FLASH_CS_Pin GPIO_PIN_0
-#define O_FLASH_CS_GPIO_Port GPIOB
+#define O_SPI_CS1_Pin GPIO_PIN_0
+#define O_SPI_CS1_GPIO_Port GPIOB
 #define O_SPI_CS2_Pin GPIO_PIN_1
 #define O_SPI_CS2_GPIO_Port GPIOB
 #define O_SPI_CS3_Pin GPIO_PIN_7
@@ -105,12 +101,10 @@ void Error_Handler(void) __attribute__((noreturn));
 #define I_MOT_FAULT1_GPIO_Port GPIOB
 #define I_MOT_FAULT2_Pin GPIO_PIN_13
 #define I_MOT_FAULT2_GPIO_Port GPIOB
-#define TIM_AUX2_PWM_Pin GPIO_PIN_15
-#define TIM_AUX2_PWM_GPIO_Port GPIOB
-#define IO_AUX2_Pin GPIO_PIN_10
-#define IO_AUX2_GPIO_Port GPIOD
-#define IO_AUX1_Pin GPIO_PIN_11
-#define IO_AUX1_GPIO_Port GPIOD
+#define TIM_AUX_2_Pin GPIO_PIN_14
+#define TIM_AUX_2_GPIO_Port GPIOB
+#define TIM_AUX_1_Pin GPIO_PIN_15
+#define TIM_AUX_1_GPIO_Port GPIOB
 #define TIM_ENC2_A_Pin GPIO_PIN_12
 #define TIM_ENC2_A_GPIO_Port GPIOD
 #define TIM_ENC2_B_Pin GPIO_PIN_13
@@ -119,14 +113,13 @@ void Error_Handler(void) __attribute__((noreturn));
 #define TIM_ENC1_A_GPIO_Port GPIOC
 #define TIM_ENC1_B_Pin GPIO_PIN_7
 #define TIM_ENC1_B_GPIO_Port GPIOC
+#define I_KEY1_Pin GPIO_PIN_15
+#define I_KEY1_GPIO_Port GPIOA
 #define O_PWR_EN_Pin GPIO_PIN_8
 #define O_PWR_EN_GPIO_Port GPIOB
-#define TIM_AUX_PWM_Pin GPIO_PIN_9
-#define TIM_AUX_PWM_GPIO_Port GPIOB
 #define O_PWR_MOT_EN_Pin GPIO_PIN_0
 #define O_PWR_MOT_EN_GPIO_Port GPIOE
-#define O_PWR_SBC_EN_Pin GPIO_PIN_1
-#define O_PWR_SBC_EN_GPIO_Port GPIOE
+
 /* USER CODE BEGIN Private defines */
 #define MOTORS_COUNT 2
 
@@ -179,25 +172,18 @@ void Error_Handler(void) __attribute__((noreturn));
 
 #define TIM_MOT_ARRAY_OF_GPIOS                                                 \
   {                                                                            \
-    TIM_MOT1_A_GPIO_Port, TIM_MOT1_B_GPIO_Port,                                \
-    TIM_MOT2_A_GPIO_Port,TIM_MOT2_B_GPIO_Port                                  \
+    TIM_MOT1_A_GPIO_Port, TIM_MOT1_B_GPIO_Port, TIM_MOT2_A_GPIO_Port,          \
+        TIM_MOT2_B_GPIO_Port                                                   \
   }
-  
-#define TIM_MOT_ARRAY_OF_PINS  { TIM_MOT1_A_Pin, TIM_MOT1_B_Pin, TIM_MOT2_A_Pin, TIM_MOT2_B_Pin }
 
-#define TIM_LED1 htim13
-#define TIM_LED2 htim14
-#define TIM_LED1_CH TIM_CHANNEL_1
-#define TIM_LED2_CH TIM_CHANNEL_1
-#define TIM_LED_PERIOD_MAX 65535
+#define TIM_MOT_ARRAY_OF_PINS                                                  \
+  { TIM_MOT1_A_Pin, TIM_MOT1_B_Pin, TIM_MOT2_A_Pin, TIM_MOT2_B_Pin }
 
 /* Definition for GPIOs  */
 #define O_PWR_EN_STATUS_ENABLE GPIO_PIN_SET
 #define O_PWR_EN_STATUS_DISABLE GPIO_PIN_RESET
 #define O_PWR_MOT_EN_STATUS_ENABLE GPIO_PIN_SET
 #define O_PWR_MOT_EN_STATUS_DISABLE GPIO_PIN_RESET
-#define O_PWR_SBC_EN_STATUS_ENABLE GPIO_PIN_SET
-#define O_PWR_SBC_EN_STATUS_DISABLE GPIO_PIN_RESET
 
 #define INSTRUMENTATION_MAX_COUNTERS 10
 

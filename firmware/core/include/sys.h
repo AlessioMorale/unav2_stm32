@@ -1,8 +1,8 @@
 /**
  ******************************************************************************
- * File Name          : SDIO.h
+ * File Name          : SYS.h
  * Description        : This file provides code for the configuration
- *                      of the SDIO instances.
+ *                      of the SYS instances.
  ******************************************************************************
  * @attention
  *
@@ -17,8 +17,8 @@
  ******************************************************************************
  */
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef __sdio_H
-#define __sdio_H
+#ifndef __sys_H
+#define __sys_H
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -30,13 +30,11 @@ extern "C" {
 
 /* USER CODE END Includes */
 
-extern SD_HandleTypeDef hsd;
-
 /* USER CODE BEGIN Private defines */
 
 /* USER CODE END Private defines */
 
-void MX_SDIO_SD_Init(void);
+void MX_SYS_Init(void);
 
 /* USER CODE BEGIN Prototypes */
 
@@ -45,7 +43,7 @@ void MX_SDIO_SD_Init(void);
 #ifdef __cplusplus
 }
 #endif
-#endif /*__ sdio_H */
+#endif /*__ sys_H */
 
 /**
  * @}
