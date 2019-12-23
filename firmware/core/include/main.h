@@ -187,6 +187,18 @@ void Error_Handler(void) __attribute__((noreturn));
 
 #define INSTRUMENTATION_MAX_COUNTERS 10
 
+/* Leds */
+#define LED_ARRAY_OF_GPIO {O_LED1_GPIO_Port,O_LED2_GPIO_Port, O_LED3_GPIO_Port}
+#define LED_ARRAY_OF_PIN { O_LED1_Pin, O_LED2_Pin, O_LED3_Pin} 
+#define LED_ARRAY_OF_STATES_ON {GPIO_PIN_RESET, GPIO_PIN_RESET, GPIO_PIN_RESET} 
+#define LED_ARRAY_OF_STATES_OFF {GPIO_PIN_SET, GPIO_PIN_SET, GPIO_PIN_SET }
+
+#define NUM_LEDS 3
+extern volatile uint8_t ledvalue[NUM_LEDS]; 
+static inline void setLed(uint8_t led, uint8_t value){ ledvalue[led] = value; }
+#define LEDON(num) setLed(num, 0xFF)
+#define LEDOFF(num) setLed(num, 0x0)
+#define LED_HEARTBEAT 0
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus

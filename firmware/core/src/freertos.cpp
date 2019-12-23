@@ -24,6 +24,8 @@
 #include "tim.h"
 #include "timing.h"
 #include <FreeRTOS.h>
+#include <leds.h>
+#include <stdint.h>
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -48,6 +50,14 @@
 
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN Variables */
+extern "C" {
+const led_pattern_t led_pattern_slowblink = {2, {{900, 0}, {100, 255}}};
+const led_pattern_t led_pattern_fastblink = {2, {{450, 0}, {50, 255}}};
+const led_pattern_t led_pattern_off = {1, {{1000, 0}}};
+const led_pattern_t led_pattern_on = {1, {{1000, 255}}};
+leds_status_t leds_status[NUM_LEDS];
+volatile uint8_t ledvalue[NUM_LEDS] = {0};
+}
 
 osThreadId defaultTaskHandle;
 unav::modules::RosNodeModule rosnode;
@@ -103,6 +113,27 @@ extern "C" void MX_FREERTOS_Init(void) {
   /* USER CODE END RTOS_THREADS */
 }
 
+extern "C" void vApplicationIdleHook() {
+  const GPIO_PinState ledsOnState[] = LED_ARRAY_OF_STATES_ON;
+  const GPIO_PinState ledsOffState[] = LED_ARRAY_OF_STATES_OFF;
+  const GPIO_TypeDef *ledsGpio[] = LED_ARRAY_OF_GPIO;
+  const uint16_t ledspin[] = LED_ARRAY_OF_PIN;
+  static uint8_t count = 0;
+
+  // Running led software pwm in idle task so there is a visible "alert" when
+  // cpu is runnong put of free cpu cycles.
+  count += UINT8_MAX / 20;
+  for (int led = 0; led < NUM_LEDS; led++) {
+    if (count < ledvalue[led]) {
+      HAL_GPIO_WritePin((GPIO_TypeDef *)ledsGpio[led], ledspin[led],
+                        ledsOnState[led]);
+    } else {
+      HAL_GPIO_WritePin((GPIO_TypeDef *)ledsGpio[led], ledspin[led],
+                        ledsOffState[led]);
+    }
+  }
+}
+
 /* USER CODE BEGIN Header_StartDefaultTask */
 /**
  * @brief  Function implementing the defaultTask thread.
@@ -113,23 +144,30 @@ extern "C" void MX_FREERTOS_Init(void) {
 extern "C" void StartDefaultTask(void const *argument) {
   /* init code for USB_DEVICE */
   MX_USB_DEVICE_Init();
+  // leds_status[0].pattern = &led_pattern_slowblink;
 
   /* USER CODE BEGIN StartDefaultTask */
-  uint8_t data[20];
-  size_t receivedBytes = 0;
-  const TickType_t blockTime = pdMS_TO_TICKS(20);
-
-  uint16_t count = 0;
-  uint16_t delta = 100;
   TickType_t c = xTaskGetTickCount();
   /* Infinite loop */
   for (;;) {
-    count += delta;
-    if (count > 0xFF00 || count == 0) {
-      delta *= -1;
+    uint32_t time = timing_getMs();
+    for (int led = 0; led < NUM_LEDS; led++) {
+      leds_status_t *status = &leds_status[led];
+      if (status->pattern != nullptr &&
+          status->intervalIndex < status->pattern->length) {
+        if ((status->lastTime +
+             status->pattern->intervals[status->intervalIndex].duration) <
+            time) {
+          status->lastTime = time;
+          status->intervalIndex++;
+          setLed(led,
+                 status->pattern->intervals[status->intervalIndex].brightness);
+        }
+      } else {
+        status->intervalIndex = 0;
+      }
     }
-    __HAL_TIM_SET_COMPARE(&TIM_LED1, TIM_LED1_CH, count);
-    vTaskDelayUntil(&c, 1);
+    vTaskDelayUntil(&c, 10);
   }
   /* USER CODE END StartDefaultTask */
 }
