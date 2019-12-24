@@ -44,6 +44,8 @@ core/src/adc.c \
 core/src/dma.c \
 core/src/i2c.c \
 core/src/usart.c \
+core/src/leds.c \
+core/src/leds_hal.c \
 middlewares/Third_Party/FreeRTOS/Source/croutine.c \
 middlewares/Third_Party/FreeRTOS/Source/event_groups.c \
 middlewares/Third_Party/FreeRTOS/Source/list.c \
