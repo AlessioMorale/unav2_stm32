@@ -6,7 +6,7 @@ namespace unav::utils {
 
 class Timer {
 public:
-  Timer() : lastTime(timing_getUs()){};
+  Timer() : lastTime(timing_getRaw()){};
   /**
    * @brief read the time passed since the last call to interval o the
    * initialization.
@@ -23,7 +23,7 @@ public:
   float interval();
 
 private:
-  uint32_t lastTime;
+  rawtime_t lastTime;
 };
 
 } // namespace unav::utils

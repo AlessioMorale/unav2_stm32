@@ -1,22 +1,30 @@
 #ifndef TIMING_H
 #define TIMING_H
 #ifdef __cplusplus
+#include <atomic>
+using namespace std;
 extern "C" {
+#else
+#include <stdatomic.h>
 #endif
 #include "stm32f4xx_hal.h"
+
 extern uint32_t us_ticks;
 
-inline static uint32_t timing_getRaw() { return DWT->CYCCNT; }
-inline static void timing_Init() {
-  uint32_t hclk = HAL_RCC_GetHCLKFreq();
-  us_ticks = hclk / 1000000;
-  CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
-  DWT->CTRL |= DWT_CTRL_CYCCNTENA_Msk;
+typedef uint32_t rawtime_t;
+inline static rawtime_t timing_getRaw() { return DWT->CYCCNT; }
+void timing_Init();
+
+inline static uint32_t timing_getUsSince(const rawtime_t rawStart) {
+  const rawtime_t rawNow = timing_getRaw();
+  return (rawNow - rawStart) / us_ticks;
 }
 
-inline static uint32_t timing_getUs() { return timing_getRaw() / us_ticks; }
-inline static uint32_t timing_getMs() {
-  return timing_getRaw() / (us_ticks * 1000);
+uint32_t timing_getUs();
+
+inline static uint32_t timing_getMs()
+{
+  return timing_getUs() / 1000ul;
 }
 
 #ifdef __cplusplus

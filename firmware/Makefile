@@ -174,7 +174,7 @@ endif
 
 
 # Generate dependency information
-ARM_CFLAGS += -MMD -MP -MF"$(@:%.o=%.d)" -Wall
+ARM_CFLAGS += -MMD -MP -MF"$(@:%.o=%.d)" -Wall -std=c11
 
 # C++ Compiler -- Required & Optimization Flags
 
