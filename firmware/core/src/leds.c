@@ -57,18 +57,18 @@ leds_status_t leds_status[NUM_LEDS];
 void leds_init() {}
 
 void leds_update() {
-  uint32_t time = timing_getMs();
   for (int led = 0; led < NUM_LEDS; led++) {
     leds_status_t *status = &leds_status[led];
     leds_pattern_t *pattern = status->pattern;
     if (pattern == NULL) {
       continue;
     }
+    const uint32_t duration = timing_getUsSince(status->lastTime) / 1000ul;
     if ((pattern->intervals[status->intervalIndex].duration != 0) &&
-        (status->lastTime + (uint32_t)pattern->intervals[status->intervalIndex].duration) < time) {
-      status->lastTime = time;
-      status->intervalIndex = (status->intervalIndex + 1) % pattern->length;
-      leds_hal_setLed(led, pattern->intervals[status->intervalIndex].brightness);
+        ((uint32_t)pattern->intervals[status->intervalIndex].duration < duration)) {
+            status->lastTime = timing_getRaw();
+            status->intervalIndex = (status->intervalIndex + 1) % pattern->length;
+            leds_hal_setLed(led, pattern->intervals[status->intervalIndex].brightness);
     }
   }
 }
