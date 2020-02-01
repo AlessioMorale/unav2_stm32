@@ -104,22 +104,22 @@ void RosNodeModule::moduleThreadStart() {
   getNodeHandle().subscribe(subPIDCfg);
   getNodeHandle().subscribe(subSafetyCfg);
 
-  auto t = timing_getMs();
-  auto t_diag = timing_getMs();
+  auto t = timing_getRaw();
+  auto t_diag = timing_getRaw();
   while (true) {
     message_t *msg{nullptr};
     while (waitMessage(&msg, 2)) {
       sendRosMessage(msg);
       releaseMessage(msg);
-      auto now = timing_getMs();
-      if (now - t > 5) {
-        t = now;
+      
+      if (timing_getUsSince(t) > 5000ul) {
+        t = timing_getRaw();
         getNodeHandle().spinOnce();
       }
     }
-    auto now = timing_getMs();
-    if (now - t_diag > 100) {
-      t_diag = now;
+
+    if (timing_getUsSince(t_diag) > 100000ul) {
+      t_diag = timing_getRaw();
       publishDiagnostic();
     }
     getNodeHandle().spinOnce();
