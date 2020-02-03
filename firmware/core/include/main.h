@@ -59,67 +59,68 @@ void Error_Handler(void) __attribute__((noreturn));
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
-#define I_KEY2_Pin GPIO_PIN_3
-#define I_KEY2_GPIO_Port GPIOE
-#define I_KEY3_Pin GPIO_PIN_4
-#define I_KEY3_GPIO_Port GPIOE
-#define TIM_FAN_PWM_Pin GPIO_PIN_5
-#define TIM_FAN_PWM_GPIO_Port GPIOE
-#define I_FAN_INDEX_Pin GPIO_PIN_6
-#define I_FAN_INDEX_GPIO_Port GPIOE
 #define O_LED1_Pin GPIO_PIN_13
 #define O_LED1_GPIO_Port GPIOC
 #define ADC_MOT1_CUR_Pin GPIO_PIN_0
 #define ADC_MOT1_CUR_GPIO_Port GPIOC
 #define ADC_MOT2_CUR_Pin GPIO_PIN_1
 #define ADC_MOT2_CUR_GPIO_Port GPIOC
-#define I_KEY_UP_Pin GPIO_PIN_0
-#define I_KEY_UP_GPIO_Port GPIOA
+#define ADC_VREF_Pin GPIO_PIN_2
+#define ADC_VREF_GPIO_Port GPIOC
+#define TIM_ENC2_B_Pin GPIO_PIN_1
+#define TIM_ENC2_B_GPIO_Port GPIOA
 #define ADC_TEMP_Pin GPIO_PIN_2
 #define ADC_TEMP_GPIO_Port GPIOA
-#define O_LED3_Pin GPIO_PIN_6
-#define O_LED3_GPIO_Port GPIOA
-#define O_LED2_Pin GPIO_PIN_7
+#define I_ABORT_Pin GPIO_PIN_4
+#define I_ABORT_GPIO_Port GPIOA
+#define TIM_ENC2_A_Pin GPIO_PIN_5
+#define TIM_ENC2_A_GPIO_Port GPIOA
+#define O_LED2_Pin GPIO_PIN_6
 #define O_LED2_GPIO_Port GPIOA
-#define O_SPI_CS1_Pin GPIO_PIN_0
-#define O_SPI_CS1_GPIO_Port GPIOB
-#define O_SPI_CS2_Pin GPIO_PIN_1
-#define O_SPI_CS2_GPIO_Port GPIOB
-#define O_SPI_CS3_Pin GPIO_PIN_7
-#define O_SPI_CS3_GPIO_Port GPIOE
-#define TIM_MOT1_B_Pin GPIO_PIN_8
-#define TIM_MOT1_B_GPIO_Port GPIOE
-#define TIM_MOT1_A_Pin GPIO_PIN_9
-#define TIM_MOT1_A_GPIO_Port GPIOE
-#define TIM_MOT2_B_Pin GPIO_PIN_10
-#define TIM_MOT2_B_GPIO_Port GPIOE
-#define TIM_MOT2_A_Pin GPIO_PIN_11
-#define TIM_MOT2_A_GPIO_Port GPIOE
-#define O_MOT_ENABLE_Pin GPIO_PIN_14
-#define O_MOT_ENABLE_GPIO_Port GPIOE
-#define I_MOT_FAULT1_Pin GPIO_PIN_12
-#define I_MOT_FAULT1_GPIO_Port GPIOB
-#define I_MOT_FAULT2_Pin GPIO_PIN_13
-#define I_MOT_FAULT2_GPIO_Port GPIOB
-#define TIM_AUX_2_Pin GPIO_PIN_14
-#define TIM_AUX_2_GPIO_Port GPIOB
-#define TIM_AUX_1_Pin GPIO_PIN_15
-#define TIM_AUX_1_GPIO_Port GPIOB
-#define TIM_ENC2_A_Pin GPIO_PIN_12
-#define TIM_ENC2_A_GPIO_Port GPIOD
-#define TIM_ENC2_B_Pin GPIO_PIN_13
-#define TIM_ENC2_B_GPIO_Port GPIOD
-#define TIM_ENC1_A_Pin GPIO_PIN_6
-#define TIM_ENC1_A_GPIO_Port GPIOC
-#define TIM_ENC1_B_Pin GPIO_PIN_7
-#define TIM_ENC1_B_GPIO_Port GPIOC
-#define I_KEY1_Pin GPIO_PIN_15
-#define I_KEY1_GPIO_Port GPIOA
-#define O_PWR_EN_Pin GPIO_PIN_8
-#define O_PWR_EN_GPIO_Port GPIOB
-#define O_PWR_MOT_EN_Pin GPIO_PIN_0
-#define O_PWR_MOT_EN_GPIO_Port GPIOE
-
+#define O_LED3_Pin GPIO_PIN_7
+#define O_LED3_GPIO_Port GPIOA
+#define TIM_FAN_PWM_Pin GPIO_PIN_0
+#define TIM_FAN_PWM_GPIO_Port GPIOB
+#define TIM_FAN_INDEX_Pin GPIO_PIN_1
+#define TIM_FAN_INDEX_GPIO_Port GPIOB
+#define I2C_SCL_Pin GPIO_PIN_10
+#define I2C_SCL_GPIO_Port GPIOB
+#define I2C_SDA_Pin GPIO_PIN_11
+#define I2C_SDA_GPIO_Port GPIOB
+#define I_KEY0_Pin GPIO_PIN_12
+#define I_KEY0_GPIO_Port GPIOB
+#define I_KEY1_Pin GPIO_PIN_13
+#define I_KEY1_GPIO_Port GPIOB
+#define TIM_MOT1_B_Pin GPIO_PIN_14
+#define TIM_MOT1_B_GPIO_Port GPIOB
+#define TIM_MOT2_B_Pin GPIO_PIN_15
+#define TIM_MOT2_B_GPIO_Port GPIOB
+#define O_MOT_ENABLE_Pin GPIO_PIN_6
+#define O_MOT_ENABLE_GPIO_Port GPIOC
+#define TIM_MOT1_A_Pin GPIO_PIN_7
+#define TIM_MOT1_A_GPIO_Port GPIOC
+#define TIM_MOT2_A_Pin GPIO_PIN_8
+#define TIM_MOT2_A_GPIO_Port GPIOC
+#define O_PWR_SBC_EN_Pin GPIO_PIN_9
+#define O_PWR_SBC_EN_GPIO_Port GPIOC
+#define TIM_ENC1_A_Pin GPIO_PIN_8
+#define TIM_ENC1_A_GPIO_Port GPIOA
+#define TIM_ENC1_B_Pin GPIO_PIN_9
+#define TIM_ENC1_B_GPIO_Port GPIOA
+#define O_PWR_MOT_EN_Pin GPIO_PIN_10
+#define O_PWR_MOT_EN_GPIO_Port GPIOA
+#define O_SPI_CS2_Pin GPIO_PIN_10
+#define O_SPI_CS2_GPIO_Port GPIOC
+#define O_SPI_CS1_Pin GPIO_PIN_11
+#define O_SPI_CS1_GPIO_Port GPIOC
+#define SER2_TX_Pin GPIO_PIN_12
+#define SER2_TX_GPIO_Port GPIOC
+#define SER2_RX_Pin GPIO_PIN_2
+#define SER2_RX_GPIO_Port GPIOD
+#define O_PWR_REG_EN_Pin GPIO_PIN_8
+#define O_PWR_REG_EN_GPIO_Port GPIOB
+#define TIM_AUX2_PWM_Pin GPIO_PIN_9
+#define TIM_AUX2_PWM_GPIO_Port GPIOB
 /* USER CODE BEGIN Private defines */
 #define MOTORS_COUNT 2
 
@@ -138,17 +139,18 @@ void Error_Handler(void) __attribute__((noreturn));
   { ADC_MOT1_CUR_GPIO_Port, ADC_MOT2_CUR_GPIO_Port }
 
 /* Definition for ADCx's Channels */
-#define MOTOR_CUR_ADC2_CH1 ADC_CHANNEL_10
-#define MOTOR_CUR_ADC2_CH2 ADC_CHANNEL_11
-#define MOTOR_CUR_ADC2_ARRAY_OF_CHANNELS                                       \
-  { MOTOR_CUR_ADC2_CH1, MOTOR_CUR_ADC2_CH2 }
-#define MOTOR_CUR_ADC hadc2
+#define MOTOR_CUR_ADC3_CH1 ADC_CHANNEL_10
+#define MOTOR_CUR_ADC3_CH2 ADC_CHANNEL_11
+#define MOTOR_CUR_ADC3_REF ADC_CHANNEL_12
+#define MOTOR_CUR_ADC3_ARRAY_OF_CHANNELS                                       \
+  { MOTOR_CUR_ADC3_CH1, MOTOR_CUR_ADC3_CH2, MOTOR_CUR_ADC3_REF}
+#define MOTOR_CUR_ADC hadc3
 /* Definition for TIMx clock resources */
-#define MOTOR_CUR_ADC_TIMx TIM8
-#define MOTOR_CUR_ADC_TIMx_CLK_ENABLE() __HAL_RCC_TIM8_CLK_ENABLE()
+#define MOTOR_CUR_ADC_TIMx TIM4
+#define MOTOR_CUR_ADC_TIMx_CLK_ENABLE() __HAL_RCC_TIM4_CLK_ENABLE()
 
-#define MOTOR_CUR_ADC_TIMx_FORCE_RESET() __HAL_RCC_TIM8_FORCE_RESET()
-#define MOTOR_CUR_ADC_TIMx_RELEASE_RESET() __HAL_RCC_TIM8_RELEASE_RESET()
+#define MOTOR_CUR_ADC_TIMx_FORCE_RESET() __HAL_RCC_TIM4_FORCE_RESET()
+#define MOTOR_CUR_ADC_TIMx_RELEASE_RESET() __HAL_RCC_TIM4_RELEASE_RESET()
 
 #define MOTOR_CUR_ADC_DMA_CHANNEL DMA_CHANNEL_1
 #define MOTOR_CUR_ADC_DMA_STREAM DMA2_Stream2
@@ -158,17 +160,22 @@ void Error_Handler(void) __attribute__((noreturn));
 #define MOTOR_CUR_ADC_DMA_IRQHandler DMA2_Stream2_IRQHandler
 
 /* Definition for timers */
-#define TIM_ENC1 htim3
-#define TIM_ENC2 htim4
-#define TIM_MOT htim1
-#define TIM_MOT1_CH TIM_CHANNEL_1
-#define TIM_MOT2_CH TIM_CHANNEL_2
+#define TIM_ENC1 htim1
+#define TIM_ENC2 htim2
+#define TIM_FAN htim3
+#define TIM_FAN_PWM_CH TIM_CHANNEL_3
+#define TIM_FAN_IDX_CH TIM_CHANNEL_4
+
+#define TIM_MOT htim8
+#define TIM_MOT1_CH TIM_CHANNEL_2
+#define TIM_MOT2_CH TIM_CHANNEL_3
 #define TIM_MOT_PERIOD_MAX 1024
 #define TIM_MOT_PERIOD_MIN 0
 #define TIM_MOT_PERIOD_ZERO 512
 
+#define TimInit MX_TIM8_Init
 #define TIM_MOT_ARRAY_OF_CHANNELS                                              \
-  { TIM_MOT1_CH, TIM_CHANNEL_2 }
+  { TIM_MOT1_CH, TIM_MOT2_CH }
 
 #define TIM_MOT_ARRAY_OF_GPIOS                                                 \
   {                                                                            \
@@ -195,6 +202,8 @@ void Error_Handler(void) __attribute__((noreturn));
 
 #define NUM_LEDS 3
 #define LED_HEARTBEAT 0
+#define LED_ACTIVE 1
+#define LED_WAR_ERROR 2
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus

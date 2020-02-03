@@ -28,10 +28,10 @@ FREERTOSPATH = FreeRTOS
 ######################################
 # C sources
 C_SOURCES =  \
+core/src/crc.c \
 core/src/gpio.c \
 core/src/main.c \
-core/src/rtc.c \
-core/src/sdio.c \
+core/src/rng.c \
 core/src/spi.c \
 core/src/tim.c \
 core/src/stm32f4xx_it.c \
@@ -78,7 +78,7 @@ core/src/messaging.cpp
 
 # ASM sources
 ASM_SOURCES =  \
-startup_stm32f407xx.s
+startup_stm32f405xx.s
 
 include $(HALPATH)/stm32hal.mk
 include $(USBDEVPATH)/usbdev.mk
@@ -164,7 +164,7 @@ AS_INCLUDES += $(foreach dir, $(AS_INCLUDES_DIRS_EXPANDED), -I$(dir))
 # compile gcc flags
 ARM_ASFLAGS = $(MCU) $(ARM_AS_DEFS) $(AS_INCLUDES) $(OPT) -fdata-sections -ffunction-sections -fno-common
 
-ARM_CFLAGS = $(MCU) $(ARM_C_DEFS) $(C_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections -fno-common
+ARM_CFLAGS = $(MCU) $(ARM_C_DEFS) $(C_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections -fno-common -fstack-usage
 
 
 

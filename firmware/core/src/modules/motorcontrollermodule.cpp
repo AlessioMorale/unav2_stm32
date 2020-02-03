@@ -87,7 +87,7 @@ void MotorControllerModule::moduleThreadStart() {
             // pubAdcValue.publish(&adcValue);
           } else {
           }
-          if (HAL_ADC_Start_DMA(&hadc2, (uint32_t *)dmaBuffer, 4) != HAL_OK) {
+          if (HAL_ADC_Start_DMA(&hadc3, (uint32_t *)dmaBuffer, 4) != HAL_OK) {
             /* Start Conversation Error */
             Error_Handler();
           }

@@ -26,7 +26,7 @@ private:
   float dt;
   unav::controls::PID pidControllers[MOTORS_COUNT];
   bool MotorEnabled;
-  const uint32_t Channels[MOTORS_COUNT] = MOTOR_CUR_ADC2_ARRAY_OF_CHANNELS;
+  const uint32_t Channels[MOTORS_COUNT + 1] = MOTOR_CUR_ADC3_ARRAY_OF_CHANNELS;
   const uint32_t AdcSamplingTime = ADC_SAMPLETIME_15CYCLES;
 #define ConversionPerChannel 1
   volatile uint16_t adcConversionBuffer[MOTORS_COUNT * ConversionPerChannel];

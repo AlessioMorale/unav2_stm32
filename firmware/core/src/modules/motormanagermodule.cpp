@@ -13,6 +13,7 @@
 #include <modules/rosnodemodule.h>
 #include <stm32f4xx.h>
 #include <timers.h>
+#include <leds.h>
 namespace unav::modules {
 #define MAX_TIMEOUT 40
 volatile static bool commandUpdated = false;
@@ -29,6 +30,10 @@ void MotorManagerModule::initialize() {
   disableDrivers();
   subscribe(MotorManagerModule::ModuleMessageId);
   BaseRosModule::initializeTask(osPriority::osPriorityAboveNormal, 1024);
+
+  HAL_TIM_Encoder_Start(&TIM_ENC1, TIM_CHANNEL_ALL);
+  HAL_TIM_Encoder_Start(&TIM_ENC2, TIM_CHANNEL_ALL);
+
 }
 
 void MotorManagerModule::moduleThreadStart() {
@@ -55,6 +60,7 @@ void MotorManagerModule::moduleThreadStart() {
   }
   const uint32_t motor_channels[MOTORS_COUNT] TIM_MOT_ARRAY_OF_CHANNELS;
 
+
   while (true) {
     uint32_t motoroutput[MOTORS_COUNT]{TIM_MOT_PERIOD_ZERO};
 
@@ -68,7 +74,7 @@ void MotorManagerModule::moduleThreadStart() {
     }
 
     if(timeout_counter>MAX_TIMEOUT){
-      mode = jointcommand_mode_t::failsafe;
+      mode = jointcommand_mode_t::disabled;
     }
 
     if (mode > jointcommand_mode_t::disabled) {
@@ -78,6 +84,7 @@ void MotorManagerModule::moduleThreadStart() {
       {
         enableDrivers();
         drivers_enabled = true;
+        leds_setPattern(LED_ACTIVE, &leds_pattern_fast);
       }
       message_t *js = prepareMessage();
       jointstate_content_t *jointstate = &js->jointstate;
@@ -144,6 +151,7 @@ void MotorManagerModule::moduleThreadStart() {
   }
   else {
     if(drivers_enabled){
+	  leds_setPattern(LED_ACTIVE, &leds_pattern_off);
       disableDrivers();
       drivers_enabled = false;
     }
@@ -155,12 +163,11 @@ void MotorManagerModule::moduleThreadStart() {
 } // namespace unav::modules
 
 void MotorManagerModule::enableDrivers(){
-  HAL_TIM_MspPostInit(&TIM_MOT);
-  HAL_TIM_Base_Start(&TIM_MOT);
-  HAL_TIM_PWM_Start(&TIM_MOT, TIM_MOT1_CH);
-  HAL_TIMEx_PWMN_Start(&TIM_MOT, TIM_MOT1_CH);
-  HAL_TIM_PWM_Start(&TIM_MOT, TIM_MOT2_CH);
-  HAL_TIMEx_PWMN_Start(&TIM_MOT, TIM_MOT2_CH);
+  TimInit();
+  HAL_TIM_PWM_Start(&TIM_MOT, TIM_CHANNEL_2);
+  HAL_TIMEx_PWMN_Start(&TIM_MOT, TIM_CHANNEL_2);
+  HAL_TIM_PWM_Start(&TIM_MOT, TIM_CHANNEL_3);
+  HAL_TIMEx_PWMN_Start(&TIM_MOT, TIM_CHANNEL_3);
   __HAL_TIM_SET_COMPARE(&TIM_MOT, TIM_MOT1_CH, TIM_MOT_PERIOD_ZERO);
   __HAL_TIM_SET_COMPARE(&TIM_MOT, TIM_MOT2_CH, TIM_MOT_PERIOD_ZERO);
 }

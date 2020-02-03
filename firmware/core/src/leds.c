@@ -2,20 +2,30 @@
 #include <leds_hal.h>
 #include <timing.h>
 
-const leds_pattern_t leds_pattern_slowblink = {
+const leds_pattern_t leds_pattern_slow = {
     2,
     {
-        {.duration = 900, .brightness = 0},   //
         {.duration = 100, .brightness = 255}, //
+        {.duration = 900, .brightness = 0},   //
     }                                         //
 };
 
-const leds_pattern_t leds_pattern_fastblink = {
+const leds_pattern_t leds_pattern_fast = {
     2,
     {
-        {.duration = 450, .brightness = 0},  //
         {.duration = 50, .brightness = 255}, //
+        {.duration = 450, .brightness = 0},  //
     }                                        //
+};
+
+const leds_pattern_t leds_pattern_doublefast = {
+	4,
+	{
+		{.duration = 50, .brightness = 255}, //
+		{.duration = 150, .brightness = 0},  //
+		{.duration = 50, .brightness = 255}, //
+		{.duration = 750, .brightness = 0},  //
+	}
 };
 
 const leds_pattern_t leds_pattern_off = {
@@ -32,7 +42,7 @@ const leds_pattern_t leds_pattern_on = {
     }                                          //
 };
 
-const leds_pattern_t leds_pattern_singlefastblink = {
+const leds_pattern_t leds_pattern_blink_singlefast = {
     3,
     {
         {.duration = 450, .brightness = 0},  //
@@ -41,7 +51,7 @@ const leds_pattern_t leds_pattern_singlefastblink = {
     }                                        //
 };
 
-const leds_pattern_t leds_pattern_doublefastblink = {
+const leds_pattern_t leds_pattern_blink_doublefast = {
     5,
     {
         {.duration = 450, .brightness = 0},  //

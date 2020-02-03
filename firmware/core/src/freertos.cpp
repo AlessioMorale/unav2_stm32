@@ -123,8 +123,9 @@ extern "C" void StartDefaultTask(void const *argument) {
   /* init code for USB_DEVICE */
   MX_USB_DEVICE_Init();
   leds_init();
-  //leds_setPattern(0, &leds_pattern_slowblink);
-  leds_setPattern(0, &leds_pattern_slowblink);
+  leds_setPattern(0, &leds_pattern_doublefast);
+  leds_setPattern(1, &leds_pattern_off);
+  leds_setPattern(2, &leds_pattern_off);
 
   /* USER CODE BEGIN StartDefaultTask */
   TickType_t c = xTaskGetTickCount();

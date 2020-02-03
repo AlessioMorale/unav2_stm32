@@ -2,12 +2,10 @@ stm32libsrc = \
 $(HALPATH)/Src/stm32f4xx_hal_pcd.c \
 $(HALPATH)/Src/stm32f4xx_hal_pcd_ex.c \
 $(HALPATH)/Src/stm32f4xx_ll_usb.c \
+$(HALPATH)/Src/stm32f4xx_hal_crc.c \
 $(HALPATH)/Src/stm32f4xx_hal_i2c.c \
 $(HALPATH)/Src/stm32f4xx_hal_i2c_ex.c \
-$(HALPATH)/Src/stm32f4xx_hal_rtc.c \
-$(HALPATH)/Src/stm32f4xx_hal_rtc_ex.c \
-$(HALPATH)/Src/stm32f4xx_ll_sdmmc.c \
-$(HALPATH)/Src/stm32f4xx_hal_mmc.c \
+$(HALPATH)/Src/stm32f4xx_hal_rng.c \
 $(HALPATH)/Src/stm32f4xx_hal_spi.c \
 $(HALPATH)/Src/stm32f4xx_hal_tim.c \
 $(HALPATH)/Src/stm32f4xx_hal_tim_ex.c \

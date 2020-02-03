@@ -52,3 +52,4 @@ CMakeLists.txt
 */uNav_CppUTest_tests
 */uNav_CppUTest_tests.txt
 **/tests.d
+/.metadata/

@@ -20,18 +20,17 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-#include "adc.h"
 #include "cmsis_os.h"
+#include "adc.h"
+#include "crc.h"
 #include "dma.h"
-#include "gpio.h"
 #include "i2c.h"
-#include "rtc.h"
-#include "sdio.h"
+#include "rng.h"
 #include "spi.h"
 #include "tim.h"
 #include "usart.h"
 #include "usb_device.h"
-
+#include "gpio.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -108,7 +107,8 @@ int main(void) {
   HAL_Init();
 
   /* USER CODE BEGIN Init */
-
+  MX_GPIO_Init();
+  HAL_GPIO_WritePin(O_PWR_REG_EN_GPIO_Port, O_PWR_REG_EN_Pin, O_PWR_EN_STATUS_ENABLE);
   /* USER CODE END Init */
 
   /* Configure the system clock */
@@ -122,30 +122,35 @@ int main(void) {
   MX_GPIO_Init();
   MX_DMA_Init();
   MX_ADC1_Init();
-  MX_ADC2_Init();
-  MX_I2C1_Init();
-  MX_RTC_Init();
-  // MX_SDIO_SD_Init();
+  MX_ADC3_Init();
+  MX_I2C2_Init();
+  MX_RNG_Init();
   MX_SPI1_Init();
   MX_TIM1_Init();
+  MX_TIM2_Init();
   MX_TIM3_Init();
   MX_TIM4_Init();
-  MX_TIM9_Init();
-  MX_TIM12_Init();
-  MX_USART1_UART_Init();
-  MX_USART2_UART_Init();
   MX_TIM8_Init();
+  //MX_TIM13_Init();
+  //MX_TIM14_Init();
+  MX_UART5_Init();
+  MX_USART1_UART_Init();
+  MX_CRC_Init();
+  MX_DMA_Init();
   /* USER CODE BEGIN 2 */
 
-  HAL_TIM_Encoder_Start(&TIM_ENC1, TIM_CHANNEL_ALL);
-  HAL_TIM_Encoder_Start(&TIM_ENC2, TIM_CHANNEL_ALL);
-
   timing_Init();
-  HAL_GPIO_WritePin(O_PWR_EN_GPIO_Port, O_PWR_EN_Pin, O_PWR_EN_STATUS_ENABLE);
-  HAL_GPIO_WritePin(O_PWR_MOT_EN_GPIO_Port, O_PWR_MOT_EN_Pin,
-                    O_PWR_MOT_EN_STATUS_ENABLE);
+  HAL_GPIO_WritePin(O_PWR_REG_EN_GPIO_Port, O_PWR_REG_EN_Pin, O_PWR_EN_STATUS_ENABLE);
   /* USER CODE END 2 */
+  FLASH_OBProgramInitTypeDef ob;
+  HAL_FLASHEx_OBGetConfig(&ob);
 
+  if(ob.BORLevel != OB_BOR_LEVEL3){
+	  HAL_FLASH_Unlock();
+	  ob.BORLevel = OB_BOR_LEVEL3;
+	  HAL_FLASHEx_OBProgram(&ob);
+	  HAL_FLASH_Lock();
+  }
   /* Call init function for freertos objects (in freertos.c) */
   MX_FREERTOS_Init();
 
@@ -165,48 +170,43 @@ int main(void) {
 }
 
 /**
- * @brief System Clock Configuration
- * @retval None
- */
-void SystemClock_Config(void) {
+  * @brief System Clock Configuration
+  * @retval None
+  */
+void SystemClock_Config(void)
+{
   RCC_OscInitTypeDef RCC_OscInitStruct = {0};
   RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
-  RCC_PeriphCLKInitTypeDef PeriphClkInitStruct = {0};
 
-  /** Configure the main internal regulator output voltage
-   */
+  /** Configure the main internal regulator output voltage 
+  */
   __HAL_RCC_PWR_CLK_ENABLE();
   __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
-  /** Initializes the CPU, AHB and APB busses clocks
-   */
-  RCC_OscInitStruct.OscillatorType =
-      RCC_OSCILLATORTYPE_HSE | RCC_OSCILLATORTYPE_LSE;
+  /** Initializes the CPU, AHB and APB busses clocks 
+  */
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
   RCC_OscInitStruct.HSEState = RCC_HSE_ON;
-  RCC_OscInitStruct.LSEState = RCC_LSE_ON;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
   RCC_OscInitStruct.PLL.PLLM = 8;
   RCC_OscInitStruct.PLL.PLLN = 336;
   RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
   RCC_OscInitStruct.PLL.PLLQ = 7;
-  if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK) {
+  if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
+  {
     Error_Handler();
   }
-  /** Initializes the CPU, AHB and APB busses clocks
-   */
-  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_SYSCLK |
-                                RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2;
+  /** Initializes the CPU, AHB and APB busses clocks 
+  */
+  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
+                              |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
   RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
   RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV4;
   RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV2;
 
-  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_5) != HAL_OK) {
-    Error_Handler();
-  }
-  PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_RTC;
-  PeriphClkInitStruct.RTCClockSelection = RCC_RTCCLKSOURCE_LSE;
-  if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK) {
+  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_5) != HAL_OK)
+  {
     Error_Handler();
   }
 }

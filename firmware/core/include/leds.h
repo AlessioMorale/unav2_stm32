@@ -20,12 +20,13 @@ typedef struct {
   uint32_t intervalIndex; // current interval index
 } leds_status_t;
 
-extern const leds_pattern_t leds_pattern_slowblink;
-extern const leds_pattern_t leds_pattern_fastblink;
+extern const leds_pattern_t leds_pattern_slow;
+extern const leds_pattern_t leds_pattern_fast;
+extern const leds_pattern_t leds_pattern_doublefast;
 extern const leds_pattern_t leds_pattern_off;
 extern const leds_pattern_t leds_pattern_on;
-extern const leds_pattern_t leds_pattern_singlefastblink;
-extern const leds_pattern_t leds_pattern_doublefastblink;
+extern const leds_pattern_t leds_pattern_blink_singlefast;
+extern const leds_pattern_t leds_pattern_blink_doublefast;
 
 extern leds_status_t leds_status[];
 
