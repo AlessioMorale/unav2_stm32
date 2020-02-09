@@ -6,7 +6,8 @@ float Timer::elapsed() {
 }
 
 float Timer::interval() {
+  auto ret = elapsed();
   lastTime = timing_getRaw();
-  return elapsed();
+  return ret;
 }
 } // namespace unav::utils

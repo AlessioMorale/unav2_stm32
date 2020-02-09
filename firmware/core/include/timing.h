@@ -1,11 +1,7 @@
 #ifndef TIMING_H
 #define TIMING_H
 #ifdef __cplusplus
-#include <atomic>
-using namespace std;
 extern "C" {
-#else
-#include <stdatomic.h>
 #endif
 #include "stm32f4xx_hal.h"
 
@@ -20,7 +16,9 @@ inline static uint32_t timing_getUsSince(const rawtime_t rawStart) {
   return (rawNow - rawStart) / us_ticks;
 }
 
-uint32_t timing_getUs();
+inline static uint32_t timing_getUs(){
+	return timing_getRaw() / us_ticks;
+}
 
 inline static uint32_t timing_getMs()
 {
