@@ -1,5 +1,8 @@
-#include <main.h>
+#include <consts.h>
+#include<stdint.h>
+#include<stdbool.h>
 #pragma once
+
 namespace unav {
 
 enum class message_types_t : int32_t {
@@ -191,5 +194,21 @@ typedef struct _generic_message {
     motorcontrol_content_t motorcontrol;
   };
 } message_t;
+
+#define CONFIGURATION_ENTRIES_TABLE(ENTRY) \
+  ENTRY(pidconfig, 0) \
+  ENTRY(bridgeconfig, 1) \
+  ENTRY(encoderconfig, 2) \
+  ENTRY(limitsconfig, 3) \
+  ENTRY(mechanicalconfig, 4) \
+  ENTRY(operationconfig, 5) \
+  ENTRY(safetyconfig, 6) \
+  ENTRY(motorcontrol, 7)
+
+#define CONFIGURATION_ENTRY_EXPAND_ENUM(name, index) name = index,
+
+enum class ConfigurationMessageTypes_t : uint8_t{
+  CONFIGURATION_ENTRIES_TABLE(CONFIGURATION_ENTRY_EXPAND_ENUM)
+} ;
 
 } // namespace unav

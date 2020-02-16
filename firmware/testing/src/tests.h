@@ -1,1 +1,1 @@
-/// IMPORT_TEST_GROUP(dummytest);
+IMPORT_TEST_GROUP(ConfigurationChecks);
