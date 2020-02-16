@@ -55,3 +55,6 @@ CMakeLists.txt
 /.metadata/
 hardware_proto2
 template
+.cproject
+core
+.settings
