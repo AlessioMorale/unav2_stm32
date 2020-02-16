@@ -56,5 +56,5 @@ CMakeLists.txt
 hardware_proto2
 template
 .cproject
-core
 .settings
+objs
