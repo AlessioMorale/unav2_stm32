@@ -1,5 +1,6 @@
-#include <drivers/lm75.h>
 #include "i2c.h"
+
+#include <drivers/lm75.h>
 
 namespace unav::drivers {
 
@@ -14,18 +15,18 @@ Lm75::Lm75(I2C_HandleTypeDef *port, uint8_t address)
 void Lm75::setup() {
   //
 }
-int32_t Lm75::getTemperature() {
+float Lm75::getTemperature() {
   twoBytesConverter_t Result;
-  uint32_t temperature;
+  float temperature;
   uint8_t data[2];
-  auto status =
-      HAL_I2C_Mem_Read(i2cport, (uint16_t)address, (uint16_t)LM75_TEMP,
-                       I2C_MEMADD_SIZE_8BIT, data, 2, 10);
+  auto status = HAL_I2C_Mem_Read(i2cport, (uint16_t)address,
+                                 (uint16_t)Lm75Registers::temperature,
+                                 I2C_MEMADD_SIZE_8BIT, data, 2, 10);
   Result.Bytes[1] = data[0];
   Result.Bytes[0] = data[1];
   Result.Word /= 128;
 
-  temperature = (Result.Word * 10u) / LM75_TEMP_CORR;
+  temperature = (float)Result.Word * temperatureConversionValue;
   return temperature;
 }
-}  // namespace unav::drivers
+} // namespace unav::drivers
