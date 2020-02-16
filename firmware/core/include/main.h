@@ -143,7 +143,7 @@ void Error_Handler(void) __attribute__((noreturn));
 #define MOTOR_CUR_ADC3_CH2 ADC_CHANNEL_11
 #define MOTOR_CUR_ADC3_REF ADC_CHANNEL_12
 #define MOTOR_CUR_ADC3_ARRAY_OF_CHANNELS                                       \
-  { MOTOR_CUR_ADC3_CH1, MOTOR_CUR_ADC3_CH2, MOTOR_CUR_ADC3_REF}
+  { MOTOR_CUR_ADC3_CH1, MOTOR_CUR_ADC3_CH2, MOTOR_CUR_ADC3_REF }
 #define MOTOR_CUR_ADC hadc3
 /* Definition for TIMx clock resources */
 #define MOTOR_CUR_ADC_TIMx TIM4
@@ -195,10 +195,14 @@ void Error_Handler(void) __attribute__((noreturn));
 #define INSTRUMENTATION_MAX_COUNTERS 10
 
 /* Leds */
-#define LED_ARRAY_OF_GPIO {O_LED1_GPIO_Port,O_LED2_GPIO_Port, O_LED3_GPIO_Port}
-#define LED_ARRAY_OF_PIN { O_LED1_Pin, O_LED2_Pin, O_LED3_Pin} 
-#define LED_ARRAY_OF_STATES_ON {GPIO_PIN_RESET, GPIO_PIN_RESET, GPIO_PIN_RESET} 
-#define LED_ARRAY_OF_STATES_OFF {GPIO_PIN_SET, GPIO_PIN_SET, GPIO_PIN_SET }
+#define LED_ARRAY_OF_GPIO                                                      \
+  { O_LED1_GPIO_Port, O_LED2_GPIO_Port, O_LED3_GPIO_Port }
+#define LED_ARRAY_OF_PIN                                                       \
+  { O_LED1_Pin, O_LED2_Pin, O_LED3_Pin }
+#define LED_ARRAY_OF_STATES_ON                                                 \
+  { GPIO_PIN_RESET, GPIO_PIN_RESET, GPIO_PIN_RESET }
+#define LED_ARRAY_OF_STATES_OFF                                                \
+  { GPIO_PIN_SET, GPIO_PIN_SET, GPIO_PIN_SET }
 
 #define NUM_LEDS 3
 #define LED_HEARTBEAT 0

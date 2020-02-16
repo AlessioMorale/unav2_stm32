@@ -30,10 +30,6 @@ void MotorManagerModule::initialize() {
   disableDrivers();
   subscribe(MotorManagerModule::ModuleMessageId);
   BaseRosModule::initializeTask(osPriority::osPriorityAboveNormal, 1024);
-
-  HAL_TIM_Encoder_Start(&TIM_ENC1, TIM_CHANNEL_ALL);
-  HAL_TIM_Encoder_Start(&TIM_ENC2, TIM_CHANNEL_ALL);
-
 }
 
 void MotorManagerModule::moduleThreadStart() {
@@ -46,7 +42,6 @@ void MotorManagerModule::moduleThreadStart() {
 
   int8_t pid_rate_counter = 0;
   bool publish_pidstatus = false;
-  // assigning arrays to the message
 
   const float alphaMotor = motLPF > 0 ? LPF_ALPHA(nominalDt, motLPF) : 1.0f;
 
