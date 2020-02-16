@@ -122,8 +122,7 @@ void Error_Handler(void) __attribute__((noreturn));
 #define TIM_AUX2_PWM_Pin GPIO_PIN_9
 #define TIM_AUX2_PWM_GPIO_Port GPIOB
 /* USER CODE BEGIN Private defines */
-#define MOTORS_COUNT 2
-
+#include "consts.h"
 /* Definition for ADCx clock resources */
 #define MOTOR_CUR_ADCx ADC2
 #define MOTOR_CUR_ADCx_CLK_ENABLE() __HAL_RCC_ADC2_CLK_ENABLE()
@@ -196,7 +195,7 @@ extern I2C_HandleTypeDef hi2c2;
 #define O_PWR_MOT_EN_STATUS_ENABLE GPIO_PIN_SET
 #define O_PWR_MOT_EN_STATUS_DISABLE GPIO_PIN_RESET
 
-#define INSTRUMENTATION_MAX_COUNTERS 10
+
 
 /* Leds */
 #define LED_ARRAY_OF_GPIO                                                      \
@@ -208,7 +207,6 @@ extern I2C_HandleTypeDef hi2c2;
 #define LED_ARRAY_OF_STATES_OFF                                                \
   { GPIO_PIN_SET, GPIO_PIN_SET, GPIO_PIN_SET }
 
-#define NUM_LEDS 3
 #define LED_HEARTBEAT 0
 #define LED_ACTIVE 1
 #define LED_WAR_ERROR 2

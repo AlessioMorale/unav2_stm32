@@ -208,6 +208,8 @@ ARM_CXXFLAGS 				+= -Wshadow
 ARM_CXXFLAGS 				+= -Wctor-dtor-privacy
 ARM_CXXFLAGS 				+= -Wstrict-null-sentinel
 
+CPPUTEST_CXXFLAGS   += -std=c++17
+
 #######################################
 # LDFLAGS
 #######################################
@@ -234,6 +236,7 @@ SRC_DIRS = \
 	src/Platforms/$(CPP_PLATFORM)
 
 SRC_FILES = \
+	core/src/modules/system/systemhealthchecker.cpp \
 
 
 TEST_SRC_DIRS = \
@@ -262,7 +265,7 @@ include $(CPPUTEST_HOME)/build/MakefileWorker.mk
 
 
 # default action: build all
-all: $(BUILD_DIR)/$(TARGET).elf $(BUILD_DIR)/$(TARGET).hex $(BUILD_DIR)/$(TARGET).bin test
+all: $(BUILD_DIR)/$(TARGET).elf $(BUILD_DIR)/$(TARGET).hex $(BUILD_DIR)/$(TARGET).bin vtest
 
 #######################################
 # build the application
