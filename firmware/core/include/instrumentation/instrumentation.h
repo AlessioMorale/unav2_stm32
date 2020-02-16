@@ -6,12 +6,14 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+
 typedef struct {
   const char *key;
   int32_t max;
   int32_t min;
   int32_t value;
   uint32_t lastUpdateTS;
+  uint32_t temp;
 } perf_counter_t;
 
 typedef void *counter_t;
@@ -19,28 +21,33 @@ typedef void *counter_t;
 extern perf_counter_t *perf_counters;
 extern int8_t last_used_perf_counter;
 
+static inline void updateStats(perf_counter_t *counter){
+  const int32_t value = counter->value;
+  counter->max--;
+  if (value > counter->max) {
+    counter->max = value;
+  }
+
+  counter->min++;
+  if (value < counter->min) {
+    counter->min = value;
+  }
+  counter->lastUpdateTS = timing_getUs();
+}
+
 /**
  * Update a counter with a new value
  * @param counter_handle handle of the counter to update @see
  * Instrumentation_SearchCounter @see Instrumentation_CreateCounter
  * @param newValue the updated value.
  */
-static inline void instrumentation_setCounter(counter_t counter_handle,
+static void instrumentation_setCounter(counter_t counter_handle,
                                               int32_t newValue) {
   assert(perf_counters && counter_handle);
-  vPortEnterCritical();
   perf_counter_t *counter = (perf_counter_t *)counter_handle;
+
   counter->value = newValue;
-  counter->max--;
-  if (counter->value > counter->max) {
-    counter->max = counter->value;
-  }
-  counter->min++;
-  if (counter->value < counter->min) {
-    counter->min = counter->value;
-  }
-  counter->lastUpdateTS = timing_getUs();
-  vPortExitCritical();
+  updateStats(counter);
 }
 
 /**
@@ -49,13 +56,12 @@ static inline void instrumentation_setCounter(counter_t counter_handle,
  * @param counter_handle handle of the counter @see
  * Instrumentation_SearchCounter @see Instrumentation_CreateCounter
  */
+
 static inline void instrumentation_timedStart(counter_t counter_handle) {
   assert(perf_counters && counter_handle);
-  vPortEnterCritical();
   perf_counter_t *counter = (perf_counter_t *)counter_handle;
 
-  counter->lastUpdateTS = timing_getUs();
-  vPortExitCritical();
+  counter->temp = timing_getRaw();
 }
 
 /**
@@ -66,20 +72,10 @@ static inline void instrumentation_timedStart(counter_t counter_handle) {
  */
 static inline void instrumentation_timedEnd(counter_t counter_handle) {
   assert(perf_counters && counter_handle);
-  vPortEnterCritical();
   perf_counter_t *counter = (perf_counter_t *)counter_handle;
 
-  counter->value = (int32_t)(timing_getUs() - counter->lastUpdateTS);
-  counter->max--;
-  if (counter->value > counter->max) {
-    counter->max = counter->value;
-  }
-  counter->min++;
-  if (counter->value < counter->min) {
-    counter->min = counter->value;
-  }
-  counter->lastUpdateTS = timing_getUs();
-  vPortExitCritical();
+  counter->value = (int32_t)(timing_getUsSince(counter->temp));
+  updateStats(counter);
 }
 
 /**
@@ -90,21 +86,14 @@ static inline void instrumentation_timedEnd(counter_t counter_handle) {
 static inline void instrumentation_trackPeriod(counter_t counter_handle) {
   assert(perf_counters && counter_handle);
   perf_counter_t *counter = (perf_counter_t *)counter_handle;
-  if (counter->lastUpdateTS != 0) {
-    vPortEnterCritical();
-    uint32_t period = timing_getUs() - counter->lastUpdateTS;
-    counter->value = (counter->value * 15 + period) / 16;
-    counter->max--;
-    if ((int32_t)period > counter->max) {
-      counter->max = period;
-    }
-    counter->min++;
-    if ((int32_t)period < counter->min) {
-      counter->min = period;
-    }
-    vPortExitCritical();
+  if (counter->temp != 0) {
+
+	uint32_t period = timing_getUsSince(counter->temp);
+	counter->temp = timing_getRaw();
+
+	counter->value = (counter->value * 15 + period) / 16;
+    updateStats(counter);
   }
-  counter->lastUpdateTS = timing_getUs();
 }
 
 /**
@@ -116,19 +105,10 @@ static inline void instrumentation_trackPeriod(counter_t counter_handle) {
 static inline void instrumentation_incrementCounter(counter_t counter_handle,
                                                     int32_t increment) {
   assert(perf_counters && counter_handle);
-  vPortEnterCritical();
   perf_counter_t *counter = (perf_counter_t *)counter_handle;
+
   counter->value += increment;
-  counter->max--;
-  if (counter->value > counter->max) {
-    counter->max = counter->value;
-  }
-  counter->min++;
-  if (counter->value < counter->min) {
-    counter->min = counter->value;
-  }
-  counter->lastUpdateTS = timing_getUs();
-  vPortExitCritical();
+  updateStats(counter);
 }
 
 /**
