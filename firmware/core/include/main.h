@@ -158,7 +158,11 @@ void Error_Handler(void) __attribute__((noreturn));
 /* Definition for ADCx's NVIC */
 #define MOTOR_CUR_ADC_DMA_IRQn DMA2_Stream2_IRQn
 #define MOTOR_CUR_ADC_DMA_IRQHandler DMA2_Stream2_IRQHandler
-
+/* I2C */
+extern I2C_HandleTypeDef hi2c2;
+#define I2C_PORT hi2c2
+#define TEMP_SENSOR_ADDRESS (0x48 << 1)
+#define POWER_MONITOR_ADDRESS (0x40 << 1)
 /* Definition for timers */
 #define TIM_ENC1 htim1
 #define TIM_ENC2 htim2

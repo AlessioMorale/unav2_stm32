@@ -69,8 +69,10 @@ core/src/modules/baserosmodule.cpp \
 core/src/modules/rosnodemodule.cpp \
 core/src/modules/motormanagermodule.cpp \
 core/src/modules/motorcontrollermodule.cpp \
+core/src/modules/systemmodule.cpp \
 core/src/controls/pid.cpp \
 core/src/drivers/encoder.cpp \
+core/src/driver/lm75.cpp \
 core/src/utils/timer.cpp \
 core/src/messaging.cpp
 
