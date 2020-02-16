@@ -21,7 +21,6 @@
 /* Includes ------------------------------------------------------------------*/
 #include "cmsis_os.h"
 #include "main.h"
-#include "tim.h"
 #include "timing.h"
 #include <FreeRTOS.h>
 #include <leds.h>

@@ -268,6 +268,24 @@ include $(CPPUTEST_HOME)/build/MakefileWorker.mk
 all: $(BUILD_DIR)/$(TARGET).elf $(BUILD_DIR)/$(TARGET).hex $(BUILD_DIR)/$(TARGET).bin vtest
 
 #######################################
+# precompiled headers
+#######################################
+PRECOMPILED_H := precompiled.h
+PRECOMPILED_H_OBJ := $(BUILD_DIR)/$(PRECOMPILED_H).gch
+
+$(BUILD_DIR)/%.h.gch: $(PRECOMPILED_H) | $(BUILD_DIR)
+	$(ARMCPPC) -c $(ARM_CFLAGS) -Wa,-a,-ad,-alms=$(BUILD_DIR)/$(notdir $(<:.c=.lst)) $< -o $@
+
+PRECOMPILED_CPP_H := precompiledcpp.h
+PRECOMPILED_CPP_H_OBJ := $(BUILD_DIR)/$(PRECOMPILED_CPP_H).gch
+
+$(BUILD_DIR)/%cpp.h.gch: $(PRECOMPILED_CPP_H) | $(BUILD_DIR)
+	$(ARMCPPC) -c $(ARM_CFLAGS) -Wa,-a,-ad,-alms=$(BUILD_DIR)/$(notdir $(<:.c=.lst)) $< -o $@
+
+#%.o : %.c | 
+#	$(ARMCC) $(ARM_CFLAGS) -include $(PRECOMPILED_H) -c -o $@ $<
+
+#######################################
 # build the application
 #######################################
 # list of objects
@@ -281,11 +299,11 @@ vpath %.cpp $(sort $(dir $(CPP_SOURCES)))
 OBJECTS += $(addprefix $(BUILD_DIR)/,$(notdir $(ASM_SOURCES:.s=.o)))
 vpath %.s $(sort $(dir $(ASM_SOURCES)))
 
-$(BUILD_DIR)/%.o: %.c Makefile | $(BUILD_DIR) 
-	$(ARMCC) -c $(ARM_CFLAGS) -Wa,-a,-ad,-alms=$(BUILD_DIR)/$(notdir $(<:.c=.lst)) $< -o $@
+$(BUILD_DIR)/%.o: %.c Makefile | $(PRECOMPILED_H_OBJ) $(PRECOMPILED_CPP_H_OBJ)
+	$(ARMCC) -c $(ARM_CFLAGS) -include $(PRECOMPILED_H)  -Wa,-a,-ad,-alms=$(BUILD_DIR)/$(notdir $(<:.c=.lst)) $< -o $@
 
 $(BUILD_DIR)/%.o: %.cpp Makefile | $(BUILD_DIR) 
-	$(ARMCPPC) -c $(ARM_CXXFLAGS) -Wa,-a,-ad,-alms=$(BUILD_DIR)/$(notdir $(<:.cpp=.lst)) $< -o $@
+	$(ARMCPPC) -c $(ARM_CXXFLAGS) -include $(PRECOMPILED_CPP_H) -Wa,-a,-ad,-alms=$(BUILD_DIR)/$(notdir $(<:.cpp=.lst)) $< -o $@
 
 $(BUILD_DIR)/%.o: %.s Makefile | $(BUILD_DIR)
 	$(ARMAS) -c $(ARM_CFLAGS) $< -o $@
