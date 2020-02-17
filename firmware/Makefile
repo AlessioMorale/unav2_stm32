@@ -260,12 +260,12 @@ INCLUDE_DIRS +=	$(C_INCLUDE_DIRS)
 
 $(CPPUTEST_HOME)/lib/libCppUTest.a $(CPPUTEST_HOME)/lib/libCppUTestExt.a:
 	@echo Building CppUTest library
+	$(MAKE) -C $(CPPUTEST_HOME) -s clean
 	cd $(CPPUTEST_HOME) && ./autogen.sh
 	cd $(CPPUTEST_HOME) && ./configure > /dev/null
-	$(MAKE) -C $(CPPUTEST_HOME) -s
-	$(MAKE) -C $(CPPUTEST_HOME) -s check
+	$(MAKE) -C $(CPPUTEST_HOME) -s -j4
+	$(MAKE) -C $(CPPUTEST_HOME) -s -j4 check
 	@echo CppUTest library built
-	@echo -
 
 cpputest: $(CPPUTEST_HOME)/lib/libCppUTest.a
 
@@ -289,9 +289,6 @@ PRECOMPILED_CPP_H_OBJ := $(BUILD_DIR)/$(PRECOMPILED_CPP_H).gch
 
 $(BUILD_DIR)/%cpp.h.gch: $(PRECOMPILED_CPP_H) | $(BUILD_DIR)
 	$(ARMCPPC) -c $(ARM_CXXFLAGS) -Wa,-a,-ad,-alms=$(BUILD_DIR)/$(notdir $(<:.cpp=.lst)) $< -o $@
-
-#%.o : %.c | 
-#	$(ARMCC) $(ARM_CFLAGS) -include $(PRECOMPILED_H) -c -o $@ $<
 
 #######################################
 # build the application
