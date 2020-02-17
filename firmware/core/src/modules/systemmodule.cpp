@@ -10,8 +10,8 @@
 #include <stm32f4xx.h>
 namespace unav::modules {
 
-SystemModule::SystemModule()
-    : timer(), thermometer(&I2C_PORT, TEMP_SENSOR_ADDRESS) {}
+SystemModule::SystemModule() : thermometer(&I2C_PORT, TEMP_SENSOR_ADDRESS), timer() {
+}
 
 void SystemModule::initialize() {
   subscribe(SystemModule::ModuleMessageId);
@@ -39,7 +39,8 @@ void SystemModule::moduleThreadStart() {
   }
 }
 
-void SystemModule::setup() {}
+void SystemModule::setup() {
+}
 
 void SystemModule::checkMessages() {
   message_t *receivedMsg = nullptr;

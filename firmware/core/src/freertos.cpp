@@ -61,8 +61,9 @@ unav::modules::SystemModule systemModule;
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
-extern "C" void StartDefaultTask(void const *argument);
+extern "C" void StartDefaultTask(void const *argument) __attribute__((noreturn));
 extern "C" void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
+extern "C" void vApplicationIdleHook();
 
 void MX_USB_DEVICE_Init(void);
 
@@ -97,7 +98,7 @@ extern "C" void MX_FREERTOS_Init(void) {
   /* Create the thread(s) */
   /* definition and creation of defaultTask */
   osThreadDef(defaultTask, StartDefaultTask, osPriorityNormal, 0, 256);
-  defaultTaskHandle = osThreadCreate(osThread(defaultTask), NULL);
+  defaultTaskHandle = osThreadCreate(osThread(defaultTask), nullptr);
 
   rosnode.initialize();
   rosmotornode.initialize();

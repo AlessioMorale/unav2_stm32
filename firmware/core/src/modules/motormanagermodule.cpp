@@ -5,6 +5,7 @@
 #include "tim.h"
 #include <counters.h>
 #include <instrumentation/instrumentation_helper.h>
+#include <leds.h>
 #include <mathutils.h>
 #include <messages.h>
 #include <messaging.h>
@@ -13,18 +14,13 @@
 #include <modules/rosnodemodule.h>
 #include <stm32f4xx.h>
 #include <timers.h>
-#include <leds.h>
 namespace unav::modules {
 #define MAX_TIMEOUT 40
-volatile static bool commandUpdated = false;
-volatile static bool pidUpdated = false;
 
 MotorManagerModule::MotorManagerModule()
-    : encoders{unav::drivers::Encoder(&TIM_ENC1),
-               unav::drivers::Encoder(&TIM_ENC2)},
-      filteredEffort{0.0f}, mode{unav::jointcommand_mode_t::disabled},
-      cmd{0.0f}, pid_publish_rate{10}, pid_debug{false},
-      control_mode{motorcontrol_mode_t::disabled}, inverted_rotation{false} {}
+    : timer(), encoders{unav::drivers::Encoder(&TIM_ENC1), unav::drivers::Encoder(&TIM_ENC2)}, filteredEffort{0.0f}, mode{unav::jointcommand_mode_t::disabled},
+      wait{0}, nominalDt{0}, dt{0}, cmd{0.0f}, pid_publish_rate{10}, pid_debug{false}, control_mode{motorcontrol_mode_t::disabled}, inverted_rotation{false} {
+}
 
 void MotorManagerModule::initialize() {
   disableDrivers();
@@ -45,7 +41,7 @@ void MotorManagerModule::moduleThreadStart() {
 
   const float alphaMotor = motLPF > 0 ? LPF_ALPHA(nominalDt, motLPF) : 1.0f;
 
-  for (int32_t i = 0; i < MOTORS_COUNT; i++) {
+  for (uint32_t i = 0; i < MOTORS_COUNT; i++) {
     encoders[i].setup();
     encoders[i].setGear(1.0f);
     encoders[i].setCPR(11);
@@ -54,7 +50,6 @@ void MotorManagerModule::moduleThreadStart() {
     encoders[i].applyFilter(nominalDt, encLPF);
   }
   const uint32_t motor_channels[MOTORS_COUNT] TIM_MOT_ARRAY_OF_CHANNELS;
-
 
   while (true) {
     uint32_t motoroutput[MOTORS_COUNT]{TIM_MOT_PERIOD_ZERO};
@@ -68,15 +63,14 @@ void MotorManagerModule::moduleThreadStart() {
       }
     }
 
-    if(timeout_counter>MAX_TIMEOUT){
+    if (timeout_counter > MAX_TIMEOUT) {
       mode = jointcommand_mode_t::disabled;
     }
 
     if (mode > jointcommand_mode_t::disabled) {
       timeout_counter++;
 
-      if (!drivers_enabled)
-      {
+      if (!drivers_enabled) {
         enableDrivers();
         drivers_enabled = true;
         leds_setPattern(LED_ACTIVE, &leds_pattern_fast);
@@ -100,12 +94,11 @@ void MotorManagerModule::moduleThreadStart() {
       motorcontrol->mode = control_mode;
       motorcontrol->type = message_types_t::internal_motor_control;
 
-      for (int32_t i = 0; i < MOTORS_COUNT; i++) {
+      for (uint32_t i = 0; i < MOTORS_COUNT; i++) {
         const auto measuredSpeed = encoders[i].getVelocity();
         jointstate->vel[i] = measuredSpeed * inverted_rotation[i];
         auto effort = pidControllers[i].apply(cmd[i] * inverted_rotation[i], measuredSpeed, dt);
-        filteredEffort[i] =
-            alphaMotor * (effort - filteredEffort[i]) + filteredEffort[i];
+        filteredEffort[i] = alphaMotor * (effort - filteredEffort[i]) + filteredEffort[i];
         jointstate->eff[i] = filteredEffort[i] * inverted_rotation[i];
 
         auto a = fabsf(filteredEffort[i]);
@@ -116,9 +109,7 @@ void MotorManagerModule::moduleThreadStart() {
         // channel case.
         motorcontrol->command[i] = filteredEffort[i];
         // handle diagnostics and status reporting
-        motoroutput[i] = (uint32_t)(
-            TIM_MOT_PERIOD_ZERO +
-            (int32_t)(filteredEffort[i] * ((float)(TIM_MOT_PERIOD_MAX / 2))));
+        motoroutput[i] = (uint32_t)(TIM_MOT_PERIOD_ZERO + (int32_t)(filteredEffort[i] * ((float)(TIM_MOT_PERIOD_MAX / 2))));
 
         jointstate->pos[i] = encoders[i].getPosition() * inverted_rotation[i];
         if (pidstate) {
@@ -131,33 +122,32 @@ void MotorManagerModule::moduleThreadStart() {
           pidstate->i_min[i] = s.i_min;
           pidstate->d_term[i] = s.d_term;
           pidstate->timestep[i] = s.timestep;
+        }
+      }
+      PERF_TIMED_SECTION_START(perf_action_latency);
+      sendMessage(mc, MotorControllerModule::ModuleMessageId);
+      sendMessage(js, RosNodeModuleMessageId);
+      for (uint32_t i = 0; i < MOTORS_COUNT; i++) {
+        __HAL_TIM_SET_COMPARE(&TIM_MOT, motor_channels[i], motoroutput[i]);
+      }
+      if (pidstate) {
+        sendMessage(ps, RosNodeModuleMessageId);
+        pidstate = nullptr;
+      }
+    } else {
+      if (drivers_enabled) {
+        leds_setPattern(LED_ACTIVE, &leds_pattern_off);
+        disableDrivers();
+        drivers_enabled = false;
       }
     }
-    PERF_TIMED_SECTION_START(perf_action_latency);
-    sendMessage(mc, MotorControllerModule::ModuleMessageId);
-    sendMessage(js, RosNodeModuleMessageId);
-    for (int i = 0; i < MOTORS_COUNT; i++) {
-      __HAL_TIM_SET_COMPARE(&TIM_MOT, motor_channels[i], motoroutput[i]);
-    }
-    if (pidstate) {
-      sendMessage(ps, RosNodeModuleMessageId);
-      pidstate = nullptr;
-    }
-  }
-  else {
-    if(drivers_enabled){
-	  leds_setPattern(LED_ACTIVE, &leds_pattern_off);
-      disableDrivers();
-      drivers_enabled = false;
-    }
-  }
 
-  checkMessages();
-  vTaskDelayUntil(&c, wait);
-}
+    checkMessages();
+    vTaskDelayUntil(&c, wait);
+  }
 } // namespace unav::modules
 
-void MotorManagerModule::enableDrivers(){
+void MotorManagerModule::enableDrivers() {
   TimInit();
   HAL_TIM_PWM_Start(&TIM_MOT, TIM_CHANNEL_2);
   HAL_TIMEx_PWMN_Start(&TIM_MOT, TIM_CHANNEL_2);
@@ -167,7 +157,7 @@ void MotorManagerModule::enableDrivers(){
   __HAL_TIM_SET_COMPARE(&TIM_MOT, TIM_MOT2_CH, TIM_MOT_PERIOD_ZERO);
 }
 
-void MotorManagerModule::disableDrivers(){
+void MotorManagerModule::disableDrivers() {
   GPIO_InitTypeDef GPIO_InitStruct = {0};
   GPIO_TypeDef *ports[] = TIM_MOT_ARRAY_OF_GPIOS;
   uint16_t pins[] = TIM_MOT_ARRAY_OF_PINS;
@@ -175,7 +165,7 @@ void MotorManagerModule::disableDrivers(){
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  for (int i = 0; i < (sizeof(ports) / sizeof(ports[0])); i++){
+  for (uint32_t i = 0; i < (sizeof(ports) / sizeof(ports[0])); i++) {
     HAL_GPIO_WritePin(ports[i], pins[i], GPIO_PIN_RESET);
     GPIO_InitStruct.Pin = pins[i];
     HAL_GPIO_Init(ports[i], &GPIO_InitStruct);
@@ -191,9 +181,9 @@ void MotorManagerModule::checkMessages() {
     switch (receivedMsg->type) {
     case message_types_t::inbound_JointCommand: {
       const jointcommand_content_t *jcmd = &receivedMsg->jointcommand;
-      for (int i = 0; i < MOTORS_COUNT; i++) {
+      for (uint32_t i = 0; i < MOTORS_COUNT; i++) {
         cmd[i] = jcmd->command[i];
-        if(fabsf(cmd[i]) > 0.0001){
+        if (fabsf(cmd[i]) > 0.0001) {
           timeout_counter = 0;
         }
       }
@@ -269,26 +259,21 @@ void MotorManagerModule::checkMessages() {
 }
 
 void MotorManagerModule::updatePidConfig(const pidconfig_content_t *cfg) {
-  for (int i = 0; i < MOTORS_COUNT; i++) {
-    pidControllers[i].setGains(cfg->vel_kp, cfg->vel_ki, cfg->vel_kd,
-                               cfg->vel_kaw);
+  for (uint32_t i = 0; i < MOTORS_COUNT; i++) {
+    pidControllers[i].setGains(cfg->vel_kp, cfg->vel_ki, cfg->vel_kd, cfg->vel_kaw);
   }
   updateTimings(cfg->vel_frequency);
 }
 
-void MotorManagerModule::updateEncoderConfig(
-    const encoderconfig_content_t *cfg) {
-  for (int i = 0; i < MOTORS_COUNT; i++) {
+void MotorManagerModule::updateEncoderConfig(const encoderconfig_content_t *cfg) {
+  for (uint32_t i = 0; i < MOTORS_COUNT; i++) {
     encoders[i].setCPR(cfg->cpr);
-    encoders[i].setSingleChannel(cfg->channels ==
-                                 encoderconfig_channels_t::one_channel);
+    encoders[i].setSingleChannel(cfg->channels == encoderconfig_channels_t::one_channel);
     encoders[i].setHasZIndex(cfg->has_z_index);
-    encoders[i].setIsEncoderAfterGear(cfg->position ==
-                                      encoderconfig_position_t::after_gear);
+    encoders[i].setIsEncoderAfterGear(cfg->position == encoderconfig_position_t::after_gear);
     encoders[i].setInverted(i == 0 ? cfg->invert0 : cfg->invert1);
   }
 }
-
 
 void MotorManagerModule::updateBridgeConfig(const bridgeconfig_content_t *cfg) {
 }
@@ -296,20 +281,15 @@ void MotorManagerModule::updateBridgeConfig(const bridgeconfig_content_t *cfg) {
 void MotorManagerModule::updateLimitsConfig(const limitsconfig_content_t *cfg) {
 }
 
-void MotorManagerModule::updateMechanicalConfig(
-    const mechanicalconfig_content_t *cfg) {
-  bool inverted[]{
-      cfg->rotation0, cfg->rotation1
-      };
-  for (int i = 0; i < MOTORS_COUNT; i++)
-  {
+void MotorManagerModule::updateMechanicalConfig(const mechanicalconfig_content_t *cfg) {
+  bool inverted[]{cfg->rotation0, cfg->rotation1};
+  for (uint32_t i = 0; i < MOTORS_COUNT; i++) {
     encoders[i].setGear(cfg->ratio);
     inverted_rotation[i] = inverted[i] ? -1.0 : 1.0;
   }
 }
 
-void MotorManagerModule::updateOperationConfig(
-    const operationconfig_content_t *cfg) {
+void MotorManagerModule::updateOperationConfig(const operationconfig_content_t *cfg) {
   pid_debug = cfg->pid_debug;
 }
 
@@ -317,7 +297,7 @@ void MotorManagerModule::updateSafetyConfig(const safetyconfig_content_t *cfg) {
 }
 
 void MotorManagerModule::updateTimings(const float frequency) {
-  if (mode == jointcommand_mode_t::disabled && frequency) {
+  if (mode == jointcommand_mode_t::disabled && (frequency > 0)) {
     wait = 1000 / frequency;
     if (wait < 4) {
       wait = 4;

@@ -30,9 +30,9 @@ namespace unav2_msgs
 
     JointState():
       stamp(),
-      position_length(0), position(NULL),
-      velocity_length(0), velocity(NULL),
-      effort_length(0), effort(NULL)
+      position_length(0), position(nullptr),
+      velocity_length(0), velocity(nullptr),
+      effort_length(0), effort(nullptr)
     {
     }
 
@@ -116,10 +116,10 @@ namespace unav2_msgs
       this->stamp.nsec |= ((uint32_t) (*(inbuffer + offset + 2))) << (8 * 2);
       this->stamp.nsec |= ((uint32_t) (*(inbuffer + offset + 3))) << (8 * 3);
       offset += sizeof(this->stamp.nsec);
-      uint32_t position_lengthT = ((uint32_t) (*(inbuffer + offset))); 
-      position_lengthT |= ((uint32_t) (*(inbuffer + offset + 1))) << (8 * 1); 
-      position_lengthT |= ((uint32_t) (*(inbuffer + offset + 2))) << (8 * 2); 
-      position_lengthT |= ((uint32_t) (*(inbuffer + offset + 3))) << (8 * 3); 
+      uint32_t position_lengthT = ((uint32_t) (*(inbuffer + offset)));
+      position_lengthT |= ((uint32_t) (*(inbuffer + offset + 1))) << (8 * 1);
+      position_lengthT |= ((uint32_t) (*(inbuffer + offset + 2))) << (8 * 2);
+      position_lengthT |= ((uint32_t) (*(inbuffer + offset + 3))) << (8 * 3);
       offset += sizeof(this->position_length);
       if(position_lengthT > position_length)
         this->position = (float*)realloc(this->position, position_lengthT * sizeof(float));
@@ -138,10 +138,10 @@ namespace unav2_msgs
       offset += sizeof(this->st_position);
         memcpy( &(this->position[i]), &(this->st_position), sizeof(float));
       }
-      uint32_t velocity_lengthT = ((uint32_t) (*(inbuffer + offset))); 
-      velocity_lengthT |= ((uint32_t) (*(inbuffer + offset + 1))) << (8 * 1); 
-      velocity_lengthT |= ((uint32_t) (*(inbuffer + offset + 2))) << (8 * 2); 
-      velocity_lengthT |= ((uint32_t) (*(inbuffer + offset + 3))) << (8 * 3); 
+      uint32_t velocity_lengthT = ((uint32_t) (*(inbuffer + offset)));
+      velocity_lengthT |= ((uint32_t) (*(inbuffer + offset + 1))) << (8 * 1);
+      velocity_lengthT |= ((uint32_t) (*(inbuffer + offset + 2))) << (8 * 2);
+      velocity_lengthT |= ((uint32_t) (*(inbuffer + offset + 3))) << (8 * 3);
       offset += sizeof(this->velocity_length);
       if(velocity_lengthT > velocity_length)
         this->velocity = (float*)realloc(this->velocity, velocity_lengthT * sizeof(float));
@@ -160,10 +160,10 @@ namespace unav2_msgs
       offset += sizeof(this->st_velocity);
         memcpy( &(this->velocity[i]), &(this->st_velocity), sizeof(float));
       }
-      uint32_t effort_lengthT = ((uint32_t) (*(inbuffer + offset))); 
-      effort_lengthT |= ((uint32_t) (*(inbuffer + offset + 1))) << (8 * 1); 
-      effort_lengthT |= ((uint32_t) (*(inbuffer + offset + 2))) << (8 * 2); 
-      effort_lengthT |= ((uint32_t) (*(inbuffer + offset + 3))) << (8 * 3); 
+      uint32_t effort_lengthT = ((uint32_t) (*(inbuffer + offset)));
+      effort_lengthT |= ((uint32_t) (*(inbuffer + offset + 1))) << (8 * 1);
+      effort_lengthT |= ((uint32_t) (*(inbuffer + offset + 2))) << (8 * 2);
+      effort_lengthT |= ((uint32_t) (*(inbuffer + offset + 3))) << (8 * 3);
       offset += sizeof(this->effort_length);
       if(effort_lengthT > effort_length)
         this->effort = (float*)realloc(this->effort, effort_lengthT * sizeof(float));

@@ -5,7 +5,7 @@
 namespace unav::drivers {
 
 enum class Lm75Registers : uint8_t {
-  temperature = 0x00,
+  temperature = 0x00, //
   configuration = 0x01,
   hysteresys = 0x02,
   overtempshutdown = 0x03,
@@ -14,10 +14,7 @@ enum class Lm75Registers : uint8_t {
 class Lm75 {
 
 public:
-  /**
-   * Default constructur for Encoder (does nothing).
-   */
-  Lm75(I2C_HandleTypeDef *i2c, uint8_t address);
+  Lm75(I2C_HandleTypeDef *i2c, uint8_t deviceAddress);
   float getTemperature();
   void setup();
 

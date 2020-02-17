@@ -25,10 +25,9 @@ const char msg_start[]{"start"};
 DMA_HandleTypeDef hdma_adc;
 
 MotorControllerModule::MotorControllerModule()
-    : curLoopEnabled{false}, cmd{0.0f},
-      timer(), mode{unav::motorcontrol_mode_t::disabled}, pid_publish_rate{0},
-      pid_debug(false), nominalDt{0.0f}, dt{0.0f}, MotorEnabled{false},
-      adcConversionBuffer{0} {}
+    : curLoopEnabled{false}, cmd{0.0f}, timer(), mode{unav::motorcontrol_mode_t::disabled}, pid_publish_rate{0},
+      pid_debug(false), nominalDt{0.0f}, dt{0.0f}, MotorEnabled{false}, adcConversionBuffer{0} {
+}
 
 void MotorControllerModule::initialize() {
 
@@ -42,7 +41,7 @@ void MotorControllerModule::initialize() {
 }
 
 void MotorControllerModule::moduleThreadStart() {
-  const uint32_t motor_channels[MOTORS_COUNT] TIM_MOT_ARRAY_OF_CHANNELS;
+  // const uint32_t motor_channels[MOTORS_COUNT] TIM_MOT_ARRAY_OF_CHANNELS;
   int8_t pid_rate_counter = 0;
   bool publish_pidstatus = false;
 
@@ -93,15 +92,13 @@ void MotorControllerModule::moduleThreadStart() {
           }
         }
       } else {
-        for (int8_t i = 0; i < MOTORS_COUNT; i++) {
-          motoroutput[i] =
-              (uint32_t)(TIM_MOT_PERIOD_ZERO +
-                         (int32_t)(cmd[i] * ((float)(TIM_MOT_PERIOD_MAX / 2))));
+        for (uint8_t i = 0; i < MOTORS_COUNT; i++) {
+          motoroutput[i] = (uint32_t)(TIM_MOT_PERIOD_ZERO + (int32_t)(cmd[i] * ((float)(TIM_MOT_PERIOD_MAX / 2))));
         }
 
         PERF_MEASURE_PERIOD(perf_mc_loop_time);
 
-        for (int i = 0; i < MOTORS_COUNT; i++) {
+        for (uint32_t i = 0; i < MOTORS_COUNT; i++) {
           //__HAL_TIM_SET_COMPARE(&TIM_MOT, motor_channels[i], motoroutput[i]);
           if (pidstate) {
             pidstate->output[i] = (float)motoroutput[i];
@@ -112,7 +109,7 @@ void MotorControllerModule::moduleThreadStart() {
     // todo!
     case motorcontrol_mode_t::disabled:
     case motorcontrol_mode_t::failsafe: {
-      for (int i = 0; i < MOTORS_COUNT; i++) {
+      for (uint32_t i = 0; i < MOTORS_COUNT; i++) {
         motoroutput[i] = TIM_MOT_PERIOD_ZERO;
       }
     } break;
@@ -129,7 +126,7 @@ void MotorControllerModule::setup() {
   GPIO_TypeDef *gpios[] MOTOR_CUR_ADCx_CHANNEL_GPIO_PORT;
   const uint16_t pins[] MOTOR_CUR_ADCx_CHANNEL_PINS;
   GPIO_InitTypeDef GPIO_InitStruct;
-  for (int i = 0; i < MOTORS_COUNT; i++) {
+  for (uint32_t i = 0; i < MOTORS_COUNT; i++) {
     GPIO_InitStruct.Pin = pins[i];
     GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
@@ -147,7 +144,7 @@ void MotorControllerModule::checkMessages(bool wait) {
       PERF_TIMED_SECTION_END(perf_action_latency);
       auto *c = &receivedMsg->motorcontrol;
       mode = c->mode;
-      for (int x = 0; x < MOTORS_COUNT; x++) {
+      for (uint32_t x = 0; x < MOTORS_COUNT; x++) {
         cmd[x] = c->command[x];
       }
 
@@ -194,26 +191,25 @@ void MotorControllerModule::checkMessages(bool wait) {
 }
 
 void MotorControllerModule::updatePidConfig(const pidconfig_content_t *cfg) {
-  for (int i = 0; i < MOTORS_COUNT; i++) {
-    pidControllers[i].setGains(cfg->cur_kp, cfg->cur_ki, cfg->cur_kd,
-                               cfg->cur_kaw);
+  for (uint32_t i = 0; i < MOTORS_COUNT; i++) {
+    pidControllers[i].setGains(cfg->cur_kp, cfg->cur_ki, cfg->cur_kd, cfg->cur_kaw);
   }
   updateTimings(cfg->cur_frequency);
 }
 
-void MotorControllerModule::updateLimitsConfig(
-    const limitsconfig_content_t *cfg) {}
+void MotorControllerModule::updateLimitsConfig(const limitsconfig_content_t *cfg) {
+}
 
-void MotorControllerModule::updateSafetyConfig(
-    const safetyconfig_content_t *cfg) {}
+void MotorControllerModule::updateSafetyConfig(const safetyconfig_content_t *cfg) {
+}
 
-void MotorControllerModule::updateBridgeConfig(
-    const bridgeconfig_content_t *cfg) {}
+void MotorControllerModule::updateBridgeConfig(const bridgeconfig_content_t *cfg) {
+}
 
-void MotorControllerModule::updateTimings(const float frequency) {}
+void MotorControllerModule::updateTimings(const float frequency) {
+}
 
-void MotorControllerModule::updateOperationConfig(
-    const operationconfig_content_t *cfg) {
+void MotorControllerModule::updateOperationConfig(const operationconfig_content_t *cfg) {
   pid_debug = cfg->pid_debug;
 }
 

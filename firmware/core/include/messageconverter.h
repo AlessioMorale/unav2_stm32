@@ -47,8 +47,7 @@ public:
 
 template <> class MessageConverter<unav2_msgs::JointCommand> {
 public:
-  static void fromRosMsg(const unav2_msgs::JointCommand &rosmsg,
-                         message_t *msg) {
+  static void fromRosMsg(const unav2_msgs::JointCommand &rosmsg, message_t *msg) {
     jointcommand_content_t *c = &msg->jointcommand;
     c->type = message_types_t::inbound_JointCommand;
     c->seq = rosmsg.seq;
@@ -70,7 +69,7 @@ public:
       break;
     }
 
-    for (int i = 0; i < MOTORS_COUNT && i < rosmsg.command_length; i++) {
+    for (uint32_t i = 0; i < MOTORS_COUNT && i < rosmsg.command_length; i++) {
       c->command[i] = rosmsg.command[i];
     }
   }
@@ -78,19 +77,14 @@ public:
 
 template <> class MessageConverter<unav2_msgs::EncoderConfig> {
 public:
-  static void fromRosMsg(const unav2_msgs::EncoderConfig &rosmsg,
-                         message_t *msg) {
+  static void fromRosMsg(const unav2_msgs::EncoderConfig &rosmsg, message_t *msg) {
     auto c = &msg->encoderconfig;
     c->type = message_types_t::inbound_EncoderConfig;
     c->transactionId = rosmsg.transactionId;
     c->cpr = rosmsg.cpr;
-    c->position = rosmsg.position == rosmsg.ENCODER_POS_BEFORE_GEAR
-                      ? encoderconfig_position_t::before_gear
-                      : encoderconfig_position_t::after_gear;
+    c->position = rosmsg.position == rosmsg.ENCODER_POS_BEFORE_GEAR ? encoderconfig_position_t::before_gear : encoderconfig_position_t::after_gear;
     c->has_z_index = rosmsg.has_z_index;
-    c->channels = rosmsg.channels == rosmsg.ENCODER_CHANNELS_ONE
-                      ? encoderconfig_channels_t::one_channel
-                      : encoderconfig_channels_t::two_channels;
+    c->channels = rosmsg.channels == rosmsg.ENCODER_CHANNELS_ONE ? encoderconfig_channels_t::one_channel : encoderconfig_channels_t::two_channels;
     c->invert0 = rosmsg.invert0;
     c->invert1 = rosmsg.invert1;
   }
@@ -98,8 +92,7 @@ public:
 
 template <> class MessageConverter<unav2_msgs::LimitsConfig> {
 public:
-  static void fromRosMsg(const unav2_msgs::LimitsConfig &rosmsg,
-                         message_t *msg) {
+  static void fromRosMsg(const unav2_msgs::LimitsConfig &rosmsg, message_t *msg) {
     auto c = &msg->limitsconfig;
     c->type = message_types_t::inbound_LimitsConfig;
     c->transactionId = rosmsg.transactionId;
@@ -113,8 +106,7 @@ public:
 
 template <> class MessageConverter<unav2_msgs::MechanicalConfig> {
 public:
-  static void fromRosMsg(const unav2_msgs::MechanicalConfig &rosmsg,
-                         message_t *msg) {
+  static void fromRosMsg(const unav2_msgs::MechanicalConfig &rosmsg, message_t *msg) {
     auto c = &msg->mechanicalconfig;
     c->type = message_types_t::inbound_MechanicalConfig;
     c->transactionId = rosmsg.transactionId;
@@ -126,32 +118,26 @@ public:
 
 template <> class MessageConverter<unav2_msgs::OperationConfig> {
 public:
-  static void fromRosMsg(const unav2_msgs::OperationConfig &rosmsg,
-                         message_t *msg) {
+  static void fromRosMsg(const unav2_msgs::OperationConfig &rosmsg, message_t *msg) {
     auto c = &msg->operationconfig;
     c->type = message_types_t::inbound_OperationConfig;
     c->transactionId = rosmsg.transactionId;
     c->settings_command =
         (rosmsg.settings_command == rosmsg.SETTINGS_COMMAND_STORE)
             ? operationconfig_settingscommand_t::store
-            : (rosmsg.settings_command == rosmsg.SETTINGS_COMMAND_RELOAD)
-                  ? operationconfig_settingscommand_t::reload
-                  : operationconfig_settingscommand_t::none;
+            : (rosmsg.settings_command == rosmsg.SETTINGS_COMMAND_RELOAD) ? operationconfig_settingscommand_t::reload : operationconfig_settingscommand_t::none;
 
     c->operation_mode =
         (rosmsg.operation_mode == rosmsg.OPERATION_MODE_MOTORS_EMERGENCY_STOP)
             ? operationconfig_opmode_t::emergency_stop
-            : (rosmsg.operation_mode == rosmsg.OPERATION_MODE_MOTORS_DISABLED)
-                  ? operationconfig_opmode_t::disabled
-                  : operationconfig_opmode_t::normal;
+            : (rosmsg.operation_mode == rosmsg.OPERATION_MODE_MOTORS_DISABLED) ? operationconfig_opmode_t::disabled : operationconfig_opmode_t::normal;
     c->pid_debug = rosmsg.pid_debug;
   }
 };
 
 template <> class MessageConverter<unav2_msgs::SafetyConfig> {
 public:
-  static void fromRosMsg(const unav2_msgs::SafetyConfig &rosmsg,
-                         message_t *msg) {
+  static void fromRosMsg(const unav2_msgs::SafetyConfig &rosmsg, message_t *msg) {
     auto c = &msg->safetyconfig;
     c->type = message_types_t::inbound_SafetyConfig;
     c->transactionId = rosmsg.transactionId;
@@ -171,8 +157,7 @@ public:
 
 template <> class MessageConverter<unav2_msgs::BridgeConfig> {
 public:
-  static void fromRosMsg(const unav2_msgs::BridgeConfig &rosmsg,
-                         message_t *msg) {
+  static void fromRosMsg(const unav2_msgs::BridgeConfig &rosmsg, message_t *msg) {
     auto c = &msg->bridgeconfig;
     c->type = message_types_t::inbound_BridgeConfig;
     c->transactionId = rosmsg.transactionId;
@@ -224,8 +209,7 @@ public:
 };
 template <> class MessageConverter<unav2_msgs::PerfCounter> {
 public:
-  static void toRosMsg(const perf_counter_t *c,
-                       unav2_msgs::PerfCounter &rosmsg) {
+  static void toRosMsg(const perf_counter_t *c, unav2_msgs::PerfCounter &rosmsg) {
     rosmsg.key = c->key;
     rosmsg.value = c->value;
     rosmsg.min = c->min;

@@ -1,5 +1,5 @@
 #include <instrumentation/instrumentation.h>
-
+#include <string.h>
 perf_counter_t *perf_counters = NULL;
 int8_t instrumentation_max_counters = -1;
 int8_t last_used_perf_counter = -1;
@@ -7,8 +7,7 @@ int8_t last_used_perf_counter = -1;
 void instrumentation_init(int8_t maxCounters) {
   assert(maxCounters >= 0);
   if (maxCounters > 0) {
-    perf_counters =
-        (perf_counter_t *)pvPortMalloc(sizeof(perf_counter_t) * maxCounters);
+    perf_counters = (perf_counter_t *)pvPortMalloc(sizeof(perf_counter_t) * maxCounters);
     assert(perf_counters);
     memset(perf_counters, 0, sizeof(perf_counter_t) * maxCounters);
     instrumentation_max_counters = maxCounters;
@@ -19,8 +18,7 @@ void instrumentation_init(int8_t maxCounters) {
 }
 
 counter_t instrumentation_createCounter(const char *key) {
-  assert(perf_counters &&
-         (instrumentation_max_counters > last_used_perf_counter));
+  assert(perf_counters && (instrumentation_max_counters > last_used_perf_counter));
 
   counter_t counter_handle = instrumentation_searchCounter(key);
   if (!counter_handle) {
@@ -45,8 +43,7 @@ counter_t instrumentation_searchCounter(const char *key) {
   return (counter_t)&perf_counters[i];
 }
 
-void instrumentation_forEachCounter(instrumentationCounterCallback callback,
-                                    void *context) {
+void instrumentation_forEachCounter(instrumentationCounterCallback callback, void *context) {
   assert(perf_counters);
   for (int8_t index = 0; index < last_used_perf_counter + 1; index++) {
     const perf_counter_t *counter = &perf_counters[index];

@@ -51,7 +51,7 @@ void Encoder::setInverted(bool inverted){
   config.isInverted = inverted;
   recalcReduction();
 }
-float Encoder::setIsEncoderAfterGear(bool isAfterGear) {
+void Encoder::setIsEncoderAfterGear(bool isAfterGear) {
   config.isEncoderAfterGear = isAfterGear;
   recalcReduction();
 }

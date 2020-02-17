@@ -35,20 +35,19 @@
 #ifndef _ROS_MSG_H_
 #define _ROS_MSG_H_
 
-#include <stdint.h>
 #include <stddef.h>
+#include <stdint.h>
 
-namespace ros
-{
+namespace ros {
 
 /* Base Message Type */
-class Msg
-{
+class Msg {
 public:
+  virtual ~Msg() = default;
   virtual int serialize(unsigned char *outbuffer) const = 0;
   virtual int deserialize(unsigned char *data) = 0;
-  virtual const char * getType() = 0;
-  virtual const char * getMD5() = 0;
+  virtual const char *getType() = 0;
+  virtual const char *getMD5() = 0;
 
   /**
    * @brief This tricky function handles promoting a 32bit float to a 64bit
@@ -61,12 +60,10 @@ public:
    * @return number of bytes to advance the buffer pointer.
    *
    */
-  static int serializeAvrFloat64(unsigned char* outbuffer, const float f)
-  {
-    const int32_t* val = (int32_t*) &f;
+  static int serializeAvrFloat64(unsigned char *outbuffer, const float f) {
+    const int32_t *val = (int32_t *)&f;
     int32_t exp = ((*val >> 23) & 255);
-    if (exp != 0)
-    {
+    if (exp != 0) {
       exp += 1023 - 127;
     }
 
@@ -81,8 +78,7 @@ public:
     *(outbuffer++) = (exp >> 4) & 0x7F;
 
     // Mark negative bit as necessary.
-    if (f < 0)
-    {
+    if (f < 0) {
       *(outbuffer - 1) |= 0x80;
     }
 
@@ -99,9 +95,8 @@ public:
    *
    * @return number of bytes to advance the buffer pointer.
    */
-  static int deserializeAvrFloat64(const unsigned char* inbuffer, float* f)
-  {
-    uint32_t* val = (uint32_t*)f;
+  static int deserializeAvrFloat64(const unsigned char *inbuffer, float *f) {
+    uint32_t *val = (uint32_t *)f;
     inbuffer += 3;
 
     // Copy truncated mantissa.
@@ -113,9 +108,8 @@ public:
     // Copy truncated exponent.
     uint32_t exp = ((uint32_t)(*(inbuffer++)) & 0xf0) >> 4;
     exp |= ((uint32_t)(*inbuffer) & 0x7f) << 4;
-    if (exp != 0)
-    {
-      *val |= ((exp) - 1023 + 127) << 23;
+    if (exp != 0) {
+      *val |= ((exp)-1023 + 127) << 23;
     }
 
     // Copy negative sign.
@@ -125,24 +119,19 @@ public:
   }
 
   // Copy data from variable into a byte array
-  template<typename A, typename V>
-  static void varToArr(A arr, const V var)
-  {
+  template <typename A, typename V> static void varToArr(A arr, const V var) {
     for (size_t i = 0; i < sizeof(V); i++)
       arr[i] = (var >> (8 * i));
   }
 
   // Copy data from a byte array into variable
-  template<typename V, typename A>
-  static void arrToVar(V& var, const A arr)
-  {
+  template <typename V, typename A> static void arrToVar(V &var, const A arr) {
     var = 0;
     for (size_t i = 0; i < sizeof(V); i++)
       var |= (arr[i] << (8 * i));
   }
-
 };
 
-}  // namespace ros
+} // namespace ros
 
 #endif

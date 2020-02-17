@@ -1,6 +1,6 @@
 #pragma once
-#define INSTRUMENTATION_MAX_COUNTERS 10
+#define INSTRUMENTATION_MAX_COUNTERS 10u
 
-#define NUM_LEDS 3
+#define NUM_LEDS 3u
 
-#define MOTORS_COUNT 2
+#define MOTORS_COUNT 2u

@@ -25,7 +25,6 @@ protected:
 
 private:
   unav::utils::Timer timer;
-  float dt;
   void checkMessages();
 };
 } // namespace unav::modules

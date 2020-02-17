@@ -25,19 +25,18 @@ protected:
 private:
   unav::utils::Timer timer;
   unav::drivers::Encoder encoders[MOTORS_COUNT];
-  unav::controls::PID pidControllers[MOTORS_COUNT];
-  float inverted_rotation[MOTORS_COUNT];
-  uint32_t wait;
+  float filteredEffort[2];
   jointcommand_mode_t mode;
+  unav::controls::PID pidControllers[MOTORS_COUNT];
+  uint32_t wait;
   float nominalDt;
   float dt;
-  float filteredEffort[2];
   float cmd[MOTORS_COUNT];
-  float encoder_ppr;
   uint8_t pid_publish_rate;
   bool pid_debug;
   motorcontrol_mode_t control_mode;
   int timeout_counter = 0;
+  float inverted_rotation[MOTORS_COUNT];
 
   void disableDrivers();
   void enableDrivers();

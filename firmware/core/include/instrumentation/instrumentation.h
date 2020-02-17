@@ -21,7 +21,7 @@ typedef void *counter_t;
 extern perf_counter_t *perf_counters;
 extern int8_t last_used_perf_counter;
 
-static inline void updateStats(perf_counter_t *counter){
+static inline void updateStats(perf_counter_t *counter) {
   const int32_t value = counter->value;
   counter->max--;
   if (value > counter->max) {
@@ -41,8 +41,7 @@ static inline void updateStats(perf_counter_t *counter){
  * Instrumentation_SearchCounter @see Instrumentation_CreateCounter
  * @param newValue the updated value.
  */
-static void instrumentation_setCounter(counter_t counter_handle,
-                                              int32_t newValue) {
+static inline void instrumentation_setCounter(counter_t counter_handle, int32_t newValue) {
   assert(perf_counters && counter_handle);
   perf_counter_t *counter = (perf_counter_t *)counter_handle;
 
@@ -88,10 +87,10 @@ static inline void instrumentation_trackPeriod(counter_t counter_handle) {
   perf_counter_t *counter = (perf_counter_t *)counter_handle;
   if (counter->temp != 0) {
 
-	uint32_t period = timing_getUsSince(counter->temp);
-	counter->temp = timing_getRaw();
+    uint32_t period = timing_getUsSince(counter->temp);
+    counter->temp = timing_getRaw();
 
-	counter->value = (counter->value * 15 + period) / 16;
+    counter->value = (counter->value * 15 + period) / 16;
     updateStats(counter);
   }
 }
@@ -102,8 +101,7 @@ static inline void instrumentation_trackPeriod(counter_t counter_handle) {
  * Instrumentation_SearchCounter @see Instrumentation_CreateCounter
  * @param increment the value to increment counter with.
  */
-static inline void instrumentation_incrementCounter(counter_t counter_handle,
-                                                    int32_t increment) {
+static inline void instrumentation_incrementCounter(counter_t counter_handle, int32_t increment) {
   assert(perf_counters && counter_handle);
   perf_counter_t *counter = (perf_counter_t *)counter_handle;
 
@@ -132,16 +130,13 @@ counter_t instrumentation_createCounter(const char *key);
  */
 counter_t instrumentation_searchCounter(const char *key);
 
-typedef void (*instrumentationCounterCallback)(const perf_counter_t *counter,
-                                               const int8_t index,
-                                               void *context);
+typedef void (*instrumentationCounterCallback)(const perf_counter_t *counter, const int8_t index, void *context);
 /**
  * Retrieve and execute the passed callback for each counter
  * @param callback to be called for each counter
  * @param context a context variable pointer that can be passed to the callback
  */
-void instrumentation_forEachCounter(instrumentationCounterCallback callback,
-                                    void *context);
+void instrumentation_forEachCounter(instrumentationCounterCallback callback, void *context);
 #ifdef __cplusplus
 }
 #endif

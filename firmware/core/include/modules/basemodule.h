@@ -6,8 +6,10 @@ extern "C" void BaseModuleTaskWrapper(void const *argument);
 class BaseModule {
 public:
   virtual void initializeTask(osPriority priority, size_t tasksize);
+  virtual ~BaseModule() = default;
 
 protected:
+  BaseModule() : moduleThread{nullptr} {};
   osThreadId moduleThread;
   virtual void moduleThreadStart() __attribute__((noreturn)) = 0;
   friend void BaseModuleTaskWrapper(void const *argument);

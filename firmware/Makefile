@@ -176,8 +176,8 @@ endif
 
 
 # Generate dependency information
-ARM_CFLAGS += -MMD -MP -MF"$(@:%.o=%.d)" -Wall -std=c11
-
+ARM_CFLAGS += -MMD -MP -MF"$(@:%.o=%.d)" -Wall 
+ARM_CONLYFLAGS += -std=c11
 # C++ Compiler -- Required & Optimization Flags
 
 ARM_CXXFLAGS                += $(ARM_CFLAGS)
@@ -208,6 +208,7 @@ ARM_CXXFLAGS 				+= -Wshadow
 ARM_CXXFLAGS 				+= -Wctor-dtor-privacy
 ARM_CXXFLAGS 				+= -Wstrict-null-sentinel
 
+ARM_CFLAGS += $(ARM_CONLYFLAGS)
 #######################################
 # LDFLAGS
 #######################################
@@ -215,7 +216,7 @@ ARM_CXXFLAGS 				+= -Wstrict-null-sentinel
 ARM_LDSCRIPT = unav_firmware.ld
 
 # libraries
-ARM_LIBS = -lc -lm -lnosys 
+ARM_LIBS = -lc -lm -lnosys -lstdc++
 ARM_LIBDIR = 
 ARM_LDFLAGS = $(MCU) -specs=nano.specs -T$(ARM_LDSCRIPT) $(ARM_LIBDIR) $(ARM_LIBS) -Wl,-Map=$(BUILD_DIR)/$(TARGET).map,--cref -Wl,--gc-sections -Wl,--undefined=uxTopUsedPriority
 
@@ -281,13 +282,13 @@ PRECOMPILED_H := precompiled.h
 PRECOMPILED_H_OBJ := $(BUILD_DIR)/$(PRECOMPILED_H).gch
 
 $(BUILD_DIR)/%.h.gch: $(PRECOMPILED_H) | $(BUILD_DIR)
-	$(ARMCPPC) -c $(ARM_CFLAGS) -Wa,-a,-ad,-alms=$(BUILD_DIR)/$(notdir $(<:.c=.lst)) $< -o $@
+	$(ARMCC) -c $(ARM_CFLAGS) -Wa,-a,-ad,-alms=$(BUILD_DIR)/$(notdir $(<:.c=.lst)) $< -o $@
 
 PRECOMPILED_CPP_H := precompiledcpp.h
 PRECOMPILED_CPP_H_OBJ := $(BUILD_DIR)/$(PRECOMPILED_CPP_H).gch
 
 $(BUILD_DIR)/%cpp.h.gch: $(PRECOMPILED_CPP_H) | $(BUILD_DIR)
-	$(ARMCPPC) -c $(ARM_CFLAGS) -Wa,-a,-ad,-alms=$(BUILD_DIR)/$(notdir $(<:.c=.lst)) $< -o $@
+	$(ARMCPPC) -c $(ARM_CXXFLAGS) -Wa,-a,-ad,-alms=$(BUILD_DIR)/$(notdir $(<:.cpp=.lst)) $< -o $@
 
 #%.o : %.c | 
 #	$(ARMCC) $(ARM_CFLAGS) -include $(PRECOMPILED_H) -c -o $@ $<

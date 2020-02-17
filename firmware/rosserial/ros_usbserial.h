@@ -8,33 +8,38 @@
 #ifndef ROS_USBSERIAL_H
 #define ROS_USBSERIAL_H
 
+#include "FreeRTOS.h"
 #include <stm32f4xx_hal.h>
 #include <usbd_cdc_if.h>
-#include "FreeRTOS.h"
 extern USBD_HandleTypeDef hUsbDeviceFS;
 #define MAXBLOCK 60
 class rosUSBSerial {
- public:
-  rosUSBSerial() {}
+public:
+  rosUSBSerial() : rxStream{nullptr} {
+  }
 
-  void setBaud(long baud) { (void)baud; }
+  void setBaud(long baud) {
+    (void)baud;
+  }
 
-  int getBaud() { return 115200; }
+  int getBaud() {
+    return 115200;
+  }
 
   // any initialization code necessary to use the serial port
-  void init() {}
+  void init() {
+  }
 
   // read a byte from the serial port. -1 = failure
   int read() {
     uint8_t byte;
-    if ((!rxStream && !(rxStream = CDC_GetRxStream())) ||
-        !xStreamBufferReceive(rxStream, (void*)&byte, 1, 0)) {
+    if ((!rxStream && !(rxStream = CDC_GetRxStream())) || !xStreamBufferReceive(rxStream, (void *)&byte, 1, 0)) {
       return -1;
     }
     return byte;
   }
 
-  void write(uint8_t* data, int length) {
+  void write(uint8_t *data, int length) {
     if (!rxStream && !(rxStream = CDC_GetRxStream())) {
       return;
     }
@@ -52,9 +57,11 @@ class rosUSBSerial {
       ;
   }
 
-  unsigned long time() { return (HAL_GetTick()); }
+  unsigned long time() {
+    return (HAL_GetTick());
+  }
 
- private:
+private:
   StreamBufferHandle_t rxStream;
   osThreadId commTaskHandle;
 };

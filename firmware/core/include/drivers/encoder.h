@@ -25,7 +25,7 @@ public:
   void setSingleChannel(bool isSingleChannel);
   void setHasZIndex(bool hasZIndex) {}
   void applyFilter(float dt, float cutoff);
-  float setIsEncoderAfterGear(bool isAfterGear);
+  void setIsEncoderAfterGear(bool isAfterGear);
 
 private:
   typedef struct encoderConfgi {
