@@ -1,14 +1,14 @@
+#include <counters.h>
 #include <drivers/encoder.h>
 #include <math.h>
 #include <mathutils.h>
-#include <counters.h>
 namespace unav::drivers {
 
 Encoder::Encoder(TIM_HandleTypeDef *tim)
-    : encoderTimer{tim},
-      timer(), alpha{1.0f}, filteredEncVelocity{0.0f}, enc_period{0},
-      lastReading{0}, position{0}, inverseReduction{1.0f}, config{0} {}
-Encoder::Encoder() : Encoder(nullptr) {}
+    : encoderTimer{tim}, timer(), alpha{1.0f}, filteredEncVelocity{0.0f}, enc_period{0}, lastReading{0}, position{0}, inverseReduction{1.0f}, config{0} {
+}
+Encoder::Encoder() : Encoder(nullptr) {
+}
 
 void Encoder::setup() {
   HAL_TIM_Encoder_Start(encoderTimer, TIM_CHANNEL_ALL);
@@ -38,8 +38,7 @@ float Encoder::getVelocity() {
   }
   float encVelocity = -((float)delta) / dt;
   if (isfinite(encVelocity)) {
-    filteredEncVelocity =
-        alpha * (encVelocity - filteredEncVelocity) + filteredEncVelocity;
+    filteredEncVelocity = alpha * (encVelocity - filteredEncVelocity) + filteredEncVelocity;
     float velocity = filteredEncVelocity * inverseReduction;
     position += velocity * dt;
     return velocity;
@@ -47,7 +46,7 @@ float Encoder::getVelocity() {
     return 0.0f;
   }
 }
-void Encoder::setInverted(bool inverted){
+void Encoder::setInverted(bool inverted) {
   config.isInverted = inverted;
   recalcReduction();
 }
@@ -82,7 +81,7 @@ void Encoder::recalcReduction() {
   if (!config.isEncoderAfterGear && config.gear > 0.01f) {
     reduction *= config.gear;
   }
-  if(config.isInverted){
+  if (config.isInverted) {
     reduction *= -1.0f;
   }
   inverseReduction = 1.0f / reduction;

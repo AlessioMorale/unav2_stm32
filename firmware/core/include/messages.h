@@ -1,6 +1,6 @@
 #include <consts.h>
-#include<stdint.h>
-#include<stdbool.h>
+#include <stdbool.h>
+#include <stdint.h>
 #pragma once
 
 namespace unav {
@@ -46,13 +46,7 @@ typedef struct _ack_content {
   uint32_t transactionId;
 } ack_content_t;
 
-enum class jointcommand_mode_t {
-  failsafe = -1,
-  disabled = 0,
-  position = 1,
-  velocity = 2,
-  effort = 3
-};
+enum class jointcommand_mode_t { failsafe = -1, disabled = 0, position = 1, velocity = 2, effort = 3 };
 
 typedef struct jointcommand_content {
   message_types_t type;
@@ -91,14 +85,8 @@ typedef struct bridgeconfig_content {
   float current_gain;
 } bridgeconfig_content_t;
 
-enum class encoderconfig_position_t : int8_t {
-  after_gear = 0,
-  before_gear = 1
-};
-enum class encoderconfig_channels_t : uint8_t {
-  one_channel = 1,
-  two_channels = 2
-};
+enum class encoderconfig_position_t : int8_t { after_gear = 0, before_gear = 1 };
+enum class encoderconfig_channels_t : uint8_t { one_channel = 1, two_channels = 2 };
 typedef struct encoderconfig_content {
   message_types_t type;
   uint32_t transactionId;
@@ -129,17 +117,9 @@ typedef struct mechanicalconfig_content {
 
 } mechanicalconfig_content_t;
 
-enum class operationconfig_settingscommand_t : uint16_t {
-  none = 0,
-  store = 1,
-  reload = 2
-};
+enum class operationconfig_settingscommand_t : uint16_t { none = 0, store = 1, reload = 2 };
 
-enum class operationconfig_opmode_t : uint16_t {
-  disabled = 0,
-  normal = 1,
-  emergency_stop = 2
-};
+enum class operationconfig_opmode_t : uint16_t { disabled = 0, normal = 1, emergency_stop = 2 };
 
 typedef struct operationconfig_content {
   message_types_t type;
@@ -165,11 +145,7 @@ typedef struct safetyconfig_content {
   int16_t timeout;
 } safetyconfig_content_t;
 
-enum class motorcontrol_mode_t : int8_t {
-  failsafe = -1,
-  disabled = 0,
-  normal = 1
-};
+enum class motorcontrol_mode_t : int8_t { failsafe = -1, disabled = 0, normal = 1 };
 
 typedef struct motorcontrol_content {
   message_types_t type;
@@ -195,20 +171,18 @@ typedef struct _generic_message {
   };
 } message_t;
 
-#define CONFIGURATION_ENTRIES_TABLE(ENTRY) \
-  ENTRY(pidconfig, 0) \
-  ENTRY(bridgeconfig, 1) \
-  ENTRY(encoderconfig, 2) \
-  ENTRY(limitsconfig, 3) \
-  ENTRY(mechanicalconfig, 4) \
-  ENTRY(operationconfig, 5) \
-  ENTRY(safetyconfig, 6) \
+#define CONFIGURATION_ENTRIES_TABLE(ENTRY)                                                                                                                     \
+  ENTRY(pidconfig, 0)                                                                                                                                          \
+  ENTRY(bridgeconfig, 1)                                                                                                                                       \
+  ENTRY(encoderconfig, 2)                                                                                                                                      \
+  ENTRY(limitsconfig, 3)                                                                                                                                       \
+  ENTRY(mechanicalconfig, 4)                                                                                                                                   \
+  ENTRY(operationconfig, 5)                                                                                                                                    \
+  ENTRY(safetyconfig, 6)                                                                                                                                       \
   ENTRY(motorcontrol, 7)
 
 #define CONFIGURATION_ENTRY_EXPAND_ENUM(name, index) name = index,
 
-enum class ConfigurationMessageTypes_t : uint8_t{
-  CONFIGURATION_ENTRIES_TABLE(CONFIGURATION_ENTRY_EXPAND_ENUM)
-} ;
+enum class ConfigurationMessageTypes_t : uint8_t { CONFIGURATION_ENTRIES_TABLE(CONFIGURATION_ENTRY_EXPAND_ENUM) };
 
 } // namespace unav

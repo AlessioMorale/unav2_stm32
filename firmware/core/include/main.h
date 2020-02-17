@@ -132,16 +132,16 @@ void Error_Handler(void) __attribute__((noreturn));
 #define MOTOR_CUR_ADCx_RELEASE_RESET() __HAL_RCC_ADC_RELEASE_RESET()
 
 /* Definition for ADCx Channel Pins */
-#define MOTOR_CUR_ADCx_CHANNEL_PINS                                            \
+#define MOTOR_CUR_ADCx_CHANNEL_PINS                                                                                                                            \
   { ADC_MOT1_CUR_Pin, ADC_MOT2_CUR_Pin }
-#define MOTOR_CUR_ADCx_CHANNEL_GPIO_PORT                                       \
+#define MOTOR_CUR_ADCx_CHANNEL_GPIO_PORT                                                                                                                       \
   { ADC_MOT1_CUR_GPIO_Port, ADC_MOT2_CUR_GPIO_Port }
 
 /* Definition for ADCx's Channels */
 #define MOTOR_CUR_ADC3_CH1 ADC_CHANNEL_10
 #define MOTOR_CUR_ADC3_CH2 ADC_CHANNEL_11
 #define MOTOR_CUR_ADC3_REF ADC_CHANNEL_12
-#define MOTOR_CUR_ADC3_ARRAY_OF_CHANNELS                                       \
+#define MOTOR_CUR_ADC3_ARRAY_OF_CHANNELS                                                                                                                       \
   { MOTOR_CUR_ADC3_CH1, MOTOR_CUR_ADC3_CH2, MOTOR_CUR_ADC3_REF }
 #define MOTOR_CUR_ADC hadc3
 /* Definition for TIMx clock resources */
@@ -177,16 +177,13 @@ extern I2C_HandleTypeDef hi2c2;
 #define TIM_MOT_PERIOD_ZERO 512
 
 #define TimInit MX_TIM8_Init
-#define TIM_MOT_ARRAY_OF_CHANNELS                                              \
+#define TIM_MOT_ARRAY_OF_CHANNELS                                                                                                                              \
   { TIM_MOT1_CH, TIM_MOT2_CH }
 
-#define TIM_MOT_ARRAY_OF_GPIOS                                                 \
-  {                                                                            \
-    TIM_MOT1_A_GPIO_Port, TIM_MOT1_B_GPIO_Port, TIM_MOT2_A_GPIO_Port,          \
-        TIM_MOT2_B_GPIO_Port                                                   \
-  }
+#define TIM_MOT_ARRAY_OF_GPIOS                                                                                                                                 \
+  { TIM_MOT1_A_GPIO_Port, TIM_MOT1_B_GPIO_Port, TIM_MOT2_A_GPIO_Port, TIM_MOT2_B_GPIO_Port }
 
-#define TIM_MOT_ARRAY_OF_PINS                                                  \
+#define TIM_MOT_ARRAY_OF_PINS                                                                                                                                  \
   { TIM_MOT1_A_Pin, TIM_MOT1_B_Pin, TIM_MOT2_A_Pin, TIM_MOT2_B_Pin }
 
 /* Definition for GPIOs  */
@@ -195,16 +192,14 @@ extern I2C_HandleTypeDef hi2c2;
 #define O_PWR_MOT_EN_STATUS_ENABLE GPIO_PIN_SET
 #define O_PWR_MOT_EN_STATUS_DISABLE GPIO_PIN_RESET
 
-
-
 /* Leds */
-#define LED_ARRAY_OF_GPIO                                                      \
+#define LED_ARRAY_OF_GPIO                                                                                                                                      \
   { O_LED1_GPIO_Port, O_LED2_GPIO_Port, O_LED3_GPIO_Port }
-#define LED_ARRAY_OF_PIN                                                       \
+#define LED_ARRAY_OF_PIN                                                                                                                                       \
   { O_LED1_Pin, O_LED2_Pin, O_LED3_Pin }
-#define LED_ARRAY_OF_STATES_ON                                                 \
+#define LED_ARRAY_OF_STATES_ON                                                                                                                                 \
   { GPIO_PIN_RESET, GPIO_PIN_RESET, GPIO_PIN_RESET }
-#define LED_ARRAY_OF_STATES_OFF                                                \
+#define LED_ARRAY_OF_STATES_OFF                                                                                                                                \
   { GPIO_PIN_SET, GPIO_PIN_SET, GPIO_PIN_SET }
 
 #define LED_HEARTBEAT 0

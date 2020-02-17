@@ -8,7 +8,9 @@ extern "C" {
 extern uint32_t us_ticks;
 
 typedef uint32_t rawtime_t;
-inline static rawtime_t timing_getRaw() { return DWT->CYCCNT; }
+inline static rawtime_t timing_getRaw() {
+  return DWT->CYCCNT;
+}
 void timing_Init();
 
 inline static uint32_t timing_getUsSince(const rawtime_t rawStart) {
@@ -16,12 +18,11 @@ inline static uint32_t timing_getUsSince(const rawtime_t rawStart) {
   return (rawNow - rawStart) / us_ticks;
 }
 
-inline static uint32_t timing_getUs(){
-	return timing_getRaw() / us_ticks;
+inline static uint32_t timing_getUs() {
+  return timing_getRaw() / us_ticks;
 }
 
-inline static uint32_t timing_getMs()
-{
+inline static uint32_t timing_getMs() {
   return timing_getUs() / 1000ul;
 }
 

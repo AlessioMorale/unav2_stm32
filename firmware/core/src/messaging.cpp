@@ -67,8 +67,7 @@ QueueHandle_t Messaging::subscribe(uint32_t recipientId) {
 }
 
 QueueHandle_t Messaging::getRecipientQueue(uint32_t recipientId) const {
-  for (int32_t i = 0;
-       i < MESSAGING_MAX_RECIPIENTS && _recipients[i].queue != nullptr; i++) {
+  for (int32_t i = 0; i < MESSAGING_MAX_RECIPIENTS && _recipients[i].queue != nullptr; i++) {
     if (_recipients[i].recipientId == recipientId) {
       return _recipients[i].queue;
     }

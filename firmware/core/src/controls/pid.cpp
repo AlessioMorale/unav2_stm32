@@ -4,7 +4,8 @@
 #include <mathutils.h>
 #include <string.h>
 namespace unav::controls {
-PID::PID() : _status() {}
+PID::PID() : _status() {
+}
 
 void PID::setGains(float kp, float ki, float kd, float ilimit) {
   _kp = kp;
@@ -25,7 +26,9 @@ void PID::zero() {
   _status.i_min = 0;
 }
 
-const pid_status_t PID::getStatus() { return _status; }
+const pid_status_t PID::getStatus() {
+  return _status;
+}
 
 float PID::apply(float setpoint, float measure, float dT) {
   _status.timestep = dT;

@@ -18,15 +18,13 @@ const leds_pattern_t leds_pattern_fast = {
     }                                        //
 };
 
-const leds_pattern_t leds_pattern_doublefast = {
-	4,
-	{
-		{.duration = 50, .brightness = 255}, //
-		{.duration = 150, .brightness = 0},  //
-		{.duration = 50, .brightness = 255}, //
-		{.duration = 750, .brightness = 0},  //
-	}
-};
+const leds_pattern_t leds_pattern_doublefast = {4,
+                                                {
+                                                    {.duration = 50, .brightness = 255}, //
+                                                    {.duration = 150, .brightness = 0},  //
+                                                    {.duration = 50, .brightness = 255}, //
+                                                    {.duration = 750, .brightness = 0},  //
+                                                }};
 
 const leds_pattern_t leds_pattern_off = {
     1,
@@ -64,7 +62,8 @@ const leds_pattern_t leds_pattern_blink_doublefast = {
 
 leds_status_t leds_status[NUM_LEDS];
 
-void leds_init() {}
+void leds_init() {
+}
 
 void leds_update() {
   for (int led = 0; led < NUM_LEDS; led++) {
@@ -74,11 +73,10 @@ void leds_update() {
       continue;
     }
     const uint32_t duration = timing_getUsSince(status->lastTime) / 1000ul;
-    if ((pattern->intervals[status->intervalIndex].duration != 0) &&
-        ((uint32_t)pattern->intervals[status->intervalIndex].duration < duration)) {
-            status->lastTime = timing_getRaw();
-            status->intervalIndex = (status->intervalIndex + 1) % pattern->length;
-            leds_hal_setLed(led, pattern->intervals[status->intervalIndex].brightness);
+    if ((pattern->intervals[status->intervalIndex].duration != 0) && ((uint32_t)pattern->intervals[status->intervalIndex].duration < duration)) {
+      status->lastTime = timing_getRaw();
+      status->intervalIndex = (status->intervalIndex + 1) % pattern->length;
+      leds_hal_setLed(led, pattern->intervals[status->intervalIndex].brightness);
     }
   }
 }

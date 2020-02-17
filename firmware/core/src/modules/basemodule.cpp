@@ -4,8 +4,7 @@
 namespace unav::modules {
 void BaseModule::initializeTask(osPriority priority, size_t tasksize) {
   osThreadDef(moduleThread, BaseModuleTaskWrapper, priority, 0, tasksize);
-  moduleThread =
-      osThreadCreate(osThread(moduleThread), static_cast<void *>(this));
+  moduleThread = osThreadCreate(osThread(moduleThread), static_cast<void *>(this));
 }
 
 extern "C" void BaseModuleTaskWrapper(void const *argument) {

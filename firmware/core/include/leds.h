@@ -5,7 +5,7 @@ extern "C" {
 #include <stdint.h>
 #include <timing.h>
 typedef struct {
-  uint16_t duration; // Intervals between each stataus in this pattern.(milliseconds)
+  uint16_t duration;  // Intervals between each stataus in this pattern.(milliseconds)
   uint8_t brightness; // brightness associated with each interval
 } leds_interval_t;
 

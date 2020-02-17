@@ -16,14 +16,19 @@ public:
   Encoder(TIM_HandleTypeDef *tim);
   void setup();
   bool isCountingUp();
-  void setEncoderTimer(TIM_HandleTypeDef *tim) { encoderTimer = tim; }
+  void setEncoderTimer(TIM_HandleTypeDef *tim) {
+    encoderTimer = tim;
+  }
   float getVelocity();
-  float getPosition() { return position; };
+  float getPosition() {
+    return position;
+  };
   void setGear(float gear);
   void setCPR(uint16_t ppr);
   void setInverted(bool inverted);
   void setSingleChannel(bool isSingleChannel);
-  void setHasZIndex(bool hasZIndex) {}
+  void setHasZIndex(bool hasZIndex) {
+  }
   void applyFilter(float dt, float cutoff);
   void setIsEncoderAfterGear(bool isAfterGear);
 

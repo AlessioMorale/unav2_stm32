@@ -34,11 +34,12 @@ public:
 private:
   void sendRosMessage(message_t *msg);
   static ros::NodeHandle nh;
-  ros::NodeHandle &getNodeHandle() { return nh; }
+  ros::NodeHandle &getNodeHandle() {
+    return nh;
+  }
   QueueHandle_t incomingMessageQueue;
   message_t _messageBuffer[MESSAGING_BUFFER_SIZE];
-  template <typename T>
-  void handleRosMessage(const T &msg, uint32_t destination);
+  template <typename T> void handleRosMessage(const T &msg, uint32_t destination);
   void publishDiagnostic();
   unav2_msgs::JointState msgjointstate;
   unav2_msgs::PIDState msgpidstate;

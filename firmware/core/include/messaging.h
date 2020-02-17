@@ -13,13 +13,14 @@ typedef struct {
 
 class Messaging {
 public:
-  Messaging()
-      : _messagebuffer{nullptr}, _slotSize{0}, freeSlotInitialized{false},
-        _recipients{0}, _maxMessagesCount{0}, _freeMessagesQueue{nullptr} {}
+  Messaging() : _messagebuffer{nullptr}, _slotSize{0}, freeSlotInitialized{false}, _recipients{0}, _maxMessagesCount{0}, _freeMessagesQueue{nullptr} {
+  }
 
   void setup(uint8_t *buffer, size_t slotSize, uint32_t slotsCount);
   message_handle_t prepareMessage();
-  inline uint32_t getMaxMessagesCount() { return _maxMessagesCount; };
+  inline uint32_t getMaxMessagesCount() {
+    return _maxMessagesCount;
+  };
   void sendMessage(message_handle_t message, uint32_t recipientId);
   void releaseMessage(message_handle_t message);
   QueueHandle_t subscribe(uint32_t recipientId);
