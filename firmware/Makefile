@@ -260,9 +260,9 @@ INCLUDE_DIRS +=	$(C_INCLUDE_DIRS)
 
 $(CPPUTEST_HOME)/lib/libCppUTest.a $(CPPUTEST_HOME)/lib/libCppUTestExt.a:
 	@echo Building CppUTest library
-	$(MAKE) -C $(CPPUTEST_HOME) -s clean
 	cd $(CPPUTEST_HOME) && ./autogen.sh
 	cd $(CPPUTEST_HOME) && ./configure > /dev/null
+	$(MAKE) -C $(CPPUTEST_HOME) -s clean
 	$(MAKE) -C $(CPPUTEST_HOME) -s -j4
 	$(MAKE) -C $(CPPUTEST_HOME) -s -j4 check
 	@echo CppUTest library built
