@@ -25,33 +25,25 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include "CppUTest/TestHarness.h"
 #include "modules/system/systemhealthchecker.h"
 
-#include "CppUTest/TestHarness.h"
-
-
-TEST_GROUP(ConfigurationChecks)
-{ 
-void setup()
-{
-}
-void teardown()
-{
-}
+TEST_GROUP(ConfigurationChecks){
+    void setup(){}    //
+    void teardown(){} //
 };
 
-TEST(ConfigurationChecks, CanCheckConfigurations)
-{
-    unav::modules::system::SystemHealthChecker systemHealthChecker;
-    CHECK(systemHealthChecker.isConfigured());
+TEST(ConfigurationChecks, CanCheckConfigurations) {
+  unav::modules::system::SystemHealthChecker systemHealthChecker;
+  CHECK(systemHealthChecker.isConfigured());
 
-    systemHealthChecker.setRequiredFlag(unav::ConfigurationMessageTypes_t::bridgeconfig);
-    systemHealthChecker.setRequiredFlag(unav::ConfigurationMessageTypes_t::encoderconfig);
-    CHECK_FALSE(systemHealthChecker.isConfigured());
-    
-    systemHealthChecker.setReceivedConfig(unav::ConfigurationMessageTypes_t::bridgeconfig);
-    CHECK_FALSE(systemHealthChecker.isConfigured());
+  systemHealthChecker.setRequiredFlag(unav::ConfigurationMessageTypes_t::bridgeconfig);
+  systemHealthChecker.setRequiredFlag(unav::ConfigurationMessageTypes_t::encoderconfig);
+  CHECK_FALSE(systemHealthChecker.isConfigured());
 
-    systemHealthChecker.setReceivedConfig(unav::ConfigurationMessageTypes_t::encoderconfig);
-    CHECK(systemHealthChecker.isConfigured());
+  systemHealthChecker.setReceivedConfig(unav::ConfigurationMessageTypes_t::bridgeconfig);
+  CHECK_FALSE(systemHealthChecker.isConfigured());
+
+  systemHealthChecker.setReceivedConfig(unav::ConfigurationMessageTypes_t::encoderconfig);
+  CHECK(systemHealthChecker.isConfigured());
 }
