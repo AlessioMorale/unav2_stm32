@@ -1,10 +1,10 @@
 before_script:
-  - git submodule sync --recursive
-  - git submodule update --init --recursive
+  - time git submodule sync --recursive
+  - time git submodule update --init --recursive
 build:
   image: alessiomorale/gcc-arm-none-eabi-ci:release-1.0.0-gcc9-2019q4
   script:
     - cd firmware
-    - make cpputest -j4
-    - make test all -j4
+    - time make cpputest -j4
+    - time make test all -j4
     
