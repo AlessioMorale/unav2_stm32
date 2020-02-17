@@ -208,8 +208,6 @@ ARM_CXXFLAGS 				+= -Wshadow
 ARM_CXXFLAGS 				+= -Wctor-dtor-privacy
 ARM_CXXFLAGS 				+= -Wstrict-null-sentinel
 
-CPPUTEST_CXXFLAGS   += -std=c++17
-
 #######################################
 # LDFLAGS
 #######################################
@@ -227,28 +225,37 @@ ARM_LDFLAGS = $(MCU) -specs=nano.specs -T$(ARM_LDSCRIPT) $(ARM_LIBDIR) $(ARM_LIB
 #--- Inputs ----#
 COMPONENT_NAME = uNav_CppUTest
 CPPUTEST_HOME = ./testing/cpputest/
+CPPUTEST_USE_MEM_LEAK_DETECTION = N
+CPPUTEST_CXXFLAGS   += -std=c++17
+C_DEFS +=  \
+-DUSE_HAL_DRIVER \
+-DSTM32F407xx
+
+CPPUTEST_CXXFLAGS += $(C_DEFS) 
 
 CPPUTEST_USE_EXTENSIONS = Y
 CPP_PLATFORM = Gcc
 
 SRC_DIRS = \
 	src/CppUTest \
-	src/Platforms/$(CPP_PLATFORM)
+	src/Platforms/$(CPP_PLATFORM) 
 
 SRC_FILES = \
 	core/src/modules/system/systemhealthchecker.cpp \
+	core/src/drivers/ina219.cpp \
 
 
 TEST_SRC_DIRS = \
-	testing/src
+	testing/src \
+	testing/src/mocks
 
-INCLUDE_DIRS =\
-	.\
-	$(CPPUTEST_HOME)/include\
-	core/include \
-	drivers/CMSIS/makeDevice/ST/STM32F4xx/Include \
-	drivers/CMSIS/Include \
-	rosserial
+INCLUDE_DIRS = \
+	. \
+	testing/include \
+	$(CPPUTEST_HOME)/include
+	
+INCLUDE_DIRS +=	$(C_INCLUDE_DIRS) 
+
 
 $(CPPUTEST_HOME)/lib/libCppUTest.a $(CPPUTEST_HOME)/lib/libCppUTestExt.a:
 	@echo Building CppUTest library
