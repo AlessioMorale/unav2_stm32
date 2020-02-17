@@ -1,0 +1,25 @@
+#!/bin/bash
+SKIPFILE=.format-skip
+formatdir() 
+{
+	
+	if [ -f "$1/$SKIPFILE" ]
+	then
+		echo "skipping $1/"
+		return 
+	fi
+	echo "entering $1"
+	for ext in "cpp" "h" "c"
+	do
+		if ls $1/*.$ext 1> /dev/null 2>&1; then
+			clang-format -i $1/*.$ext
+		fi
+	done
+	for d in `find $1 -mindepth 1 -maxdepth 1 -type d`
+	do
+		formatdir "$d"		
+	done
+	
+}
+
+formatdir "$@"

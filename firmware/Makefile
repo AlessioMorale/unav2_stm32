@@ -344,4 +344,10 @@ clean:
 flash:  $(BUILD_DIR)/$(TARGET).elf
 	openocd -f openocd.cfg -c "program  $(BUILD_DIR)/$(TARGET).elf verify reset" -c "shutdown"
 # *** EOF ***
-
+.PHONY: format
+format: 
+	@echo formatting source code
+	./format ./core
+	./format ./testing/include
+	./format ./testing/src
+	@echo -
