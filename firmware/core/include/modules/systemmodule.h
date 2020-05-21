@@ -22,6 +22,7 @@ protected:
   void moduleThreadStart() __attribute__((noreturn));
   void setup();
   unav::drivers::Lm75 thermometer;
+  unav::drivers::Ina219 power;
 
 private:
   unav::utils::Timer timer;

@@ -10,7 +10,7 @@
 #include <stm32f4xx.h>
 namespace unav::modules {
 
-SystemModule::SystemModule() : thermometer(&I2C_PORT, TEMP_SENSOR_ADDRESS), timer() {
+SystemModule::SystemModule() : thermometer(&I2C_PORT, TEMP_SENSOR_ADDRESS), power(&I2C_PORT, POWER_MONITOR_ADDRESS), timer() {
 }
 
 void SystemModule::initialize() {
@@ -23,18 +23,23 @@ void SystemModule::moduleThreadStart() {
   auto c = xTaskGetTickCount();
   auto wait = 100;
   auto value = -123;
-
+  power.setup(unav::drivers::Ina219ConfigGain::gain1_40MV, unav::drivers::Ina219ConfigBusAdcResolution::adc12BIT,
+              unav::drivers::Ina219ConfigShuntAdcResolution::adc12BIT_128S_69MS, 20480u, 0.002f);
   while (true) {
     float v = thermometer.getTemperature();
 
     value = int32_t(v * 100);
 
     instrumentation_setCounter(perf_sys_temp, value);
-    if (value > 0) {
-      leds_setPattern(2, &leds_pattern_on);
-    } else {
-      leds_setPattern(2, &leds_pattern_on);
-    }
+
+    unav::drivers::PowerStatus_t p = power.getPowerStatus();
+
+    value = int32_t(p.current * 100);
+    instrumentation_setCounter(perf_sys_current, value);
+
+    value = int32_t(p.voltage * 100);
+    instrumentation_setCounter(perf_sys_voltage, value);
+
     vTaskDelayUntil(&c, wait);
   }
 }

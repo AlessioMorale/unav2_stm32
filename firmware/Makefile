@@ -73,6 +73,7 @@ core/src/modules/systemmodule.cpp \
 core/src/controls/pid.cpp \
 core/src/drivers/encoder.cpp \
 core/src/driver/lm75.cpp \
+core/src/driver/ina219.cpp \
 core/src/utils/timer.cpp \
 core/src/messaging.cpp
 
