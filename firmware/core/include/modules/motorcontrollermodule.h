@@ -3,8 +3,9 @@
 #include <messages.h>
 #include <modules/baserosmodule.h>
 #include <utils/timer.h>
-#ifndef MOTORCONTROLLERMODULE_H
-#define MOTORCONTROLLERMODULE_H
+#pragma once
+#define ConversionPerChannel 1
+
 namespace unav::modules {
 class MotorControllerModule : protected BaseRosModule {
 public:
@@ -16,6 +17,10 @@ protected:
   virtual void moduleThreadStart() __attribute__((noreturn));
 
 private:
+  void disableDrivers();
+  void enableDrivers();
+
+  int timeoutCounter = 0;
   bool curLoopEnabled;
   float cmd[MOTORS_COUNT];
   unav::utils::Timer timer;
@@ -25,10 +30,9 @@ private:
   float nominalDt;
   float dt;
   unav::controls::PID pidControllers[MOTORS_COUNT];
-  bool MotorEnabled;
+  bool drivers_enabled = false;
   const uint32_t Channels[MOTORS_COUNT + 1] = MOTOR_CUR_ADC3_ARRAY_OF_CHANNELS;
   const uint32_t AdcSamplingTime = ADC_SAMPLETIME_15CYCLES;
-#define ConversionPerChannel 1
   volatile uint16_t adcConversionBuffer[MOTORS_COUNT * ConversionPerChannel];
 
   void setup();
@@ -41,4 +45,3 @@ private:
   void updateTimings(const float frequency);
 };
 } // namespace unav::modules
-#endif // MOTORCONTROLLERMODULE_H

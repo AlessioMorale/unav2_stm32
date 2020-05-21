@@ -6,6 +6,7 @@
 #include "main.h"
 #include "tim.h"
 #include "timing.h"
+#include <leds.h>
 #include <mathutils.h>
 
 #include <counters.h>
@@ -17,6 +18,8 @@
 namespace unav::modules {
 extern "C" void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc);
 
+#define MAX_TIMEOUT 40
+
 QueueHandle_t adcSemaphore = NULL;
 volatile uint16_t dmaBuffer[32]{0};
 const char msg_warn[]{"Timeout"};
@@ -26,7 +29,7 @@ DMA_HandleTypeDef hdma_adc;
 
 MotorControllerModule::MotorControllerModule()
     : curLoopEnabled{false}, cmd{0.0f}, timer(), mode{unav::motorcontrol_mode_t::disabled}, pid_publish_rate{0},
-      pid_debug(false), nominalDt{0.0f}, dt{0.0f}, MotorEnabled{false}, adcConversionBuffer{0} {
+      pid_debug(false), nominalDt{0.0f}, dt{0.0f}, adcConversionBuffer{0} {
 }
 
 void MotorControllerModule::initialize() {
@@ -41,43 +44,46 @@ void MotorControllerModule::initialize() {
 }
 
 void MotorControllerModule::moduleThreadStart() {
-  // const uint32_t motor_channels[MOTORS_COUNT] TIM_MOT_ARRAY_OF_CHANNELS;
-  int8_t pid_rate_counter = 0;
-  bool publish_pidstatus = false;
-
-  HAL_TIM_Base_Start(&htim8);
+  const uint32_t motor_channels[MOTORS_COUNT] TIM_MOT_ARRAY_OF_CHANNELS;
+  int8_t pidRateCounter{0};
+  bool publishPidStatus{false};
+  bool driversEnabled{false};
   updateTimings(1000.0f);
-
-  // if (HAL_ADC_Start_DMA(&MOTOR_CUR_ADC, (uint32_t *)dmaBuffer, 4) != HAL_OK)
-  // {
-  //  /* Start Conversation Error */
-  //  Error_Handler();
-  //}
 
   vTaskDelay(1000);
   while (true) {
     dt = timer.interval();
     uint32_t motoroutput[MOTORS_COUNT]{TIM_MOT_PERIOD_ZERO};
     if (pid_debug) {
-      pid_rate_counter--;
-      if (pid_rate_counter <= 0) {
-        pid_rate_counter = pid_publish_rate;
-        publish_pidstatus = true;
+      pidRateCounter--;
+      if (pidRateCounter <= 0) {
+        pidRateCounter = pid_publish_rate;
+        publishPidStatus = true;
       }
     }
 
     message_t *ps{nullptr};
     pidstate_content_t *pidstate{nullptr};
-    if (publish_pidstatus) {
+    if (publishPidStatus) {
       ps = prepareMessage();
       pidstate = &ps->pidstate;
       pidstate->type = message_types_t::outbound_CurPIDState;
-      publish_pidstatus = false;
+      publishPidStatus = false;
     }
 
     checkMessages(!curLoopEnabled);
-    switch (mode) {
-    case motorcontrol_mode_t::normal: {
+    if (timeoutCounter > MAX_TIMEOUT) {
+      mode = motorcontrol_mode_t::disabled;
+    }
+
+    if (mode >= motorcontrol_mode_t::normal) {
+      timeoutCounter++;
+
+      if (!driversEnabled) {
+        enableDrivers();
+        driversEnabled = true;
+        leds_setPattern(LED_ACTIVE, &leds_pattern_fast);
+      }
       if (curLoopEnabled) {
         if (false) {
           auto ret = xSemaphoreTake(adcSemaphore, 1);
@@ -92,6 +98,7 @@ void MotorControllerModule::moduleThreadStart() {
           }
         }
       } else {
+
         for (uint8_t i = 0; i < MOTORS_COUNT; i++) {
           motoroutput[i] = (uint32_t)(TIM_MOT_PERIOD_ZERO + (int32_t)(cmd[i] * ((float)(TIM_MOT_PERIOD_MAX / 2))));
         }
@@ -99,30 +106,33 @@ void MotorControllerModule::moduleThreadStart() {
         PERF_MEASURE_PERIOD(perf_mc_loop_time);
 
         for (uint32_t i = 0; i < MOTORS_COUNT; i++) {
-          //__HAL_TIM_SET_COMPARE(&TIM_MOT, motor_channels[i], motoroutput[i]);
+          for (uint32_t i = 0; i < MOTORS_COUNT; i++) {
+            __HAL_TIM_SET_COMPARE(&TIM_MOT, motor_channels[i], motoroutput[i]);
+          }
+
           if (pidstate) {
-            pidstate->output[i] = (float)motoroutput[i];
+            pidstate->output[i] = cmd[i];
           }
         }
       }
-    } break;
-    // todo!
-    case motorcontrol_mode_t::disabled:
-    case motorcontrol_mode_t::failsafe: {
-      for (uint32_t i = 0; i < MOTORS_COUNT; i++) {
-        motoroutput[i] = TIM_MOT_PERIOD_ZERO;
-      }
-    } break;
-    }
 
-    if (pidstate) {
-      sendMessage(ps, RosNodeModuleMessageId);
-      pidstate = nullptr;
+      if (pidstate) {
+        sendMessage(ps, RosNodeModuleMessageId);
+        pidstate = nullptr;
+      }
+    } else {
+      if (driversEnabled) {
+        leds_setPattern(LED_ACTIVE, &leds_pattern_off);
+        disableDrivers();
+        driversEnabled = false;
+      }
     }
   }
 }
 
 void MotorControllerModule::setup() {
+  HAL_TIM_Base_Start(&htim8);
+
   GPIO_TypeDef *gpios[] MOTOR_CUR_ADCx_CHANNEL_GPIO_PORT;
   const uint16_t pins[] MOTOR_CUR_ADCx_CHANNEL_PINS;
   GPIO_InitTypeDef GPIO_InitStruct;
@@ -146,6 +156,9 @@ void MotorControllerModule::checkMessages(bool wait) {
       mode = c->mode;
       for (uint32_t x = 0; x < MOTORS_COUNT; x++) {
         cmd[x] = c->command[x];
+        if (fabsf(cmd[x]) > 0.0001) {
+          timeoutCounter = 0;
+        }
       }
 
     } break;
@@ -211,6 +224,33 @@ void MotorControllerModule::updateTimings(const float frequency) {
 
 void MotorControllerModule::updateOperationConfig(const operationconfig_content_t *cfg) {
   pid_debug = cfg->pid_debug;
+}
+
+void MotorControllerModule::enableDrivers() {
+  TimInit();
+  HAL_TIM_PWM_Start(&TIM_MOT, TIM_CHANNEL_2);
+  HAL_TIMEx_PWMN_Start(&TIM_MOT, TIM_CHANNEL_2);
+  HAL_TIM_PWM_Start(&TIM_MOT, TIM_CHANNEL_3);
+  HAL_TIMEx_PWMN_Start(&TIM_MOT, TIM_CHANNEL_3);
+  __HAL_TIM_SET_COMPARE(&TIM_MOT, TIM_MOT1_CH, TIM_MOT_PERIOD_ZERO);
+  __HAL_TIM_SET_COMPARE(&TIM_MOT, TIM_MOT2_CH, TIM_MOT_PERIOD_ZERO);
+}
+
+void MotorControllerModule::disableDrivers() {
+  GPIO_InitTypeDef GPIO_InitStruct = {0};
+  GPIO_TypeDef *ports[] = TIM_MOT_ARRAY_OF_GPIOS;
+  uint16_t pins[] = TIM_MOT_ARRAY_OF_PINS;
+
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  for (uint32_t i = 0; i < (sizeof(ports) / sizeof(ports[0])); i++) {
+    HAL_GPIO_WritePin(ports[i], pins[i], GPIO_PIN_RESET);
+    GPIO_InitStruct.Pin = pins[i];
+    HAL_GPIO_Init(ports[i], &GPIO_InitStruct);
+  }
+  __HAL_TIM_SET_COMPARE(&TIM_MOT, TIM_MOT1_CH, TIM_MOT_PERIOD_ZERO);
+  __HAL_TIM_SET_COMPARE(&TIM_MOT, TIM_MOT2_CH, TIM_MOT_PERIOD_ZERO);
 }
 
 extern "C" {

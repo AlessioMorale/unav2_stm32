@@ -8,8 +8,7 @@
 #include <std_msgs/Int32.h>
 #include <utils/timer.h>
 
-#ifndef ROSMOTORMODULE_H
-#define ROSMOTORMODULE_H
+#pragma once
 
 namespace unav::modules {
 class MotorManagerModule : public BaseRosModule {
@@ -35,11 +34,7 @@ private:
   uint8_t pid_publish_rate;
   bool pid_debug;
   motorcontrol_mode_t control_mode;
-  int timeout_counter = 0;
   float inverted_rotation[MOTORS_COUNT];
-
-  void disableDrivers();
-  void enableDrivers();
 
   void updatePidConfig(const pidconfig_content_t *cfg);
   void updateEncoderConfig(const encoderconfig_content_t *cfg);
@@ -52,4 +47,3 @@ private:
   void checkMessages();
 };
 } // namespace unav::modules
-#endif

@@ -15,7 +15,6 @@
 #include <stm32f4xx.h>
 #include <timers.h>
 namespace unav::modules {
-#define MAX_TIMEOUT 40
 
 MotorManagerModule::MotorManagerModule()
     : timer(), encoders{unav::drivers::Encoder(&TIM_ENC1), unav::drivers::Encoder(&TIM_ENC2)}, filteredEffort{0.0f}, mode{unav::jointcommand_mode_t::disabled},
@@ -23,13 +22,11 @@ MotorManagerModule::MotorManagerModule()
 }
 
 void MotorManagerModule::initialize() {
-  disableDrivers();
   subscribe(MotorManagerModule::ModuleMessageId);
   BaseRosModule::initializeTask(osPriority::osPriorityAboveNormal, 1024);
 }
 
 void MotorManagerModule::moduleThreadStart() {
-  bool drivers_enabled = false;
   auto c = xTaskGetTickCount();
   updateTimings(100.0f);
 
@@ -49,7 +46,6 @@ void MotorManagerModule::moduleThreadStart() {
     pidControllers[i].setRange(-1.0f, 1.0f);
     encoders[i].applyFilter(nominalDt, encLPF);
   }
-  const uint32_t motor_channels[MOTORS_COUNT] TIM_MOT_ARRAY_OF_CHANNELS;
 
   while (true) {
     uint32_t motoroutput[MOTORS_COUNT]{TIM_MOT_PERIOD_ZERO};
@@ -63,18 +59,7 @@ void MotorManagerModule::moduleThreadStart() {
       }
     }
 
-    if (timeout_counter > MAX_TIMEOUT) {
-      mode = jointcommand_mode_t::disabled;
-    }
-
     if (mode > jointcommand_mode_t::disabled) {
-      timeout_counter++;
-
-      if (!drivers_enabled) {
-        enableDrivers();
-        drivers_enabled = true;
-        leds_setPattern(LED_ACTIVE, &leds_pattern_fast);
-      }
       message_t *js = prepareMessage();
       jointstate_content_t *jointstate = &js->jointstate;
       jointstate->type = message_types_t::outbound_JointState;
@@ -109,7 +94,6 @@ void MotorManagerModule::moduleThreadStart() {
         // channel case.
         motorcontrol->command[i] = filteredEffort[i];
         // handle diagnostics and status reporting
-        motoroutput[i] = (uint32_t)(TIM_MOT_PERIOD_ZERO + (int32_t)(filteredEffort[i] * ((float)(TIM_MOT_PERIOD_MAX / 2))));
 
         jointstate->pos[i] = encoders[i].getPosition() * inverted_rotation[i];
         if (pidstate) {
@@ -127,18 +111,9 @@ void MotorManagerModule::moduleThreadStart() {
       PERF_TIMED_SECTION_START(perf_action_latency);
       sendMessage(mc, MotorControllerModule::ModuleMessageId);
       sendMessage(js, RosNodeModuleMessageId);
-      for (uint32_t i = 0; i < MOTORS_COUNT; i++) {
-        __HAL_TIM_SET_COMPARE(&TIM_MOT, motor_channels[i], motoroutput[i]);
-      }
       if (pidstate) {
         sendMessage(ps, RosNodeModuleMessageId);
         pidstate = nullptr;
-      }
-    } else {
-      if (drivers_enabled) {
-        leds_setPattern(LED_ACTIVE, &leds_pattern_off);
-        disableDrivers();
-        drivers_enabled = false;
       }
     }
 
@@ -147,32 +122,6 @@ void MotorManagerModule::moduleThreadStart() {
   }
 } // namespace unav::modules
 
-void MotorManagerModule::enableDrivers() {
-  TimInit();
-  HAL_TIM_PWM_Start(&TIM_MOT, TIM_CHANNEL_2);
-  HAL_TIMEx_PWMN_Start(&TIM_MOT, TIM_CHANNEL_2);
-  HAL_TIM_PWM_Start(&TIM_MOT, TIM_CHANNEL_3);
-  HAL_TIMEx_PWMN_Start(&TIM_MOT, TIM_CHANNEL_3);
-  __HAL_TIM_SET_COMPARE(&TIM_MOT, TIM_MOT1_CH, TIM_MOT_PERIOD_ZERO);
-  __HAL_TIM_SET_COMPARE(&TIM_MOT, TIM_MOT2_CH, TIM_MOT_PERIOD_ZERO);
-}
-
-void MotorManagerModule::disableDrivers() {
-  GPIO_InitTypeDef GPIO_InitStruct = {0};
-  GPIO_TypeDef *ports[] = TIM_MOT_ARRAY_OF_GPIOS;
-  uint16_t pins[] = TIM_MOT_ARRAY_OF_PINS;
-
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  for (uint32_t i = 0; i < (sizeof(ports) / sizeof(ports[0])); i++) {
-    HAL_GPIO_WritePin(ports[i], pins[i], GPIO_PIN_RESET);
-    GPIO_InitStruct.Pin = pins[i];
-    HAL_GPIO_Init(ports[i], &GPIO_InitStruct);
-  }
-  __HAL_TIM_SET_COMPARE(&TIM_MOT, TIM_MOT1_CH, TIM_MOT_PERIOD_ZERO);
-  __HAL_TIM_SET_COMPARE(&TIM_MOT, TIM_MOT2_CH, TIM_MOT_PERIOD_ZERO);
-}
 void MotorManagerModule::checkMessages() {
   message_t *receivedMsg = nullptr;
   bool relay = false;
@@ -183,9 +132,6 @@ void MotorManagerModule::checkMessages() {
       const jointcommand_content_t *jcmd = &receivedMsg->jointcommand;
       for (uint32_t i = 0; i < MOTORS_COUNT; i++) {
         cmd[i] = jcmd->command[i];
-        if (fabsf(cmd[i]) > 0.0001) {
-          timeout_counter = 0;
-        }
       }
 
       mode = jcmd->mode;
