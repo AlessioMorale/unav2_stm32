@@ -3,7 +3,6 @@
 ######################################
 TARGET = unavng_fw
 
-
 ######################################
 # building variables
 ######################################
@@ -19,64 +18,53 @@ OPT = -Og
 # Build path
 BUILD_DIR = build
 
-HALPATH = drivers/STM32F4xx_HAL_Driver
-USBDEVPATH = usb_device
-MIDDLEWARESPATH = middlewares
-FREERTOSPATH = FreeRTOS
+HALPATH = libs/drivers/STM32F4xx_HAL_Driver
+CMSIS = libs/drivers/CMSIS
+USBDEVPATH = src/usb_device
+MIDDLEWARESPATH = libs/middlewares
+ROSSERIAL = libs/rosserial
+
 ######################################
 # source
 ######################################
 # C sources
 C_SOURCES =  \
-core/src/crc.c \
-core/src/gpio.c \
-core/src/main.c \
-core/src/rng.c \
-core/src/spi.c \
-core/src/tim.c \
-core/src/stm32f4xx_it.c \
-core/src/stm32f4xx_hal_msp.c \
-core/src/system_stm32f4xx.c \
-core/src/stm32f4xx_hal_timebase_tim.c \
-core/src/timing.c \
-core/src/mathutils.c \
-core/src/adc.c \
-core/src/dma.c \
-core/src/i2c.c \
-core/src/usart.c \
-core/src/leds.c \
-core/src/leds_hal.c \
-middlewares/Third_Party/FreeRTOS/Source/croutine.c \
-middlewares/Third_Party/FreeRTOS/Source/event_groups.c \
-middlewares/Third_Party/FreeRTOS/Source/list.c \
-middlewares/Third_Party/FreeRTOS/Source/queue.c \
-middlewares/Third_Party/FreeRTOS/Source/stream_buffer.c \
-middlewares/Third_Party/FreeRTOS/Source/tasks.c \
-middlewares/Third_Party/FreeRTOS/Source/timers.c \
-middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c \
-middlewares/Third_Party/FreeRTOS/Source/portable/MemMang/heap_4.c \
-middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/port.c \
-core/src/instrumentation/instrumentation.c \
-core/src/counters.c \
-core/src/freertos_support.c
-
+src/crc.c \
+src/gpio.c \
+src/main.c \
+src/rng.c \
+src/spi.c \
+src/tim.c \
+src/stm32f4xx_it.c \
+src/stm32f4xx_hal_msp.c \
+src/system_stm32f4xx.c \
+src/stm32f4xx_hal_timebase_tim.c \
+src/timing.c \
+src/mathutils.c \
+src/adc.c \
+src/dma.c \
+src/i2c.c \
+src/usart.c \
+src/leds.c \
+src/leds_hal.c \
+src/instrumentation/instrumentation.c \
+src/counters.c \
+src/freertos_support.c
 
 CPP_SOURCES = \
-core/src/freertos.cpp \
-rosserial/time.cpp \
-core/src/modules/basemodule.cpp \
-core/src/modules/baserosmodule.cpp \
-core/src/modules/rosnodemodule.cpp \
-core/src/modules/motormanagermodule.cpp \
-core/src/modules/motorcontrollermodule.cpp \
-core/src/modules/systemmodule.cpp \
-core/src/controls/pid.cpp \
-core/src/drivers/encoder.cpp \
-core/src/driver/lm75.cpp \
-core/src/driver/ina219.cpp \
-core/src/utils/timer.cpp \
-core/src/messaging.cpp
-
+src/freertos.cpp \
+src/modules/basemodule.cpp \
+src/modules/baserosmodule.cpp \
+src/modules/rosnodemodule.cpp \
+src/modules/motormanagermodule.cpp \
+src/modules/motorcontrollermodule.cpp \
+src/modules/systemmodule.cpp \
+src/controls/pid.cpp \
+src/drivers/encoder.cpp \
+src/driver/lm75.cpp \
+src/driver/ina219.cpp \
+src/utils/timer.cpp \
+src/messaging.cpp
 
 
 # ASM sources
@@ -86,6 +74,8 @@ startup_stm32f405xx.s
 include $(HALPATH)/stm32hal.mk
 include $(USBDEVPATH)/usbdev.mk
 include $(MIDDLEWARESPATH)/middlewares.mk
+include $(ROSSERIAL)/rosserial.mk
+
 #######################################
 # binaries
 #######################################
@@ -138,13 +128,9 @@ AS_INCLUDES =
 
 # C includes
 C_INCLUDE_DIRS +=  \
-core/include \
-drivers/CMSIS/Device/ST/STM32F4xx/Include \
-drivers/CMSIS/Include \
-middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/ \
-middlewares/Third_Party/FreeRTOS/Source/include \
-middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F \
-rosserial
+include \
+$(CMSIS)/Device/ST/STM32F4xx/Include \
+$(CMSIS)/Include
 
 ARM_CFLAGS          += -Wall
 ARM_CFLAGS 					+= -Wextra
@@ -243,8 +229,8 @@ SRC_DIRS = \
 	src/Platforms/$(CPP_PLATFORM) 
 
 SRC_FILES = \
-	core/src/modules/system/systemhealthchecker.cpp \
-	core/src/drivers/ina219.cpp \
+	src/modules/system/systemhealthchecker.cpp \
+	src/drivers/ina219.cpp \
 
 
 TEST_SRC_DIRS = \

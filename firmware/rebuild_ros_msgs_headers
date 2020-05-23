@@ -9,11 +9,11 @@ then
     echo "* Generating headers"
     rosrun rosserial_client make_libraries $working_folder > /dev/null
     echo "* Copying to the destination folder"
-    cp -r $working_folder/ros_lib/unav2_msgs ./rosserial/
-    cp -r $working_folder/ros_lib/std_msgs ./rosserial/
+    cp -r $working_folder/ros_lib/unav2_msgs ./libs/rosserial/
+    cp -r $working_folder/ros_lib/std_msgs ./libs//rosserial/
     #cp -r $working_folder/ros_lib/geometry_msgs ./rosserial/
     #cp -r $working_folder/ros_lib/sensor_msgs ./rosserial/
-    cp -r $working_folder/ros_lib/rosserial_msgs ./rosserial/
+    cp -r $working_folder/ros_lib/rosserial_msgs ./libs/rosserial/
     echo "* Cleaning up temp folder"
     rm -rf $working_folder
     echo "Successfully completed"
