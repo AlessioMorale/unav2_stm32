@@ -14,7 +14,7 @@ SystemModule::SystemModule() : thermometer(&I2C_PORT, TEMP_SENSOR_ADDRESS), powe
 }
 
 void SystemModule::initialize() {
-  subscribe(SystemModule::ModuleMessageId);
+  subscribe(SystemModule::ModuleMessageId, SystemModule::ModuleName);
   BaseModule::initializeTask(osPriority::osPriorityAboveNormal, 1024);
   setup();
 }

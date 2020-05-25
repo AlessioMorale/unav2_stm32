@@ -8,6 +8,7 @@ void Messaging::setup(uint8_t *buffer, size_t slotSize, uint32_t slotsCount) {
   _slotSize = slotSize;
   _maxMessagesCount = slotsCount;
   _freeMessagesQueue = xQueueCreate(slotsCount, sizeof(message_handle_t));
+  vQueueAddToRegistry(_freeMessagesQueue, "FreeSlots");
   if (!_freeMessagesQueue) {
     Error_Handler();
   }
@@ -51,11 +52,12 @@ void Messaging::releaseMessage(message_handle_t message) {
   xQueueSend(_freeMessagesQueue, &message, portMAX_DELAY);
 }
 
-QueueHandle_t Messaging::subscribe(uint32_t recipientId) {
+QueueHandle_t Messaging::subscribe(uint32_t recipientId, const char *subscriberName) {
   QueueHandle_t q = xQueueCreate(_maxMessagesCount, sizeof(message_handle_t));
   if (!q) {
     Error_Handler();
   }
+  vQueueAddToRegistry(q, subscriberName);
   for (int32_t i = 0; i < MESSAGING_MAX_RECIPIENTS; i++) {
     if (_recipients[i].recipientId == 0) {
       _recipients[i].recipientId = recipientId;

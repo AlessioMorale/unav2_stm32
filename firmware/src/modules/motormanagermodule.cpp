@@ -22,7 +22,7 @@ MotorManagerModule::MotorManagerModule()
 }
 
 void MotorManagerModule::initialize() {
-  subscribe(MotorManagerModule::ModuleMessageId);
+  subscribe(MotorManagerModule::ModuleMessageId, MotorManagerModule::ModuleName);
   BaseRosModule::initializeTask(osPriority::osPriorityAboveNormal, 1024);
 }
 

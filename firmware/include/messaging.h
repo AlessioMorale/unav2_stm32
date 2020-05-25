@@ -23,7 +23,7 @@ public:
   };
   void sendMessage(message_handle_t message, uint32_t recipientId);
   void releaseMessage(message_handle_t message);
-  QueueHandle_t subscribe(uint32_t recipientId);
+  QueueHandle_t subscribe(uint32_t recipientId, const char *subscriberName);
 
 private:
   uint8_t *_messagebuffer;

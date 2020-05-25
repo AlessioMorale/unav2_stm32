@@ -27,6 +27,8 @@ namespace unav::modules {
 class RosNodeModule : public BaseRosModule {
 public:
   static const uint32_t ModuleMessageId = BaseRosModule::RosNodeModuleMessageId;
+  static constexpr char *ModuleName = "ROSNode";
+
   RosNodeModule();
   void initialize();
   unav2_msgs::PerfCounter msgPerfCounter[COUNTERS_COUNT];

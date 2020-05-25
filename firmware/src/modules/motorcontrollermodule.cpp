@@ -35,7 +35,7 @@ MotorControllerModule::MotorControllerModule()
 }
 
 void MotorControllerModule::initialize() {
-  subscribe(MotorControllerModule::ModuleMessageId);
+  subscribe(MotorControllerModule::ModuleMessageId, MotorControllerModule::ModuleName);
   BaseModule::initializeTask(osPriority::osPriorityAboveNormal, 1024);
 }
 

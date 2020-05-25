@@ -12,6 +12,7 @@ public:
   MotorControllerModule();
   void initialize();
   static const uint32_t ModuleMessageId{0x0A02};
+  static constexpr char const *ModuleName = "MotCtl";
 
 protected:
   virtual void moduleThreadStart() __attribute__((noreturn));

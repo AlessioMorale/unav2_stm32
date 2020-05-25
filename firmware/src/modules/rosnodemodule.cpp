@@ -49,7 +49,7 @@ void RosNodeModule::initialize() {
 
   getNodeHandle().initNode();
   getMessaging().setup((uint8_t *)_messageBuffer, sizeof(message_t), MESSAGING_BUFFER_SIZE);
-  subscribe(RosNodeModule::ModuleMessageId);
+  subscribe(RosNodeModule::ModuleMessageId, RosNodeModule::ModuleName);
   BaseRosModule::initializeTask(osPriority::osPriorityNormal, 512);
 }
 

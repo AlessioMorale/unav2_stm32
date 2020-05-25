@@ -14,6 +14,7 @@ namespace unav::modules {
 class SystemModule : public BaseRosModule {
 public:
   static const uint32_t ModuleMessageId{0x0515};
+  static constexpr char *ModuleName = "SysMod";
 
   SystemModule();
   virtual void initialize();
