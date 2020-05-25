@@ -2,6 +2,7 @@
 #include "modules/rosnodemodule.h"
 #include "FreeRTOS.h"
 #include "modules/motormanagermodule.h"
+#include <configurationmessageconverter.h>
 #include <counters.h>
 #include <message_buffer.h>
 #include <messageconverter.h>
@@ -17,23 +18,13 @@ RosNodeModule::RosNodeModule()
       pubCurPIDState("unav2/status/cur_pid", &msgpidstate), pubAck("unav2/status/ack", &msgack), pubDiagnostic("unav2/diagnostic", &msgDiagnostic),
       subJointCmd("unav2/control/joint_cmd",
                   [](const unav2_msgs::JointCommand &msg) { rosNode->handleRosMessage(msg, unav::modules::MotorManagerModule::ModuleMessageId); }),
-      subPIDCfg("unav2/config/pid",
-                [](const unav2_msgs::PIDConfig &msg) { rosNode->handleRosMessage(msg, unav::modules::MotorManagerModule::ModuleMessageId); }),
-      subBridgeCfg("unav2/config/bridge",
-                   [](const unav2_msgs::BridgeConfig &msg) { rosNode->handleRosMessage(msg, unav::modules::MotorManagerModule::ModuleMessageId); }),
-      subEncoderCfg("unav2/config/encoder",
-                    [](const unav2_msgs::EncoderConfig &msg) { rosNode->handleRosMessage(msg, unav::modules::MotorManagerModule::ModuleMessageId); }),
-      subLimitCfg("unav2/config/limits",
-                  [](const unav2_msgs::LimitsConfig &msg) { rosNode->handleRosMessage(msg, unav::modules::MotorManagerModule::ModuleMessageId); }),
-      subMechanicalCfg("unav2/config/mechanical",
-                       [](const unav2_msgs::MechanicalConfig &msg) { rosNode->handleRosMessage(msg, unav::modules::MotorManagerModule::ModuleMessageId); }),
-      subOperationCfg("unav2/config/operation",
-                      [](const unav2_msgs::OperationConfig &msg) { rosNode->handleRosMessage(msg, unav::modules::MotorManagerModule::ModuleMessageId); }),
-      subSafetyCfg("unav2/config/safety",
-                   [](const unav2_msgs::SafetyConfig &msg) { rosNode->handleRosMessage(msg, unav::modules::MotorManagerModule::ModuleMessageId); }),
-      incomingMessageQueue{nullptr}
-
-{
+      subPIDCfg("unav2/config/pid", [](const unav2_msgs::PIDConfig &msg) { rosNode->handleRosConfigMessage(msg); }),
+      subBridgeCfg("unav2/config/bridge", [](const unav2_msgs::BridgeConfig &msg) { rosNode->handleRosConfigMessage(msg); }),
+      subEncoderCfg("unav2/config/encoder", [](const unav2_msgs::EncoderConfig &msg) { rosNode->handleRosConfigMessage(msg); }),
+      subLimitCfg("unav2/config/limits", [](const unav2_msgs::LimitsConfig &msg) { rosNode->handleRosConfigMessage(msg); }),
+      subMechanicalCfg("unav2/config/mechanical", [](const unav2_msgs::MechanicalConfig &msg) { rosNode->handleRosConfigMessage(msg); }),
+      subOperationCfg("unav2/config/operation", [](const unav2_msgs::OperationConfig &msg) { rosNode->handleRosConfigMessage(msg); }),
+      subSafetyCfg("unav2/config/safety", [](const unav2_msgs::SafetyConfig &msg) { rosNode->handleRosConfigMessage(msg); }), incomingMessageQueue{nullptr} {
   rosNode = this;
 }
 
@@ -41,6 +32,19 @@ template <typename T> void RosNodeModule::handleRosMessage(const T &msg, uint32_
   message_t *m = rosNode->prepareMessage();
   unav::MessageConverter<T>::fromRosMsg(msg, m);
   rosNode->sendMessage(m, destination);
+}
+
+template <typename T> void RosNodeModule::handleRosConfigMessage(const T &msg) {
+  static configuration_message_t c;
+  unav::ConfigurationMessageConverter<T>::fromRosMsg(msg, &c);
+  configuration.set(&c);
+  auto t = getConfigurationItemFromMessageType(c.header.type);
+  message_t *m = rosNode->prepareMessage();
+  m->type = message_types_t::internal_reconfigure;
+  m->reconfigure.item = t;
+  rosNode->sendMessage(m, unav::modules::MotorManagerModule::ModuleMessageId);
+  msgack.data = c.header.transactionId;
+  pubAck.publish(&msgack);
 }
 
 void RosNodeModule::initialize() {
@@ -117,7 +121,7 @@ void RosNodeModule::sendRosMessage(message_t *msg) {
     msgpidstate.stamp = getNodeHandle().now();
     pubCurPIDState.publish(&msgpidstate);
     break;
-  case unav::message_types_t::outboudn_ack:
+  case unav::message_types_t::outbound_ack:
     msgack.data = msg->ackcontent.transactionId;
     pubAck.publish(&msgack);
     break;

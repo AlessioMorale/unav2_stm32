@@ -1,4 +1,6 @@
+#include <configuration.h>
 #include <controls/pid.h>
+#include <drivers/motors.h>
 #include <main.h>
 #include <messages.h>
 #include <modules/baserosmodule.h>
@@ -7,6 +9,7 @@
 #define ConversionPerChannel 1
 
 namespace unav::modules {
+
 class MotorControllerModule : protected BaseRosModule {
 public:
   MotorControllerModule();
@@ -18,9 +21,7 @@ protected:
   virtual void moduleThreadStart() __attribute__((noreturn));
 
 private:
-  void disableDrivers();
-  void enableDrivers();
-
+  unav::drivers::Motors<MOTORS_COUNT> motors;
   int timeoutCounter = 0;
   bool curLoopEnabled;
   float cmd[MOTORS_COUNT];
@@ -32,11 +33,9 @@ private:
   float dt;
   unav::controls::PID pidControllers[MOTORS_COUNT];
   bool drivers_enabled = false;
-  const uint32_t Channels[MOTORS_COUNT + 1] = MOTOR_CUR_ADC3_ARRAY_OF_CHANNELS;
-  const uint32_t AdcSamplingTime = ADC_SAMPLETIME_15CYCLES;
-  volatile uint16_t adcConversionBuffer[MOTORS_COUNT * ConversionPerChannel];
 
   void setup();
+  void updateConfiguration(const reconfigure_content_t *reconfig);
   void checkMessages(bool wait);
   void updatePidConfig(const pidconfig_content_t *cfg);
   void updateLimitsConfig(const limitsconfig_content_t *cfg);

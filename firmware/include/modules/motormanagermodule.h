@@ -1,5 +1,6 @@
 #include "baserosmodule.h"
 #include "ros.h"
+#include <configuration.h>
 #include <controls/pid.h>
 #include <drivers/encoder.h>
 #include <messages.h>
@@ -7,7 +8,6 @@
 #include <std_msgs/Int16.h>
 #include <std_msgs/Int32.h>
 #include <utils/timer.h>
-
 #pragma once
 
 namespace unav::modules {
@@ -37,6 +37,7 @@ private:
   motorcontrol_mode_t control_mode;
   float inverted_rotation[MOTORS_COUNT];
 
+  void updateConfiguration(const reconfigure_content_t *reconfig);
   void updatePidConfig(const pidconfig_content_t *cfg);
   void updateEncoderConfig(const encoderconfig_content_t *cfg);
   void updateBridgeConfig(const bridgeconfig_content_t *cfg);

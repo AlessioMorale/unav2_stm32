@@ -80,9 +80,9 @@ void MotorControllerModule::moduleThreadStart() {
 void MotorControllerModule::checkMessages(bool wait) {
   message_t *receivedMsg = nullptr;
   portBASE_TYPE waittime = wait ? 50 : 0;
-  uint32_t transactionId = 0;
   if (waitMessage(&receivedMsg, waittime)) {
     switch (receivedMsg->type) {
+
     case message_types_t::internal_motor_control: {
       PERF_TIMED_SECTION_END(perf_action_latency);
       auto *c = &receivedMsg->motorcontrol;
@@ -93,46 +93,45 @@ void MotorControllerModule::checkMessages(bool wait) {
           timeoutCounter = 0;
         }
       }
-
     } break;
-    case message_types_t::inbound_PIDConfig: {
-      const auto cfg = &receivedMsg->pidconfig;
-      updatePidConfig(cfg);
-      transactionId = cfg->transactionId;
-    } break;
-
-    case message_types_t::inbound_BridgeConfig: {
-      const auto cfg = &receivedMsg->bridgeconfig;
-      updateBridgeConfig(cfg);
-      transactionId = cfg->transactionId;
-    } break;
-
-    case message_types_t::inbound_SafetyConfig: {
-      const auto cfg = &receivedMsg->safetyconfig;
-      updateSafetyConfig(cfg);
-      transactionId = cfg->transactionId;
-    } break;
-
-    case message_types_t::inbound_OperationConfig: {
-      const auto cfg = &receivedMsg->operationconfig;
-      updateOperationConfig(cfg);
-      transactionId = cfg->transactionId;
-    } break;
-
-    case message_types_t::inbound_LimitsConfig: {
-      const auto cfg = &receivedMsg->limitsconfig;
-      updateLimitsConfig(cfg);
-      transactionId = cfg->transactionId;
+    case message_types_t::internal_reconfigure: {
+      const reconfigure_content_t *reconfig = &receivedMsg->reconfigure;
+      updateConfiguration(reconfig);
     } break;
 
     default:
       break;
     }
-    if (transactionId) {
-      sendAck(receivedMsg, transactionId);
-    } else {
-      releaseMessage(receivedMsg);
-    }
+    releaseMessage(receivedMsg);
+  }
+}
+
+void MotorControllerModule::updateConfiguration(const reconfigure_content_t *reconfig) {
+  switch (reconfig->item) {
+  case configuration_item_t::pidconfig: {
+    const auto cfg = configuration.getPIDConfig();
+    updatePidConfig(&cfg);
+  } break;
+
+  case configuration_item_t::bridgeconfig: {
+    const auto cfg = configuration.getBridgeConfig();
+    updateBridgeConfig(&cfg);
+  } break;
+
+  case configuration_item_t::safetyconfig: {
+    const auto cfg = configuration.getSafetyConfig();
+    updateSafetyConfig(&cfg);
+  } break;
+
+  case configuration_item_t::limitsconfig: {
+    const auto cfg = configuration.getLimitsConfig();
+    updateLimitsConfig(&cfg);
+  } break;
+
+  case configuration_item_t::operationconfig: {
+    const auto cfg = configuration.getOperationConfig();
+    updateOperationConfig(&cfg);
+  } break;
   }
 }
 

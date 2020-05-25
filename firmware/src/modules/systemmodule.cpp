@@ -57,11 +57,7 @@ void SystemModule::checkMessages() {
     default:
       break;
     }
-    if (transactionId) {
-      sendAck(receivedMsg, transactionId);
-    } else {
-      releaseMessage(receivedMsg);
-    }
+    releaseMessage(receivedMsg);
   }
 }
 

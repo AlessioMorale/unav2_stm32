@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <consts.h>
 #include <stdbool.h>
 #include <stdint.h>
@@ -7,7 +8,7 @@ namespace unav {
 
 enum class message_types_t : int32_t {
   NONE = 0,
-  outboudn_ack = 1,
+  outbound_ack = 1,
   outbound_VelPIDState = 10,
   outbound_CurPIDState = 11,
   outbound_JointState = 12,
@@ -19,7 +20,8 @@ enum class message_types_t : int32_t {
   inbound_OperationConfig = 64,
   inbound_PIDConfig = 65,
   inbound_SafetyConfig = 66,
-  internal_motor_control = 100
+  internal_motor_control = 100,
+  internal_reconfigure = 101
 };
 
 typedef struct _pidstate_content {
@@ -86,14 +88,13 @@ typedef struct bridgeconfig_content {
 } bridgeconfig_content_t;
 
 enum class encoderconfig_position_t : int8_t { after_gear = 0, before_gear = 1 };
-enum class encoderconfig_channels_t : uint8_t { one_channel = 1, two_channels = 2 };
 typedef struct encoderconfig_content {
   message_types_t type;
   uint32_t transactionId;
   uint16_t cpr;
   encoderconfig_position_t position;
   bool has_z_index;
-  encoderconfig_channels_t channels;
+  uint8_t channels;
   bool invert0;
   bool invert1;
 } encoderconfig_content_t;
@@ -153,6 +154,22 @@ typedef struct motorcontrol_content {
   motorcontrol_mode_t mode;
 } motorcontrol_content_t;
 
+enum class configuration_item_t : uint32_t {
+  NONE = 0x00,
+  pidconfig = 0x01,
+  bridgeconfig = 0x02,
+  encoderconfig = 0x04,
+  limitsconfig = 0x08,
+  mechanicalconfig = 0x10,
+  operationconfig = 0x20,
+  safetyconfig = 0x40
+};
+
+typedef struct reconfigure_content {
+  message_types_t type;
+  configuration_item_t item;
+} reconfigure_content_t;
+
 typedef struct _generic_message {
   union {
     message_types_t type;
@@ -160,6 +177,17 @@ typedef struct _generic_message {
     pidstate_content_t pidstate;
     jointstate_content_t jointstate;
     jointcommand_content_t jointcommand;
+    motorcontrol_content_t motorcontrol;
+    reconfigure_content_t reconfigure;
+  };
+} message_t;
+
+typedef struct _configuration_message {
+  union {
+    struct  {
+      message_types_t type;
+      uint32_t transactionId;
+    } header;
     pidconfig_content_t pidconfig;
     bridgeconfig_content_t bridgeconfig;
     encoderconfig_content_t encoderconfig;
@@ -167,22 +195,41 @@ typedef struct _generic_message {
     mechanicalconfig_content_t mechanicalconfig;
     operationconfig_content_t operationconfig;
     safetyconfig_content_t safetyconfig;
-    motorcontrol_content_t motorcontrol;
   };
-} message_t;
+} configuration_message_t;
 
 #define CONFIGURATION_ENTRIES_TABLE(ENTRY)                                                                                                                     \
-  ENTRY(pidconfig, 0)                                                                                                                                          \
-  ENTRY(bridgeconfig, 1)                                                                                                                                       \
-  ENTRY(encoderconfig, 2)                                                                                                                                      \
-  ENTRY(limitsconfig, 3)                                                                                                                                       \
-  ENTRY(mechanicalconfig, 4)                                                                                                                                   \
-  ENTRY(operationconfig, 5)                                                                                                                                    \
-  ENTRY(safetyconfig, 6)                                                                                                                                       \
-  ENTRY(motorcontrol, 7)
+  ENTRY(pidconfig, 0, inbound_PIDConfig)                                                                                                                       \
+  ENTRY(bridgeconfig, 1, inbound_BridgeConfig)                                                                                                                 \
+  ENTRY(encoderconfig, 2, inbound_EncoderConfig)                                                                                                               \
+  ENTRY(limitsconfig, 3, inbound_LimitsConfig)                                                                                                                 \
+  ENTRY(mechanicalconfig, 4, inbound_MechanicalConfig)                                                                                                         \
+  ENTRY(operationconfig, 5, inbound_OperationConfig)                                                                                                           \
+  ENTRY(safetyconfig, 6, inbound_SafetyConfig)
 
-#define CONFIGURATION_ENTRY_EXPAND_ENUM(name, index) name = index,
+#define CONFIGURATION_ENTRY_EXPAND_ENUM(name, index, _x) name = index,
 
 enum class ConfigurationMessageTypes_t : uint8_t { CONFIGURATION_ENTRIES_TABLE(CONFIGURATION_ENTRY_EXPAND_ENUM) };
+#define CONFIGURATION_ENTRY_EXPAND_TYPE_CASE(name, index, msgtype)                                                                                             \
+  case message_types_t::msgtype: {                                                                                                                             \
+    return configuration_item_t::name;                                                                                                                         \
+  } break;
 
+static inline configuration_item_t getConfigurationItemFromMessageType(message_types_t t) {
+  switch (t) {
+    CONFIGURATION_ENTRIES_TABLE(CONFIGURATION_ENTRY_EXPAND_TYPE_CASE)
+  case message_types_t::inbound_JointCommand:
+  case message_types_t::internal_motor_control:
+  case message_types_t::internal_reconfigure:
+  case message_types_t::outbound_ack:
+  case message_types_t::outbound_CurPIDState:
+  case message_types_t::outbound_JointState:
+  case message_types_t::outbound_VelPIDState:
+  case message_types_t::NONE:
+  default:
+    assert(false);
+    break;
+  }
+}
+#undef CONFIGURATION_ENTRY_EXPAND_TYPE_CASE
 } // namespace unav

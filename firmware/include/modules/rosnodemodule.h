@@ -1,6 +1,7 @@
 #include "baserosmodule.h"
 #include "message_buffer.h"
 #include "ros.h"
+#include <configuration.h>
 #include <counters.h>
 #include <instrumentation/instrumentation.h>
 #include <messages.h>
@@ -39,9 +40,11 @@ private:
   ros::NodeHandle &getNodeHandle() {
     return nh;
   }
+
   QueueHandle_t incomingMessageQueue;
   message_t _messageBuffer[MESSAGING_BUFFER_SIZE];
   template <typename T> void handleRosMessage(const T &msg, uint32_t destination);
+  template <typename T> void handleRosConfigMessage(const T &msg);
   void publishDiagnostic();
   unav2_msgs::JointState msgjointstate;
   unav2_msgs::PIDState msgpidstate;

@@ -120,13 +120,12 @@ void MotorManagerModule::moduleThreadStart() {
     checkMessages();
     vTaskDelayUntil(&c, wait);
   }
-} // namespace unav::modules
+}
 
 void MotorManagerModule::checkMessages() {
   message_t *receivedMsg = nullptr;
   bool relay = false;
   if (waitMessage(&receivedMsg, 0)) {
-    uint32_t transactionId = 0;
     switch (receivedMsg->type) {
     case message_types_t::inbound_JointCommand: {
       const jointcommand_content_t *jcmd = &receivedMsg->jointcommand;
@@ -148,59 +147,61 @@ void MotorManagerModule::checkMessages() {
       }
     } break;
 
-    case message_types_t::inbound_PIDConfig: {
-      const auto cfg = &receivedMsg->pidconfig;
-      updatePidConfig(cfg);
-      relay = true;
+    case message_types_t::internal_reconfigure: {
+      const reconfigure_content_t *reconfig = &receivedMsg->reconfigure;
+      updateConfiguration(reconfig);
+      // relay = true;
     } break;
 
-    case message_types_t::inbound_EncoderConfig: {
-      const auto cfg = &receivedMsg->encoderconfig;
-      updateEncoderConfig(cfg);
-      transactionId = cfg->transactionId;
-    } break;
-
-    case message_types_t::inbound_BridgeConfig: {
-      const auto cfg = &receivedMsg->bridgeconfig;
-      updateBridgeConfig(cfg);
-      relay = true;
-    } break;
-
-    case message_types_t::inbound_MechanicalConfig: {
-      const auto cfg = &receivedMsg->mechanicalconfig;
-      updateMechanicalConfig(cfg);
-      transactionId = cfg->transactionId;
-    } break;
-
-    case message_types_t::inbound_SafetyConfig: {
-      const auto cfg = &receivedMsg->safetyconfig;
-      updateSafetyConfig(cfg);
-      relay = true;
-    } break;
-
-    case message_types_t::inbound_LimitsConfig: {
-      const auto cfg = &receivedMsg->limitsconfig;
-      updateLimitsConfig(cfg);
-      relay = true;
-    } break;
-
-    case message_types_t::inbound_OperationConfig: {
-      const auto cfg = &receivedMsg->operationconfig;
-      updateOperationConfig(cfg);
-      relay = true;
-    } break;
     default:
       break;
     }
+
     if (relay) {
       sendMessage(receivedMsg, MotorControllerModule::ModuleMessageId);
     } else {
-      if (transactionId) {
-        sendAck(receivedMsg, transactionId);
-      } else {
-        releaseMessage(receivedMsg);
-      }
+      releaseMessage(receivedMsg);
     }
+  }
+}
+
+// TODO! add logic to handle configuration check as precondition to disable failsafe
+
+void MotorManagerModule::updateConfiguration(const reconfigure_content_t *reconfig) {
+  switch (reconfig->item) {
+  case configuration_item_t::pidconfig: {
+    const auto cfg = configuration.getPIDConfig();
+    updatePidConfig(&cfg);
+  } break;
+  case configuration_item_t::encoderconfig: {
+    const auto cfg = configuration.getEncoderConfig();
+    updateEncoderConfig(&cfg);
+  } break;
+
+  case configuration_item_t::bridgeconfig: {
+    const auto cfg = configuration.getBridgeConfig();
+    updateBridgeConfig(&cfg);
+  } break;
+
+  case configuration_item_t::mechanicalconfig: {
+    const auto cfg = configuration.getMechanicalConfig();
+    updateMechanicalConfig(&cfg);
+  } break;
+
+  case configuration_item_t::safetyconfig: {
+    const auto cfg = configuration.getSafetyConfig();
+    updateSafetyConfig(&cfg);
+  } break;
+
+  case configuration_item_t::limitsconfig: {
+    const auto cfg = configuration.getLimitsConfig();
+    updateLimitsConfig(&cfg);
+  } break;
+
+  case configuration_item_t::operationconfig: {
+    const auto cfg = configuration.getOperationConfig();
+    updateOperationConfig(&cfg);
+  } break;
   }
 }
 
@@ -214,7 +215,7 @@ void MotorManagerModule::updatePidConfig(const pidconfig_content_t *cfg) {
 void MotorManagerModule::updateEncoderConfig(const encoderconfig_content_t *cfg) {
   for (uint32_t i = 0; i < MOTORS_COUNT; i++) {
     encoders[i].setCPR(cfg->cpr);
-    encoders[i].setSingleChannel(cfg->channels == encoderconfig_channels_t::one_channel);
+    encoders[i].setSingleChannel(cfg->channels == 1);
     encoders[i].setHasZIndex(cfg->has_z_index);
     encoders[i].setIsEncoderAfterGear(cfg->position == encoderconfig_position_t::after_gear);
     encoders[i].setInverted(i == 0 ? cfg->invert0 : cfg->invert1);
