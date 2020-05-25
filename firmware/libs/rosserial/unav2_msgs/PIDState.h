@@ -5,7 +5,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include "ros/msg.h"
-#include "std_msgs/Header.h"
+#include "ros/time.h"
 
 namespace unav2_msgs
 {
@@ -13,8 +13,8 @@ namespace unav2_msgs
   class PIDState : public ros::Msg
   {
     public:
-      typedef std_msgs::Header _header_type;
-      _header_type header;
+      typedef ros::Time _stamp_type;
+      _stamp_type stamp;
       uint32_t timestep_length;
       typedef float _timestep_type;
       _timestep_type st_timestep;
@@ -49,7 +49,7 @@ namespace unav2_msgs
       _output_type * output;
 
     PIDState():
-      header(),
+      stamp(),
       timestep_length(0), timestep(NULL),
       error_length(0), error(NULL),
       p_term_length(0), p_term(NULL),
@@ -64,7 +64,16 @@ namespace unav2_msgs
     virtual int serialize(unsigned char *outbuffer) const
     {
       int offset = 0;
-      offset += this->header.serialize(outbuffer + offset);
+      *(outbuffer + offset + 0) = (this->stamp.sec >> (8 * 0)) & 0xFF;
+      *(outbuffer + offset + 1) = (this->stamp.sec >> (8 * 1)) & 0xFF;
+      *(outbuffer + offset + 2) = (this->stamp.sec >> (8 * 2)) & 0xFF;
+      *(outbuffer + offset + 3) = (this->stamp.sec >> (8 * 3)) & 0xFF;
+      offset += sizeof(this->stamp.sec);
+      *(outbuffer + offset + 0) = (this->stamp.nsec >> (8 * 0)) & 0xFF;
+      *(outbuffer + offset + 1) = (this->stamp.nsec >> (8 * 1)) & 0xFF;
+      *(outbuffer + offset + 2) = (this->stamp.nsec >> (8 * 2)) & 0xFF;
+      *(outbuffer + offset + 3) = (this->stamp.nsec >> (8 * 3)) & 0xFF;
+      offset += sizeof(this->stamp.nsec);
       *(outbuffer + offset + 0) = (this->timestep_length >> (8 * 0)) & 0xFF;
       *(outbuffer + offset + 1) = (this->timestep_length >> (8 * 1)) & 0xFF;
       *(outbuffer + offset + 2) = (this->timestep_length >> (8 * 2)) & 0xFF;
@@ -207,7 +216,16 @@ namespace unav2_msgs
     virtual int deserialize(unsigned char *inbuffer)
     {
       int offset = 0;
-      offset += this->header.deserialize(inbuffer + offset);
+      this->stamp.sec =  ((uint32_t) (*(inbuffer + offset)));
+      this->stamp.sec |= ((uint32_t) (*(inbuffer + offset + 1))) << (8 * 1);
+      this->stamp.sec |= ((uint32_t) (*(inbuffer + offset + 2))) << (8 * 2);
+      this->stamp.sec |= ((uint32_t) (*(inbuffer + offset + 3))) << (8 * 3);
+      offset += sizeof(this->stamp.sec);
+      this->stamp.nsec =  ((uint32_t) (*(inbuffer + offset)));
+      this->stamp.nsec |= ((uint32_t) (*(inbuffer + offset + 1))) << (8 * 1);
+      this->stamp.nsec |= ((uint32_t) (*(inbuffer + offset + 2))) << (8 * 2);
+      this->stamp.nsec |= ((uint32_t) (*(inbuffer + offset + 3))) << (8 * 3);
+      offset += sizeof(this->stamp.nsec);
       uint32_t timestep_lengthT = ((uint32_t) (*(inbuffer + offset))); 
       timestep_lengthT |= ((uint32_t) (*(inbuffer + offset + 1))) << (8 * 1); 
       timestep_lengthT |= ((uint32_t) (*(inbuffer + offset + 2))) << (8 * 2); 
@@ -388,7 +406,7 @@ namespace unav2_msgs
     }
 
     const char * getType(){ return "unav2_msgs/PIDState"; };
-    const char * getMD5(){ return "71f9b5cbcaed40867ce98feaf3d4622b"; };
+    const char * getMD5(){ return "9f8773bbe78f298721ce0f900de179ff"; };
 
   };
 

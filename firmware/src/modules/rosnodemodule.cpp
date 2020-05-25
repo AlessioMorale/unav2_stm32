@@ -103,16 +103,18 @@ void RosNodeModule::publishDiagnostic() {
 void RosNodeModule::sendRosMessage(message_t *msg) {
   switch (msg->type) {
   case unav::message_types_t::outbound_JointState:
-    msgjointstate.stamp = getNodeHandle().now();
     unav::MessageConverter<unav2_msgs::JointState>::toRosMsg(msg, msgjointstate);
+    msgjointstate.stamp = getNodeHandle().now();
     pubJoints.publish(&msgjointstate);
     break;
   case unav::message_types_t::outbound_VelPIDState:
     unav::MessageConverter<unav2_msgs::PIDState>::toRosMsg(msg, msgpidstate);
+    msgpidstate.stamp = getNodeHandle().now();
     pubVelPIDState.publish(&msgpidstate);
     break;
   case unav::message_types_t::outbound_CurPIDState:
     unav::MessageConverter<unav2_msgs::PIDState>::toRosMsg(msg, msgpidstate);
+    msgpidstate.stamp = getNodeHandle().now();
     pubCurPIDState.publish(&msgpidstate);
     break;
   case unav::message_types_t::outboudn_ack:

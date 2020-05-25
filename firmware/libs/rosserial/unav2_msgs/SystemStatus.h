@@ -15,18 +15,18 @@ namespace unav2_msgs
     public:
       typedef ros::Time _stamp_type;
       _stamp_type stamp;
-      typedef float _temperature_type;
-      _temperature_type temperature;
-      typedef uint8_t _fan_type;
-      _fan_type fan;
-      typedef bool _active_type;
-      _active_type active;
+      typedef float _BatteryVoltage_type;
+      _BatteryVoltage_type BatteryVoltage;
+      typedef float _BatteryCurrent_type;
+      _BatteryCurrent_type BatteryCurrent;
+      typedef float _Temp_type;
+      _Temp_type Temp;
 
     SystemStatus():
       stamp(),
-      temperature(0),
-      fan(0),
-      active(0)
+      BatteryVoltage(0),
+      BatteryCurrent(0),
+      Temp(0)
     {
     }
 
@@ -46,22 +46,33 @@ namespace unav2_msgs
       union {
         float real;
         uint32_t base;
-      } u_temperature;
-      u_temperature.real = this->temperature;
-      *(outbuffer + offset + 0) = (u_temperature.base >> (8 * 0)) & 0xFF;
-      *(outbuffer + offset + 1) = (u_temperature.base >> (8 * 1)) & 0xFF;
-      *(outbuffer + offset + 2) = (u_temperature.base >> (8 * 2)) & 0xFF;
-      *(outbuffer + offset + 3) = (u_temperature.base >> (8 * 3)) & 0xFF;
-      offset += sizeof(this->temperature);
-      *(outbuffer + offset + 0) = (this->fan >> (8 * 0)) & 0xFF;
-      offset += sizeof(this->fan);
+      } u_BatteryVoltage;
+      u_BatteryVoltage.real = this->BatteryVoltage;
+      *(outbuffer + offset + 0) = (u_BatteryVoltage.base >> (8 * 0)) & 0xFF;
+      *(outbuffer + offset + 1) = (u_BatteryVoltage.base >> (8 * 1)) & 0xFF;
+      *(outbuffer + offset + 2) = (u_BatteryVoltage.base >> (8 * 2)) & 0xFF;
+      *(outbuffer + offset + 3) = (u_BatteryVoltage.base >> (8 * 3)) & 0xFF;
+      offset += sizeof(this->BatteryVoltage);
       union {
-        bool real;
-        uint8_t base;
-      } u_active;
-      u_active.real = this->active;
-      *(outbuffer + offset + 0) = (u_active.base >> (8 * 0)) & 0xFF;
-      offset += sizeof(this->active);
+        float real;
+        uint32_t base;
+      } u_BatteryCurrent;
+      u_BatteryCurrent.real = this->BatteryCurrent;
+      *(outbuffer + offset + 0) = (u_BatteryCurrent.base >> (8 * 0)) & 0xFF;
+      *(outbuffer + offset + 1) = (u_BatteryCurrent.base >> (8 * 1)) & 0xFF;
+      *(outbuffer + offset + 2) = (u_BatteryCurrent.base >> (8 * 2)) & 0xFF;
+      *(outbuffer + offset + 3) = (u_BatteryCurrent.base >> (8 * 3)) & 0xFF;
+      offset += sizeof(this->BatteryCurrent);
+      union {
+        float real;
+        uint32_t base;
+      } u_Temp;
+      u_Temp.real = this->Temp;
+      *(outbuffer + offset + 0) = (u_Temp.base >> (8 * 0)) & 0xFF;
+      *(outbuffer + offset + 1) = (u_Temp.base >> (8 * 1)) & 0xFF;
+      *(outbuffer + offset + 2) = (u_Temp.base >> (8 * 2)) & 0xFF;
+      *(outbuffer + offset + 3) = (u_Temp.base >> (8 * 3)) & 0xFF;
+      offset += sizeof(this->Temp);
       return offset;
     }
 
@@ -81,29 +92,41 @@ namespace unav2_msgs
       union {
         float real;
         uint32_t base;
-      } u_temperature;
-      u_temperature.base = 0;
-      u_temperature.base |= ((uint32_t) (*(inbuffer + offset + 0))) << (8 * 0);
-      u_temperature.base |= ((uint32_t) (*(inbuffer + offset + 1))) << (8 * 1);
-      u_temperature.base |= ((uint32_t) (*(inbuffer + offset + 2))) << (8 * 2);
-      u_temperature.base |= ((uint32_t) (*(inbuffer + offset + 3))) << (8 * 3);
-      this->temperature = u_temperature.real;
-      offset += sizeof(this->temperature);
-      this->fan =  ((uint8_t) (*(inbuffer + offset)));
-      offset += sizeof(this->fan);
+      } u_BatteryVoltage;
+      u_BatteryVoltage.base = 0;
+      u_BatteryVoltage.base |= ((uint32_t) (*(inbuffer + offset + 0))) << (8 * 0);
+      u_BatteryVoltage.base |= ((uint32_t) (*(inbuffer + offset + 1))) << (8 * 1);
+      u_BatteryVoltage.base |= ((uint32_t) (*(inbuffer + offset + 2))) << (8 * 2);
+      u_BatteryVoltage.base |= ((uint32_t) (*(inbuffer + offset + 3))) << (8 * 3);
+      this->BatteryVoltage = u_BatteryVoltage.real;
+      offset += sizeof(this->BatteryVoltage);
       union {
-        bool real;
-        uint8_t base;
-      } u_active;
-      u_active.base = 0;
-      u_active.base |= ((uint8_t) (*(inbuffer + offset + 0))) << (8 * 0);
-      this->active = u_active.real;
-      offset += sizeof(this->active);
+        float real;
+        uint32_t base;
+      } u_BatteryCurrent;
+      u_BatteryCurrent.base = 0;
+      u_BatteryCurrent.base |= ((uint32_t) (*(inbuffer + offset + 0))) << (8 * 0);
+      u_BatteryCurrent.base |= ((uint32_t) (*(inbuffer + offset + 1))) << (8 * 1);
+      u_BatteryCurrent.base |= ((uint32_t) (*(inbuffer + offset + 2))) << (8 * 2);
+      u_BatteryCurrent.base |= ((uint32_t) (*(inbuffer + offset + 3))) << (8 * 3);
+      this->BatteryCurrent = u_BatteryCurrent.real;
+      offset += sizeof(this->BatteryCurrent);
+      union {
+        float real;
+        uint32_t base;
+      } u_Temp;
+      u_Temp.base = 0;
+      u_Temp.base |= ((uint32_t) (*(inbuffer + offset + 0))) << (8 * 0);
+      u_Temp.base |= ((uint32_t) (*(inbuffer + offset + 1))) << (8 * 1);
+      u_Temp.base |= ((uint32_t) (*(inbuffer + offset + 2))) << (8 * 2);
+      u_Temp.base |= ((uint32_t) (*(inbuffer + offset + 3))) << (8 * 3);
+      this->Temp = u_Temp.real;
+      offset += sizeof(this->Temp);
      return offset;
     }
 
     const char * getType(){ return "unav2_msgs/SystemStatus"; };
-    const char * getMD5(){ return "9f9e61da2c42ba796c40373d8808687b"; };
+    const char * getMD5(){ return "f8647f0bd833f40216f9b38ddac0bdb2"; };
 
   };
 
