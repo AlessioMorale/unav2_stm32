@@ -162,6 +162,7 @@ extern I2C_HandleTypeDef hi2c2;
 #define I2C_PORT hi2c2
 #define TEMP_SENSOR_ADDRESS (0x48 << 1)
 #define POWER_MONITOR_ADDRESS (0x40 << 1)
+
 /* Definition for timers */
 #define TIM_ENC1 htim1
 #define TIM_ENC2 htim2
@@ -185,6 +186,8 @@ extern I2C_HandleTypeDef hi2c2;
 
 #define TIM_MOT_ARRAY_OF_PINS                                                                                                                                  \
   { TIM_MOT1_A_Pin, TIM_MOT1_B_Pin, TIM_MOT2_A_Pin, TIM_MOT2_B_Pin }
+#define TIM_MOT_ARRAY_OF_GPIO_DISABLED_STATUS                                                                                                                  \
+  { GPIO_PIN_RESET, GPIO_PIN_RESET, GPIO_PIN_RESET, GPIO_PIN_RESET }
 
 /* Definition for GPIOs  */
 #define O_PWR_EN_STATUS_ENABLE GPIO_PIN_SET

@@ -54,7 +54,7 @@
 
 osThreadId defaultTaskHandle;
 unav::modules::RosNodeModule rosnode;
-unav::modules::MotorManagerModule rosmotornode;
+unav::modules::MotorManagerModule rosMotorManager;
 unav::modules::MotorControllerModule motorController;
 unav::modules::SystemModule systemModule;
 /* USER CODE END Variables */
@@ -101,7 +101,7 @@ extern "C" void MX_FREERTOS_Init(void) {
   defaultTaskHandle = osThreadCreate(osThread(defaultTask), nullptr);
 
   rosnode.initialize();
-  rosmotornode.initialize();
+  rosMotorManager.initialize();
   motorController.initialize();
   systemModule.initialize();
   /* USER CODE BEGIN RTOS_THREADS */
