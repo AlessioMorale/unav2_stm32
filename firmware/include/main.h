@@ -170,24 +170,35 @@ extern I2C_HandleTypeDef hi2c2;
 #define TIM_FAN_PWM_CH TIM_CHANNEL_3
 #define TIM_FAN_IDX_CH TIM_CHANNEL_4
 
-#define TIM_MOT htim8
+#define TIM_MOT1 htim8
+#define TIM_MOT2 htim8
+
 #define TIM_MOT1_CH TIM_CHANNEL_2
 #define TIM_MOT2_CH TIM_CHANNEL_3
 #define TIM_MOT_PERIOD_MAX 1024
 #define TIM_MOT_PERIOD_MIN 0
 #define TIM_MOT_PERIOD_ZERO 512
 
-#define TimInit MX_TIM8_Init
+#define Tim1Init MX_TIM8_Init
+#define Tim2Init MX_TIM8_Init
+
 #define TIM_MOT_ARRAY_OF_CHANNELS                                                                                                                              \
   { TIM_MOT1_CH, TIM_MOT2_CH }
 
-#define TIM_MOT_ARRAY_OF_GPIOS                                                                                                                                 \
-  { TIM_MOT1_A_GPIO_Port, TIM_MOT1_B_GPIO_Port, TIM_MOT2_A_GPIO_Port, TIM_MOT2_B_GPIO_Port }
+#define TIM_MOT1_ARRAY_OF_GPIOS                                                                                                                                \
+  { TIM_MOT1_A_GPIO_Port, TIM_MOT1_B_GPIO_Port }
+#define TIM_MOT2_ARRAY_OF_GPIOS                                                                                                                                \
+  { TIM_MOT2_A_GPIO_Port, TIM_MOT2_B_GPIO_Port }
 
-#define TIM_MOT_ARRAY_OF_PINS                                                                                                                                  \
-  { TIM_MOT1_A_Pin, TIM_MOT1_B_Pin, TIM_MOT2_A_Pin, TIM_MOT2_B_Pin }
-#define TIM_MOT_ARRAY_OF_GPIO_DISABLED_STATUS                                                                                                                  \
-  { GPIO_PIN_RESET, GPIO_PIN_RESET, GPIO_PIN_RESET, GPIO_PIN_RESET }
+#define TIM_MOT1_ARRAY_OF_PINS                                                                                                                                 \
+  { TIM_MOT1_A_Pin, TIM_MOT1_B_Pin }
+#define TIM_MOT2_ARRAY_OF_PINS                                                                                                                                 \
+  { TIM_MOT2_A_Pin, TIM_MOT2_B_Pin }
+
+#define TIM_MOT1_PINS_DISABLE                                                                                                                                  \
+  { GPIO_PIN_RESET, GPIO_PIN_RESET }
+#define TIM_MOT2_PINS_DISABLE                                                                                                                                  \
+  { GPIO_PIN_RESET, GPIO_PIN_RESET }
 
 /* Definition for GPIOs  */
 #define O_PWR_EN_STATUS_ENABLE GPIO_PIN_SET

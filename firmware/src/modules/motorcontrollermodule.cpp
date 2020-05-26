@@ -18,20 +18,35 @@ namespace unav::modules {
 
 #define MAX_TIMEOUT 40
 
-static const unav::drivers::MotorsConfiguration<MOTORS_COUNT> MOTOR_CONFIGURATION{
-  timer : &TIM_MOT,
-  motor_channels : TIM_MOT_ARRAY_OF_CHANNELS,
-  motor_gpios : TIM_MOT_ARRAY_OF_GPIOS,
-  motor_gpio_disabled_status : TIM_MOT_ARRAY_OF_GPIO_DISABLED_STATUS,
-  motor_pins : TIM_MOT_ARRAY_OF_PINS,
-  tim_init : TimInit,
-  tim_period_zero : TIM_MOT_PERIOD_ZERO,
-  tim_period_max : TIM_MOT_PERIOD_MAX
+static const unav::drivers::MotorConfiguration MOTOR_CONFIGURATIONS[MOTORS_COUNT] = {
+    {
+      timer : &TIM_MOT1,
+      motor_channel : TIM_MOT1_CH,
+      motor_gpios : TIM_MOT1_ARRAY_OF_GPIOS,
+      motor_gpio_disabled_status : TIM_MOT1_PINS_DISABLE,
+      motor_pins : TIM_MOT1_ARRAY_OF_PINS,
+      tim_init : Tim1Init,
+      tim_period_zero : TIM_MOT_PERIOD_ZERO,
+      tim_period_max : TIM_MOT_PERIOD_MAX
+    },
+    {
+      timer : &TIM_MOT2,
+      motor_channel : TIM_MOT2_CH,
+      motor_gpios : TIM_MOT2_ARRAY_OF_GPIOS,
+      motor_gpio_disabled_status : TIM_MOT2_PINS_DISABLE,
+      motor_pins : TIM_MOT2_ARRAY_OF_PINS,
+      tim_init : Tim2Init,
+      tim_period_zero : TIM_MOT_PERIOD_ZERO,
+      tim_period_max : TIM_MOT_PERIOD_MAX
+    },
 };
 
 MotorControllerModule::MotorControllerModule()
-    : motors(MOTOR_CONFIGURATION), cmd{0.0f}, timer(), mode{unav::motorcontrol_mode_t::disabled}, pid_publish_rate{0},
+    : motors(), cmd{0.0f}, timer(), mode{unav::motorcontrol_mode_t::disabled}, pid_publish_rate{0},
       pid_debug(false), nominalDt{0.0f}, dt{0.0f} {
+        for(uint32_t i = 0; i< MOTORS_COUNT; i++){
+          motors[i].configure(MOTOR_CONFIGURATIONS[i]);
+        }
 }
 
 void MotorControllerModule::initialize() {
@@ -44,8 +59,9 @@ void MotorControllerModule::moduleThreadStart() {
   bool publishPidStatus{false};
   bool driversEnabled{false};
   updateTimings(1000.0f);
-  motors.disable();
-
+  for (uint32_t i = 0; i < MOTORS_COUNT; i++) {
+    motors[i].disable();
+  }
   vTaskDelay(1000);
   while (true) {
     dt = timer.interval();
@@ -62,15 +78,21 @@ void MotorControllerModule::moduleThreadStart() {
 
       if (!driversEnabled) {
         driversEnabled = true;
-        motors.enable();
+        for (uint32_t i = 0; i < MOTORS_COUNT; i++) {
+          motors[i].enable();
+        }
         leds_setPattern(LED_ACTIVE, &leds_pattern_fast);
       }
       PERF_MEASURE_PERIOD(perf_mc_loop_time);
-      motors.setOutputs(cmd);
+      for (uint32_t i = 0; i < MOTORS_COUNT; i++) {
+        motors[i].setOutputs(cmd[i]);
+      }
     } else {
       if (driversEnabled) {
         leds_setPattern(LED_ACTIVE, &leds_pattern_off);
-        motors.disable();
+        for (uint32_t i = 0; i < MOTORS_COUNT; i++) {
+          motors[i].disable();
+        }
         driversEnabled = false;
       }
     }

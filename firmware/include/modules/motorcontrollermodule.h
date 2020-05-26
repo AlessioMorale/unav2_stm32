@@ -1,6 +1,6 @@
 #include <configuration.h>
 #include <controls/pid.h>
-#include <drivers/motors.h>
+#include <drivers/motor.h>
 #include <main.h>
 #include <messages.h>
 #include <modules/baserosmodule.h>
@@ -21,7 +21,7 @@ protected:
   virtual void moduleThreadStart() __attribute__((noreturn));
 
 private:
-  unav::drivers::Motors<MOTORS_COUNT> motors;
+  unav::drivers::Motor motors[MOTORS_COUNT];
   int timeoutCounter = 0;
   bool curLoopEnabled;
   float cmd[MOTORS_COUNT];
