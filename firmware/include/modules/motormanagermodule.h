@@ -8,21 +8,24 @@
 #include <std_msgs/Int16.h>
 #include <std_msgs/Int32.h>
 #include <utils/timer.h>
+#include <modules/motorcontrollermodule.h>
 #pragma once
 
 namespace unav::modules {
-class MotorManagerModule : public BaseRosModule {
+#define MOTORMANAGERSTACKSIZE 1024
+class MotorManagerModule : public BaseRosModule<MOTORMANAGERSTACKSIZE> {
 public:
   static const uint32_t ModuleMessageId{0x0A01};
   static constexpr char *ModuleName{"MotMan"};
 
-  MotorManagerModule();
+  MotorManagerModule(unav::modules::MotorControllerModule *controller);
   virtual void initialize();
 
 protected:
   void moduleThreadStart() __attribute__((noreturn));
 
 private:
+  MotorControllerModule *controller;
   unav::utils::Timer timer;
   unav::drivers::Encoder encoders[MOTORS_COUNT];
   float filteredEffort[2];
@@ -37,7 +40,8 @@ private:
   motorcontrol_mode_t control_mode;
   float inverted_rotation[MOTORS_COUNT];
 
-  void updateConfiguration(const reconfigure_content_t *reconfig);
+  void configure(const reconfigure_content_t *reconfig);
+
   void updatePidConfig(const pidconfig_content_t *cfg);
   void updateEncoderConfig(const encoderconfig_content_t *cfg);
   void updateBridgeConfig(const bridgeconfig_content_t *cfg);

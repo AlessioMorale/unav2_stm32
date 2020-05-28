@@ -5,7 +5,8 @@
 #ifndef BASEROSMODULE_H
 #define BASEROSMODULE_H
 namespace unav::modules {
-class BaseRosModule : public BaseModule {
+template <configSTACK_DEPTH_TYPE stackSize>
+class BaseRosModule : public BaseModule<stackSize> {
 private:
   inline static unav::Messaging _messaging;
 

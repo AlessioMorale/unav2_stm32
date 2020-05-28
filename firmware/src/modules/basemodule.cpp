@@ -1,14 +1,10 @@
 #include "modules/basemodule.h"
-#include "cmsis_os.h"
+#include <FreeRTOS.h>
 
 namespace unav::modules {
-void BaseModule::initializeTask(osPriority priority, size_t tasksize) {
-  osThreadDef(moduleThread, BaseModuleTaskWrapper, priority, 0, tasksize);
-  moduleThread = osThreadCreate(osThread(moduleThread), static_cast<void *>(this));
-}
 
-extern "C" void BaseModuleTaskWrapper(void const *argument) {
-  BaseModule *module = static_cast<BaseModule *>(const_cast<void *>(argument));
+extern "C" void BaseModuleTaskWrapper( void *argument) {
+  BaseRunnableModule *module = static_cast<BaseRunnableModule *>(const_cast<void *>(argument));
   module->moduleThreadStart();
 }
 

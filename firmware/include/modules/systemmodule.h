@@ -11,7 +11,8 @@
 #pragma once
 
 namespace unav::modules {
-class SystemModule : public BaseRosModule {
+#define SYSTEMSTACKSIZE 1024
+class SystemModule : public BaseRosModule<SYSTEMSTACKSIZE> {
 public:
   static const uint32_t ModuleMessageId{0x0515};
   static constexpr char *ModuleName = "SysMod";

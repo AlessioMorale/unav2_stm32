@@ -16,14 +16,15 @@
 #include <timers.h>
 namespace unav::modules {
 
-MotorManagerModule::MotorManagerModule()
-    : timer(), encoders{unav::drivers::Encoder(&TIM_ENC1), unav::drivers::Encoder(&TIM_ENC2)}, filteredEffort{0.0f}, mode{unav::jointcommand_mode_t::disabled},
+MotorManagerModule::MotorManagerModule(MotorControllerModule *controller)
+    : controller{controller},
+      timer(), encoders{unav::drivers::Encoder(&TIM_ENC1), unav::drivers::Encoder(&TIM_ENC2)}, filteredEffort{0.0f}, mode{unav::jointcommand_mode_t::disabled},
       wait{0}, nominalDt{0}, dt{0}, cmd{0.0f}, pid_publish_rate{10}, pid_debug{false}, control_mode{motorcontrol_mode_t::disabled}, inverted_rotation{false} {
 }
 
 void MotorManagerModule::initialize() {
   subscribe(MotorManagerModule::ModuleMessageId, MotorManagerModule::ModuleName);
-  BaseRosModule::initializeTask(osPriority::osPriorityAboveNormal, 1024);
+  initializeTask(osPriority::osPriorityAboveNormal, MotorManagerModule::ModuleName);
 }
 
 void MotorManagerModule::moduleThreadStart() {
@@ -74,10 +75,8 @@ void MotorManagerModule::moduleThreadStart() {
         publish_pidstatus = false;
       }
       // motor control message sent to motorcontroller module
-      auto *mc = prepareMessage();
-      auto motorcontrol = &mc->motorcontrol;
-      motorcontrol->mode = control_mode;
-      motorcontrol->type = message_types_t::internal_motor_control;
+      motorcontrol_content_t motorcontrol;
+      motorcontrol.mode = control_mode;
 
       for (uint32_t i = 0; i < MOTORS_COUNT; i++) {
         const auto measuredSpeed = encoders[i].getVelocity();
@@ -90,11 +89,10 @@ void MotorManagerModule::moduleThreadStart() {
         if (a < 0.005f) {
           filteredEffort[i] = 0.0f;
         }
-        // TODO! provide encoder class with direction info to handle single
-        // channel case.
-        motorcontrol->command[i] = filteredEffort[i];
-        // handle diagnostics and status reporting
 
+        motorcontrol.command[i] = filteredEffort[i];
+
+        // handle diagnostics and status reporting
         jointstate->pos[i] = encoders[i].getPosition() * inverted_rotation[i];
         if (pidstate) {
           auto s = pidControllers[i].getStatus();
@@ -107,9 +105,9 @@ void MotorManagerModule::moduleThreadStart() {
           pidstate->d_term[i] = s.d_term;
           pidstate->timestep[i] = s.timestep;
         }
+        controller->setCommand(motorcontrol);
       }
       PERF_TIMED_SECTION_START(perf_action_latency);
-      sendMessage(mc, MotorControllerModule::ModuleMessageId);
       sendMessage(js, RosNodeModuleMessageId);
       if (pidstate) {
         sendMessage(ps, RosNodeModuleMessageId);
@@ -149,25 +147,20 @@ void MotorManagerModule::checkMessages() {
 
     case message_types_t::internal_reconfigure: {
       const reconfigure_content_t *reconfig = &receivedMsg->reconfigure;
-      updateConfiguration(reconfig);
-      // relay = true;
+      configure(reconfig);
+      controller->configure(reconfig->item);
     } break;
 
     default:
       break;
     }
-
-    if (relay) {
-      sendMessage(receivedMsg, MotorControllerModule::ModuleMessageId);
-    } else {
-      releaseMessage(receivedMsg);
-    }
+    releaseMessage(receivedMsg);
   }
 }
 
 // TODO! add logic to handle configuration check as precondition to disable failsafe
 
-void MotorManagerModule::updateConfiguration(const reconfigure_content_t *reconfig) {
+void MotorManagerModule::configure(const reconfigure_content_t *reconfig) {
   switch (reconfig->item) {
   case configuration_item_t::pidconfig: {
     const auto cfg = configuration.getPIDConfig();
@@ -253,5 +246,7 @@ void MotorManagerModule::updateTimings(const float frequency) {
     pid_publish_rate = (uint8_t)frequency / 10.0f;
   }
 }
+
+template class BaseRosModule<MOTORMANAGERSTACKSIZE>;
 
 } // namespace unav::modules

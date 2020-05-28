@@ -42,16 +42,15 @@ static const unav::drivers::MotorConfiguration MOTOR_CONFIGURATIONS[MOTORS_COUNT
 };
 
 MotorControllerModule::MotorControllerModule()
-    : motors(), cmd{0.0f}, timer(), mode{unav::motorcontrol_mode_t::disabled}, pid_publish_rate{0},
-      pid_debug(false), nominalDt{0.0f}, dt{0.0f} {
-        for(uint32_t i = 0; i< MOTORS_COUNT; i++){
-          motors[i].configure(MOTOR_CONFIGURATIONS[i]);
-        }
+    : commandUpdated{false}, configUpdated{false}, itemsToConfigure{0}, motors(), cmd{0.0f},
+      timer(), mode{unav::motorcontrol_mode_t::disabled}, pid_publish_rate{0}, pid_debug(false), nominalDt{0.0f}, dt{0.0f} {
+  for (uint32_t i = 0; i < MOTORS_COUNT; i++) {
+    motors[i].configure(MOTOR_CONFIGURATIONS[i]);
+  }
 }
 
 void MotorControllerModule::initialize() {
-  subscribe(MotorControllerModule::ModuleMessageId, MotorControllerModule::ModuleName);
-  BaseModule::initializeTask(osPriority::osPriorityAboveNormal, 1024);
+  initializeTask(osPriority::osPriorityAboveNormal, MotorControllerModule::ModuleName);
 }
 
 void MotorControllerModule::moduleThreadStart() {
@@ -68,7 +67,7 @@ void MotorControllerModule::moduleThreadStart() {
 
     message_t *ps{nullptr};
 
-    checkMessages(!curLoopEnabled);
+    checkMessages();
     if (timeoutCounter > MAX_TIMEOUT) {
       mode = motorcontrol_mode_t::disabled;
     }
@@ -99,9 +98,18 @@ void MotorControllerModule::moduleThreadStart() {
   }
 }
 
-void MotorControllerModule::checkMessages(bool wait) {
+void MotorControllerModule::setCommand(motorcontrol_content_t command) {
+
+}
+
+void MotorControllerModule::configure(configuration_item_t configuration) {
+  itemsToConfigure |= static_cast<uint32_t>(configuration);
+  configUpdated.store(true, std::memory_order_relaxed);
+}
+
+void MotorControllerModule::checkMessages() {
   message_t *receivedMsg = nullptr;
-  portBASE_TYPE waittime = wait ? 50 : 0;
+  portBASE_TYPE waittime = 50;
   if (waitMessage(&receivedMsg, waittime)) {
     switch (receivedMsg->type) {
 
@@ -179,5 +187,7 @@ void MotorControllerModule::updateTimings(const float frequency) {
 void MotorControllerModule::updateOperationConfig(const operationconfig_content_t *cfg) {
   pid_debug = cfg->pid_debug;
 }
+
+template class BaseRosModule<MOTORCONTROLLERSTACKSIZE>;
 
 } // namespace unav::modules

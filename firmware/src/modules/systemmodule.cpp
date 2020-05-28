@@ -15,7 +15,7 @@ SystemModule::SystemModule() : thermometer(&I2C_PORT, TEMP_SENSOR_ADDRESS), powe
 
 void SystemModule::initialize() {
   subscribe(SystemModule::ModuleMessageId, SystemModule::ModuleName);
-  BaseModule::initializeTask(osPriority::osPriorityAboveNormal, 1024);
+  initializeTask(osPriority::osPriorityAboveNormal, SystemModule::ModuleName);
   setup();
 }
 
@@ -60,5 +60,7 @@ void SystemModule::checkMessages() {
     releaseMessage(receivedMsg);
   }
 }
+
+template class BaseRosModule<SYSTEMSTACKSIZE>;
 
 } // namespace unav::modules

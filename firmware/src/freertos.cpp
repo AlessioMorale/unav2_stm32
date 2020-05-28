@@ -54,8 +54,8 @@
 
 osThreadId defaultTaskHandle;
 unav::modules::RosNodeModule rosnode;
-unav::modules::MotorManagerModule rosMotorManager;
 unav::modules::MotorControllerModule motorController;
+unav::modules::MotorManagerModule rosMotorManager(&motorController);
 unav::modules::SystemModule systemModule;
 /* USER CODE END Variables */
 

@@ -54,7 +54,7 @@ void RosNodeModule::initialize() {
   getNodeHandle().initNode();
   getMessaging().setup((uint8_t *)_messageBuffer, sizeof(message_t), MESSAGING_BUFFER_SIZE);
   subscribe(RosNodeModule::ModuleMessageId, RosNodeModule::ModuleName);
-  BaseRosModule::initializeTask(osPriority::osPriorityNormal, 512);
+  initializeTask(osPriority::osPriorityNormal, RosNodeModule::ModuleName);
 }
 
 void RosNodeModule::moduleThreadStart() {
@@ -130,5 +130,7 @@ void RosNodeModule::sendRosMessage(message_t *msg) {
     break;
   }
 }
+
+template class BaseRosModule<ROSNODESTACKSIZE>;
 
 } // namespace unav::modules

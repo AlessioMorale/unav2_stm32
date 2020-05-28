@@ -24,8 +24,9 @@
 
 namespace unav::modules {
 #define MESSAGING_BUFFER_SIZE 10
+#define ROSNODESTACKSIZE 512
 
-class RosNodeModule : public BaseRosModule {
+class RosNodeModule : public BaseRosModule<ROSNODESTACKSIZE> {
 public:
   static const uint32_t ModuleMessageId = BaseRosModule::RosNodeModuleMessageId;
   static constexpr char *ModuleName = "ROSNode";
