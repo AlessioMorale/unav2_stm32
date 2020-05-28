@@ -1,5 +1,6 @@
 #include "cmsis_os.h"
 #include "main.h"
+#include "board.h"
 #include "tim.h"
 #include "timing.h"
 #include <FreeRTOS.h>

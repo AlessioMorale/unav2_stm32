@@ -20,16 +20,10 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-#include "adc.h"
+#include "board.h"
 #include "cmsis_os.h"
 #include "crc.h"
-#include "dma.h"
-#include "gpio.h"
-#include "i2c.h"
 #include "rng.h"
-#include "spi.h"
-#include "tim.h"
-#include "usart.h"
 #include "usb_device.h"
 
 /* Private includes ----------------------------------------------------------*/
@@ -107,8 +101,7 @@ int main(void) {
   HAL_Init();
 
   /* USER CODE BEGIN Init */
-  MX_GPIO_Init();
-  HAL_GPIO_WritePin(O_PWR_REG_EN_GPIO_Port, O_PWR_REG_EN_Pin, O_PWR_EN_STATUS_ENABLE);
+  board_init();
   /* USER CODE END Init */
 
   /* Configure the system clock */
@@ -119,38 +112,12 @@ int main(void) {
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
-  MX_GPIO_Init();
-  MX_DMA_Init();
-  MX_ADC1_Init();
-  MX_ADC3_Init();
-  MX_I2C2_Init();
-  MX_RNG_Init();
-  MX_SPI1_Init();
-  MX_TIM1_Init();
-  MX_TIM2_Init();
-  MX_TIM3_Init();
-  MX_TIM4_Init();
-  MX_TIM8_Init();
-  // MX_TIM13_Init();
-  // MX_TIM14_Init();
-  MX_UART5_Init();
-  MX_USART1_UART_Init();
-  MX_CRC_Init();
-  MX_DMA_Init();
+
   /* USER CODE BEGIN 2 */
 
   timing_Init();
-  HAL_GPIO_WritePin(O_PWR_REG_EN_GPIO_Port, O_PWR_REG_EN_Pin, O_PWR_EN_STATUS_ENABLE);
   /* USER CODE END 2 */
-  FLASH_OBProgramInitTypeDef ob;
-  HAL_FLASHEx_OBGetConfig(&ob);
 
-  if (ob.BORLevel != OB_BOR_LEVEL3) {
-    HAL_FLASH_Unlock();
-    ob.BORLevel = OB_BOR_LEVEL3;
-    HAL_FLASHEx_OBProgram(&ob);
-    HAL_FLASH_Lock();
-  }
   /* Call init function for freertos objects (in freertos.c) */
   MX_FREERTOS_Init();
 
@@ -219,17 +186,6 @@ void SystemClock_Config(void) {
  * @param  htim : TIM handle
  * @retval None
  */
-void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
-  /* USER CODE BEGIN Callback 0 */
-
-  /* USER CODE END Callback 0 */
-  if (htim->Instance == TIM10) {
-    HAL_IncTick();
-  }
-  /* USER CODE BEGIN Callback 1 */
-
-  /* USER CODE END Callback 1 */
-}
 
 /**
  * @brief  This function is executed in case of error occurrence.
@@ -237,6 +193,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
  */
 void Error_Handler(void) {
   /* USER CODE BEGIN Error_Handler_Debug */
+  failsafe_stop();
   /* User can add his own implementation to report the HAL error return state */
   while (1)
     ;

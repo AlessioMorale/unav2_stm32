@@ -18,29 +18,6 @@ namespace unav::modules {
 
 #define MAX_TIMEOUT 40
 
-static const unav::drivers::MotorConfiguration MOTOR_CONFIGURATIONS[MOTORS_COUNT] = {
-    {
-      timer : &TIM_MOT1,
-      motor_channel : TIM_MOT1_CH,
-      motor_gpios : TIM_MOT1_ARRAY_OF_GPIOS,
-      motor_gpio_disabled_status : TIM_MOT1_PINS_DISABLE,
-      motor_pins : TIM_MOT1_ARRAY_OF_PINS,
-      tim_init : Tim1Init,
-      tim_period_zero : TIM_MOT_PERIOD_ZERO,
-      tim_period_max : TIM_MOT_PERIOD_MAX
-    },
-    {
-      timer : &TIM_MOT2,
-      motor_channel : TIM_MOT2_CH,
-      motor_gpios : TIM_MOT2_ARRAY_OF_GPIOS,
-      motor_gpio_disabled_status : TIM_MOT2_PINS_DISABLE,
-      motor_pins : TIM_MOT2_ARRAY_OF_PINS,
-      tim_init : Tim2Init,
-      tim_period_zero : TIM_MOT_PERIOD_ZERO,
-      tim_period_max : TIM_MOT_PERIOD_MAX
-    },
-};
-
 MotorControllerModule::MotorControllerModule()
     : commandUpdated{false}, configUpdated{false}, itemsToConfigure{0}, motors(), cmd{0.0f},
       timer(), mode{unav::motorcontrol_mode_t::disabled}, pid_publish_rate{0}, pid_debug(false), nominalDt{0.0f}, dt{0.0f} {

@@ -24,27 +24,26 @@ USBDEVPATH = src/usb_device
 MIDDLEWARESPATH = libs/middlewares
 ROSSERIAL = libs/rosserial
 
+BOARD_MODEL ?= board_v0.2
+
+BOARD_BSP = src/${BOARD_MODEL}
+
+$(info Building for BOARD_MODEL [${BOARD_MODEL}])
+$(info )
 ######################################
 # source
 ######################################
 # C sources
 C_SOURCES =  \
 src/crc.c \
-src/gpio.c \
 src/main.c \
 src/rng.c \
-src/spi.c \
-src/tim.c \
 src/stm32f4xx_it.c \
 src/stm32f4xx_hal_msp.c \
 src/system_stm32f4xx.c \
 src/stm32f4xx_hal_timebase_tim.c \
 src/timing.c \
 src/mathutils.c \
-src/adc.c \
-src/dma.c \
-src/i2c.c \
-src/usart.c \
 src/leds.c \
 src/leds_hal.c \
 src/instrumentation/instrumentation.c \
@@ -75,7 +74,7 @@ include $(HALPATH)/stm32hal.mk
 include $(USBDEVPATH)/usbdev.mk
 include $(MIDDLEWARESPATH)/middlewares.mk
 include $(ROSSERIAL)/rosserial.mk
-
+include ${BOARD_BSP}/bsp.mk
 #######################################
 # binaries
 #######################################
@@ -130,7 +129,8 @@ AS_INCLUDES =
 C_INCLUDE_DIRS +=  \
 include \
 $(CMSIS)/Device/ST/STM32F4xx/Include \
-$(CMSIS)/Include
+$(CMSIS)/Include \
+$(BOARD_INCLUDE_DIRS)
 
 ARM_CFLAGS          += -Wall
 ARM_CFLAGS 					+= -Wextra

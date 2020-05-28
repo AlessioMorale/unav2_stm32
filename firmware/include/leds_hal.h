@@ -2,7 +2,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-#include <main.h>
+#include <board.h>
 
 extern volatile uint8_t leds_hal_ledvalue[NUM_LEDS];
 static inline void leds_hal_setLed(uint8_t led, uint8_t value) {
