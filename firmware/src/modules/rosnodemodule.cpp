@@ -1,5 +1,4 @@
 
-#include "modules/rosnodemodule.h"
 #include "FreeRTOS.h"
 #include "modules/motormanagermodule.h"
 #include <configurationmessageconverter.h>
@@ -7,42 +6,45 @@
 #include <message_buffer.h>
 #include <messageconverter.h>
 #include <messaging.h>
+#include <modules.h>
+#include <modules/rosnodemodule.h>
 #include <ros.h>
 #include <timing.h>
+
 namespace unav::modules {
 ros::NodeHandle RosNodeModule::nh;
 RosNodeModule *rosNode;
 
 RosNodeModule::RosNodeModule()
-    : pubJoints("unav2/status/joint", &msgjointstate), pubVelPIDState("unav2/status/vel_pid", &msgpidstate),
+    : incomingMessageQueue{nullptr}, pubJoints("unav2/status/joint", &msgjointstate), pubVelPIDState("unav2/status/vel_pid", &msgpidstate),
       pubCurPIDState("unav2/status/cur_pid", &msgpidstate), pubAck("unav2/status/ack", &msgack), pubDiagnostic("unav2/diagnostic", &msgDiagnostic),
-      subJointCmd("unav2/control/joint_cmd",
-                  [](const unav2_msgs::JointCommand &msg) { rosNode->handleRosMessage(msg, unav::modules::MotorManagerModule::ModuleMessageId); }),
+      subJointCmd("unav2/control/joint_cmd", [](const unav2_msgs::JointCommand &msg) { rosNode->sendToMotorManager(msg); }),
       subPIDCfg("unav2/config/pid", [](const unav2_msgs::PIDConfig &msg) { rosNode->handleRosConfigMessage(msg); }),
       subBridgeCfg("unav2/config/bridge", [](const unav2_msgs::BridgeConfig &msg) { rosNode->handleRosConfigMessage(msg); }),
       subEncoderCfg("unav2/config/encoder", [](const unav2_msgs::EncoderConfig &msg) { rosNode->handleRosConfigMessage(msg); }),
       subLimitCfg("unav2/config/limits", [](const unav2_msgs::LimitsConfig &msg) { rosNode->handleRosConfigMessage(msg); }),
       subMechanicalCfg("unav2/config/mechanical", [](const unav2_msgs::MechanicalConfig &msg) { rosNode->handleRosConfigMessage(msg); }),
       subOperationCfg("unav2/config/operation", [](const unav2_msgs::OperationConfig &msg) { rosNode->handleRosConfigMessage(msg); }),
-      subSafetyCfg("unav2/config/safety", [](const unav2_msgs::SafetyConfig &msg) { rosNode->handleRosConfigMessage(msg); }), incomingMessageQueue{nullptr} {
+      subSafetyCfg("unav2/config/safety", [](const unav2_msgs::SafetyConfig &msg) { rosNode->handleRosConfigMessage(msg); }) {
   rosNode = this;
 }
 
-template <typename T> void RosNodeModule::handleRosMessage(const T &msg, uint32_t destination) {
-  message_t *m = rosNode->prepareMessage();
+template <typename T> void RosNodeModule::sendToMotorManager(const T &msg) {
+  internal_message_t m;
   unav::MessageConverter<T>::fromRosMsg(msg, m);
-  rosNode->sendMessage(m, destination);
+  unav::Modules::motorManagerModule->processMessage(m);
 }
 
 template <typename T> void RosNodeModule::handleRosConfigMessage(const T &msg) {
   static configuration_message_t c;
   unav::ConfigurationMessageConverter<T>::fromRosMsg(msg, &c);
-  configuration.set(&c);
+  Application::configuration.set(&c);
   auto t = getConfigurationItemFromMessageType(c.header.type);
-  message_t *m = rosNode->prepareMessage();
-  m->type = message_types_t::internal_reconfigure;
-  m->reconfigure.item = t;
-  rosNode->sendMessage(m, unav::modules::MotorManagerModule::ModuleMessageId);
+
+  internal_message_t m;
+  m.type = message_types_t::internal_reconfigure;
+  m.reconfigure.item = t;
+  unav::Modules::motorManagerModule->processMessage(m);
   msgack.data = c.header.transactionId;
   pubAck.publish(&msgack);
 }
@@ -52,7 +54,7 @@ void RosNodeModule::initialize() {
   initCounters();
 
   getNodeHandle().initNode();
-  getMessaging().setup((uint8_t *)_messageBuffer, sizeof(message_t), MESSAGING_BUFFER_SIZE);
+  Application::messaging.setup((uint8_t *)_messageBuffer, sizeof(message_t), MESSAGING_BUFFER_SIZE);
   subscribe(RosNodeModule::ModuleMessageId, RosNodeModule::ModuleName);
   initializeTask(osPriority::osPriorityNormal, RosNodeModule::ModuleName);
 }

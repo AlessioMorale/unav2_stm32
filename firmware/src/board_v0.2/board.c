@@ -42,9 +42,35 @@ void board_init() {
 }
 
 void enable_motors() {
+  MX_TIM8_Init();
+  
+  HAL_TIM_PWM_Start(&TIM_MOT1, TIM_MOT1_CH);
+  HAL_TIMEx_PWMN_Start(&TIM_MOT1, TIM_MOT1_CH);
+  __HAL_TIM_SET_COMPARE(&TIM_MOT1, TIM_MOT1_CH, TIM_MOT_PERIOD_ZERO);
+  
+  HAL_TIM_PWM_Start(&TIM_MOT2, TIM_MOT2_CH);
+  HAL_TIMEx_PWMN_Start(&TIM_MOT2, TIM_MOT2_CH);
+  __HAL_TIM_SET_COMPARE(&TIM_MOT2, TIM_MOT2_CH, TIM_MOT_PERIOD_ZERO);
 }
+
 void disable_motors() {
+  __HAL_TIM_SET_COMPARE(&TIM_MOT1, TIM_MOT1_CH, TIM_MOT_PERIOD_ZERO);
+  __HAL_TIM_SET_COMPARE(&TIM_MOT2, TIM_MOT2_CH, TIM_MOT_PERIOD_ZERO);
+
+  GPIO_InitTypeDef GPIO_InitStruct = {0};
+
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  GPIO_TypeDef *gpios[] = {TIM_MOT1_A_GPIO_Port, TIM_MOT1_B_GPIO_Port, TIM_MOT2_A_GPIO_Port, TIM_MOT2_B_GPIO_Port};
+  GPIO_PinState pins[] = {TIM_MOT1_A_Pin, TIM_MOT1_B_Pin, TIM_MOT2_A_Pin, TIM_MOT2_B_Pin};
+  for (uint32_t i = 0; i < 4; i++) {
+    HAL_GPIO_WritePin(gpios[i], pins[i], GPIO_PIN_RESET);
+    GPIO_InitStruct.Pin = pins[i];
+    HAL_GPIO_Init(gpios[i], &GPIO_InitStruct);
+  }
 }
+
 void failsafe_stop() {
   disable_motors();
 }

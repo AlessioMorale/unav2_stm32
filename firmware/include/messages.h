@@ -176,15 +176,21 @@ typedef struct _generic_message {
     ack_content_t ackcontent;
     pidstate_content_t pidstate;
     jointstate_content_t jointstate;
+  };
+} message_t;
+
+typedef struct _internal_message {
+  union {
+    message_types_t type;
     jointcommand_content_t jointcommand;
     motorcontrol_content_t motorcontrol;
     reconfigure_content_t reconfigure;
   };
-} message_t;
+} internal_message_t;
 
 typedef struct _configuration_message {
   union {
-    struct  {
+    struct {
       message_types_t type;
       uint32_t transactionId;
     } header;

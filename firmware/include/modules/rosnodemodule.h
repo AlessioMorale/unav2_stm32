@@ -5,6 +5,7 @@
 #include <counters.h>
 #include <instrumentation/instrumentation.h>
 #include <messages.h>
+#include <modules/motormanagermodule.h>
 #include <std_msgs/UInt32.h>
 #include <unav2_msgs/BridgeConfig.h>
 #include <unav2_msgs/Diagnostic.h>
@@ -44,8 +45,9 @@ private:
 
   QueueHandle_t incomingMessageQueue;
   message_t _messageBuffer[MESSAGING_BUFFER_SIZE];
-  template <typename T> void handleRosMessage(const T &msg, uint32_t destination);
+  template <typename T> void sendToMotorManager(const T &msg);
   template <typename T> void handleRosConfigMessage(const T &msg);
+
   void publishDiagnostic();
   unav2_msgs::JointState msgjointstate;
   unav2_msgs::PIDState msgpidstate;

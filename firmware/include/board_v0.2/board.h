@@ -130,6 +130,9 @@ extern I2C_HandleTypeDef hi2c2;
 #define TIM_MOT1_CH TIM_CHANNEL_2
 #define TIM_MOT2_CH TIM_CHANNEL_3
 
+#define TIM_MOT_PERIOD_MAX 1024
+#define TIM_MOT_PERIOD_MIN 0
+#define TIM_MOT_PERIOD_ZERO 512
 /* Definition for GPIOs  */
 #define O_PWR_EN_STATUS_ENABLE GPIO_PIN_SET
 #define O_PWR_EN_STATUS_DISABLE GPIO_PIN_RESET
@@ -153,10 +156,6 @@ extern I2C_HandleTypeDef hi2c2;
 }
 
 #include <drivers/motor.h>
-
-#define TIM_MOT_PERIOD_MAX 1024
-#define TIM_MOT_PERIOD_MIN 0
-#define TIM_MOT_PERIOD_ZERO 512
 
 static constexpr unav::drivers::MotorConfiguration MOTOR_CONFIGURATIONS[MOTORS_COUNT] = {
     {

@@ -20,32 +20,11 @@ class Motor {
 public:
   Motor(const MotorConfiguration config) : configuration{config} {
   }
-  Motor() {
+  Motor() : configuration{0} {
   }
 
   void configure(const MotorConfiguration config) {
     configuration = config;
-  }
-  void disable() {
-    __HAL_TIM_SET_COMPARE(configuration.timer, configuration.motor_channel, configuration.tim_period_zero);
-
-    GPIO_InitTypeDef GPIO_InitStruct = {0};
-
-    GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-    GPIO_InitStruct.Pull = GPIO_NOPULL;
-    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-    for (uint32_t i = 0; i < 2; i++) {
-      HAL_GPIO_WritePin(configuration.motor_gpios[i], configuration.motor_pins[i], configuration.motor_gpio_disabled_status[i]);
-      GPIO_InitStruct.Pin = configuration.motor_pins[i];
-      HAL_GPIO_Init(configuration.motor_gpios[i], &GPIO_InitStruct);
-    }
-  }
-
-  void enable() {
-    configuration.tim_init();
-    HAL_TIM_PWM_Start(configuration.timer, configuration.motor_channel);
-    HAL_TIMEx_PWMN_Start(configuration.timer, configuration.motor_channel);
-    __HAL_TIM_SET_COMPARE(configuration.timer, configuration.motor_channel, configuration.tim_period_zero);
   }
 
   void setOutputs(float cmd) {

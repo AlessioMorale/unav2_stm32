@@ -41,7 +41,7 @@ message_handle_t Messaging::prepareMessage() {
   }
   message_handle_t message;
   if (xQueueReceive(_freeMessagesQueue, &message, 0) != pdTRUE) {
-    Error_Handler();
+    return nullptr;
   };
   return message;
 }
@@ -77,4 +77,7 @@ QueueHandle_t Messaging::getRecipientQueue(uint32_t recipientId) const {
   return NULL;
 }
 
+bool Messaging::receiveMessage(QueueHandle_t incomingMessageQueue, message_handle_t *msg, TickType_t wait) {
+  return (xQueueReceive(incomingMessageQueue, msg, wait) == pdTRUE);
+}
 } // namespace unav

@@ -1,12 +1,13 @@
-#include <atomic>
+#pragma once
+#include <board.h>
 #include <configuration.h>
 #include <controls/pid.h>
 #include <drivers/motor.h>
-#include <board.h>
 #include <messages.h>
 #include <modules/baserosmodule.h>
+#include <simplemessaging.h>
 #include <utils/timer.h>
-#pragma once
+
 #define ConversionPerChannel 1
 
 namespace unav::modules {
@@ -18,18 +19,15 @@ public:
   static constexpr char *ModuleName{"MotCtl"};
   MotorControllerModule();
   void initialize();
-  void setCommand(motorcontrol_content_t command);
-  void configure(configuration_item_t configuration);
+
+  void processMessage(internal_message_t &message);
 
 protected:
   virtual void moduleThreadStart() __attribute__((noreturn));
 
 private:
-  std::atomic_bool commandUpdated;
-  std::atomic_bool configUpdated;
-  uint32_t itemsToConfigure;
   unav::drivers::Motor motors[MOTORS_COUNT];
-  int timeoutCounter = 0;
+  int timeoutCounter;
   bool curLoopEnabled;
   float cmd[MOTORS_COUNT];
   unav::utils::Timer timer;
@@ -40,17 +38,17 @@ private:
   float dt;
   unav::controls::PID pidControllers[MOTORS_COUNT];
   bool drivers_enabled = false;
+  unav::SimpleMessaging<internal_message_t, 5> internalMessaging;
 
   void setup();
   void updateConfiguration(const reconfigure_content_t *reconfig);
   void checkMessages();
-  void updatePidConfig(const pidconfig_content_t *cfg);
-  void updateLimitsConfig(const limitsconfig_content_t *cfg);
-  void updateSafetyConfig(const safetyconfig_content_t *cfg);
-  void updateBridgeConfig(const bridgeconfig_content_t *cfg);
-  void updateOperationConfig(const operationconfig_content_t *cfg);
+  void updatePidConfig();
+  void updateLimitsConfig();
+  void updateSafetyConfig();
+  void updateBridgeConfig();
+  void updateOperationConfig();
   void updateTimings(const float frequency);
 };
-
 
 } // namespace unav::modules

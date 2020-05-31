@@ -102,6 +102,7 @@ int main(void) {
 
   /* USER CODE BEGIN Init */
   board_init();
+  disable_motors();
   /* USER CODE END Init */
 
   /* Configure the system clock */

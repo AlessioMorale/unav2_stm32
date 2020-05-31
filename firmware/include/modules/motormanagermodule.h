@@ -4,28 +4,28 @@
 #include <controls/pid.h>
 #include <drivers/encoder.h>
 #include <messages.h>
+#include <modules/motorcontrollermodule.h>
+#include <simplemessaging.h>
 #include <std_msgs/Float32.h>
 #include <std_msgs/Int16.h>
 #include <std_msgs/Int32.h>
 #include <utils/timer.h>
-#include <modules/motorcontrollermodule.h>
 #pragma once
 
 namespace unav::modules {
 #define MOTORMANAGERSTACKSIZE 1024
 class MotorManagerModule : public BaseRosModule<MOTORMANAGERSTACKSIZE> {
 public:
-  static const uint32_t ModuleMessageId{0x0A01};
   static constexpr char *ModuleName{"MotMan"};
 
-  MotorManagerModule(unav::modules::MotorControllerModule *controller);
+  MotorManagerModule();
   virtual void initialize();
+  void processMessage(internal_message_t &message);
 
 protected:
   void moduleThreadStart() __attribute__((noreturn));
 
 private:
-  MotorControllerModule *controller;
   unav::utils::Timer timer;
   unav::drivers::Encoder encoders[MOTORS_COUNT];
   float filteredEffort[2];
@@ -39,16 +39,16 @@ private:
   bool pid_debug;
   motorcontrol_mode_t control_mode;
   float inverted_rotation[MOTORS_COUNT];
-
+  SimpleMessaging<internal_message_t, 5> internalMessaging;
   void configure(const reconfigure_content_t *reconfig);
 
-  void updatePidConfig(const pidconfig_content_t *cfg);
-  void updateEncoderConfig(const encoderconfig_content_t *cfg);
-  void updateBridgeConfig(const bridgeconfig_content_t *cfg);
-  void updateLimitsConfig(const limitsconfig_content_t *cfg);
-  void updateMechanicalConfig(const mechanicalconfig_content_t *cfg);
-  void updateOperationConfig(const operationconfig_content_t *cfg);
-  void updateSafetyConfig(const safetyconfig_content_t *cfg);
+  void updatePidConfig();
+  void updateEncoderConfig();
+  void updateBridgeConfig();
+  void updateLimitsConfig();
+  void updateMechanicalConfig();
+  void updateOperationConfig();
+  void updateSafetyConfig();
   void updateTimings(const float frequency);
   void checkMessages();
 };

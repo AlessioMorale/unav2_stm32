@@ -53,7 +53,6 @@ src/freertos_support.c
 CPP_SOURCES = \
 src/freertos.cpp \
 src/modules/basemodule.cpp \
-src/modules/baserosmodule.cpp \
 src/modules/rosnodemodule.cpp \
 src/modules/motormanagermodule.cpp \
 src/modules/motorcontrollermodule.cpp \

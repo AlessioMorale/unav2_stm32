@@ -32,6 +32,8 @@
 
 #include "usb_device.h"
 #include "usbd_cdc_if.h"
+#include <application.h>
+#include <modules.h>
 #include <modules/motorcontrollermodule.h>
 #include <modules/motormanagermodule.h>
 #include <modules/rosnodemodule.h>
@@ -41,6 +43,7 @@
 #include <std_msgs/Float32.h>
 #include <std_msgs/Int16.h>
 #include <std_msgs/Int32.h>
+
 
 /* USER CODE END PD */
 
@@ -53,10 +56,11 @@
 /* USER CODE BEGIN Variables */
 
 osThreadId defaultTaskHandle;
-unav::modules::RosNodeModule rosnode;
 unav::modules::MotorControllerModule motorController;
-unav::modules::MotorManagerModule rosMotorManager(&motorController);
+unav::modules::MotorManagerModule motorManager;
+unav::modules::RosNodeModule rosNodeModule;
 unav::modules::SystemModule systemModule;
+unav::Configuration *configuration = &unav::Application::configuration;
 /* USER CODE END Variables */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -99,9 +103,13 @@ extern "C" void MX_FREERTOS_Init(void) {
   /* definition and creation of defaultTask */
   osThreadDef(defaultTask, StartDefaultTask, osPriorityNormal, 0, 256);
   defaultTaskHandle = osThreadCreate(osThread(defaultTask), nullptr);
+  unav::Modules::rosNodeModule = &rosNodeModule;
+  unav::Modules::motorControllerModule = &motorController;
+  unav::Modules::motorManagerModule = &motorManager;
+  unav::Modules::systemModule = &systemModule;
 
-  rosnode.initialize();
-  rosMotorManager.initialize();
+  rosNodeModule.initialize();
+  motorManager.initialize();
   motorController.initialize();
   systemModule.initialize();
   /* USER CODE BEGIN RTOS_THREADS */

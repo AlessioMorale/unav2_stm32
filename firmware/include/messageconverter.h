@@ -17,9 +17,13 @@ namespace unav {
 
 template <typename T> class MessageConverter {
 public:
-  static void fromRosMsg(const T &rosmsg, message_t *msg) {
+  static void fromRosMsg(const T &rosmsg, message_t &msg) {
     static_assert(sizeof(T) != sizeof(T));
   }
+  static void fromRosMsg(const T &rosmsg, internal_message_t &msg) {
+    static_assert(sizeof(T) != sizeof(T));
+  }
+
   static void toRosMsg(const message_t *msg, T &rosmsg) {
     static_assert(sizeof(T) != sizeof(T));
   }
@@ -27,8 +31,8 @@ public:
 
 template <> class MessageConverter<unav2_msgs::JointCommand> {
 public:
-  static void fromRosMsg(const unav2_msgs::JointCommand &rosmsg, message_t *msg) {
-    jointcommand_content_t *c = &msg->jointcommand;
+  static void fromRosMsg(const unav2_msgs::JointCommand &rosmsg, internal_message_t &msg) {
+    jointcommand_content_t *c = &msg.jointcommand;
     c->type = message_types_t::inbound_JointCommand;
     c->seq = rosmsg.seq;
     switch (rosmsg.mode) {

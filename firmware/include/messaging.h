@@ -24,6 +24,7 @@ public:
   void sendMessage(message_handle_t message, uint32_t recipientId);
   void releaseMessage(message_handle_t message);
   QueueHandle_t subscribe(uint32_t recipientId, const char *subscriberName);
+  bool receiveMessage(QueueHandle_t incomingMessageQueue, message_handle_t *msg, TickType_t wait);
 
 private:
   uint8_t *_messagebuffer;
