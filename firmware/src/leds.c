@@ -73,10 +73,14 @@ void leds_update() {
       continue;
     }
     const uint32_t duration = timing_getUsSince(status->lastTime) / 1000ul;
-    if ((pattern->intervals[status->intervalIndex].duration != 0) && ((uint32_t)pattern->intervals[status->intervalIndex].duration < duration)) {
-      status->lastTime = timing_getRaw();
-      status->intervalIndex = (status->intervalIndex + 1) % pattern->length;
-      leds_hal_setLed(led, pattern->intervals[status->intervalIndex].brightness);
+    if((pattern->intervals[status->intervalIndex].duration != 0)){
+	  if (((uint32_t)pattern->intervals[status->intervalIndex].duration < duration)) {
+	    status->lastTime = timing_getRaw();
+	    status->intervalIndex = (status->intervalIndex + 1) % pattern->length;
+		leds_hal_setLed(led, pattern->intervals[status->intervalIndex].brightness);
+	  }
+    } else {
+      status->pattern = NULL;
     }
   }
 }
