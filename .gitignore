@@ -58,3 +58,4 @@ template
 .cproject
 .settings
 objs
+.metadata/
