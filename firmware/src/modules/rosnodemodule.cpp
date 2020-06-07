@@ -3,6 +3,7 @@
 #include "modules/motormanagermodule.h"
 #include <configurationmessageconverter.h>
 #include <counters.h>
+#include <leds.h>
 #include <message_buffer.h>
 #include <messageconverter.h>
 #include <messaging.h>
@@ -77,7 +78,18 @@ void RosNodeModule::moduleThreadStart() {
 
   auto t = timing_getRaw();
   auto t_diag = timing_getRaw();
+  bool connected = true;
+
   while (true) {
+    if (connected != getNodeHandle().connected()) {
+      connected = !connected;
+      if (connected) {
+        leds_setPattern(0, &leds_pattern_doublefast);
+      } else {
+        leds_setPattern(0, &leds_pattern_slow);
+      }
+    }
+
     message_t *msg{nullptr};
     while (waitMessage(&msg, 2)) {
       sendRosMessage(msg);
