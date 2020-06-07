@@ -26,6 +26,7 @@ protected:
   void moduleThreadStart() __attribute__((noreturn));
 
 private:
+  int timeoutCounter;
   unav::utils::Timer timer;
   unav::drivers::Encoder encoders[MOTORS_COUNT];
   float filteredEffort[2];

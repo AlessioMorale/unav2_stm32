@@ -65,8 +65,12 @@ void MotorManagerModule::moduleThreadStart() {
     }
     checkMessages();
 
+    if (timeoutCounter > MAX_TIMEOUT) {
+	  mode = jointcommand_mode_t::disabled;
+	}
 
     if (mode > jointcommand_mode_t::disabled) {
+      timeoutCounter++;
       message_t *js = prepareMessage();
       jointstate_content_t *jointstate = &js->jointstate;
       jointstate->type = message_types_t::outbound_JointState;
@@ -144,6 +148,9 @@ void MotorManagerModule::checkMessages() {
       const jointcommand_content_t *jcmd = &receivedMsg.jointcommand;
       for (uint32_t i = 0; i < MOTORS_COUNT; i++) {
         cmd[i] = jcmd->command[i];
+        if (fabsf(cmd[i]) > 0.0001) {
+          timeoutCounter = 0;
+        }
       }
 
       mode = jcmd->mode;
