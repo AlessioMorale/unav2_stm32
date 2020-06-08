@@ -59,10 +59,10 @@ void MotorManagerModule::moduleThreadStart() {
     } break;
     // [unconfigured]  --- all required configurations set ---> [stopped]
     case status_t::unconfigured:
-      leds_setPattern(1, &leds_pattern_slow);
+      leds_setPattern(LED_WAR_ERROR, &leds_pattern_on);
       if ((configurationFlags & REQUIRED_CONFIGURATION_FLAGS) == REQUIRED_CONFIGURATION_FLAGS) {
         status = status_t::stopped;
-        leds_setPattern(1, &leds_pattern_blink_doublefast);
+        leds_setPattern(LED_WAR_ERROR, &leds_pattern_off);
       }
       break;
     // [stopped]-- - command.mode > disabled--->[starting]
@@ -111,7 +111,8 @@ void MotorManagerModule::stop() {
   for (uint32_t i = 0; i < MOTORS_COUNT; i++) {
     message.motorcontrol.command[i] = 0.0f;
   }
-  unav::Modules::motorControllerModule->processMessage(message);
+  message.motorcontrol.mode= motorcontrol_mode_t::disabled;
+   unav::Modules::motorControllerModule->processMessage(message);
 }
 
 void MotorManagerModule::runControlLoop() {
@@ -137,7 +138,6 @@ void MotorManagerModule::runControlLoop() {
   if (js != nullptr) {
     jointstate = &js->jointstate;
     jointstate->type = message_types_t::outbound_JointState;
-    leds_setPattern(1, &leds_pattern_blink_singlefast);
   }
 
   message_t *ps{nullptr};
