@@ -26,10 +26,17 @@ protected:
   void moduleThreadStart() __attribute__((noreturn));
 
 private:
+  enum class status_t : int32_t { failsafe = -2, unconfigured = -1, stopped = 0, starting = 1, running = 2, stopping = 3 };
+
+  uint32_t configurationFlags;
+  static constexpr uint32_t REQUIRED_CONFIGURATION_FLAGS =
+      ((uint32_t)configuration_item_t::encoderconfig) | ((uint32_t)configuration_item_t::mechanicalconfig) | ((uint32_t)configuration_item_t::pidconfig);
+
+  bool operationModeNormal;
+  status_t status;
   int timeoutCounter;
   unav::utils::Timer timer;
   unav::drivers::Encoder encoders[MOTORS_COUNT];
-  float filteredEffort[2];
   jointcommand_mode_t mode;
   unav::controls::PID pidControllers[MOTORS_COUNT];
   uint32_t wait;
@@ -43,6 +50,9 @@ private:
   SimpleMessaging<internal_message_t, 5> internalMessaging;
   void configure(const reconfigure_content_t *reconfig);
 
+  void stop();
+  void runControlLoop();
+  void checkMessages();
   void updatePidConfig();
   void updateEncoderConfig();
   void updateBridgeConfig();
@@ -51,6 +61,5 @@ private:
   void updateOperationConfig();
   void updateSafetyConfig();
   void updateTimings(const float frequency);
-  void checkMessages();
 };
 } // namespace unav::modules

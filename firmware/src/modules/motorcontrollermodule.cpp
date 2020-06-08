@@ -20,7 +20,8 @@ namespace unav::modules {
 #define MAX_TIMEOUT 5
 
 MotorControllerModule::MotorControllerModule()
-    : timeoutCounter{0}, motors(), cmd{0.0f}, timer(), mode{unav::motorcontrol_mode_t::disabled}, pid_publish_rate{0}, pid_debug(false), nominalDt{0.0f}, dt{0.0f} {
+    : timeoutCounter{0}, motors(), cmd{0.0f}, timer(), mode{unav::motorcontrol_mode_t::disabled}, pid_publish_rate{0},
+      pid_debug(false), nominalDt{0.0f}, dt{0.0f} {
   for (uint32_t i = 0; i < MOTORS_COUNT; i++) {
     motors[i].configure(MOTOR_CONFIGURATIONS[i]);
   }
@@ -32,7 +33,6 @@ void MotorControllerModule::initialize() {
 }
 
 void MotorControllerModule::moduleThreadStart() {
-  bool driversEnabled{false};
   updateTimings(1000.0f);
   disable_motors();
   vTaskDelay(1000);
@@ -47,11 +47,10 @@ void MotorControllerModule::moduleThreadStart() {
 
     if (mode >= motorcontrol_mode_t::normal) {
       timeoutCounter++;
-
       if (!driversEnabled) {
-        driversEnabled = true;
-        enable_motors();
         leds_setPattern(LED_ACTIVE, &leds_pattern_fast);
+        enable_motors();
+        driversEnabled = true;
       }
       PERF_MEASURE_PERIOD(perf_mc_loop_time);
       for (uint32_t i = 0; i < MOTORS_COUNT; i++) {
@@ -59,9 +58,9 @@ void MotorControllerModule::moduleThreadStart() {
       }
     } else {
       if (driversEnabled) {
+        driversEnabled = false;
         leds_setPattern(LED_ACTIVE, &leds_pattern_off);
         disable_motors();
-        driversEnabled = false;
       }
     }
   }

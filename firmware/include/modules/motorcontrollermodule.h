@@ -26,6 +26,7 @@ protected:
   virtual void moduleThreadStart() __attribute__((noreturn));
 
 private:
+  bool driversEnabled;
   unav::drivers::Motor motors[MOTORS_COUNT];
   int timeoutCounter;
   bool curLoopEnabled;
@@ -37,9 +38,7 @@ private:
   float nominalDt;
   float dt;
   unav::controls::PID pidControllers[MOTORS_COUNT];
-  bool drivers_enabled = false;
   unav::SimpleMessaging<internal_message_t, 5> internalMessaging;
-
   void setup();
   void updateConfiguration(const reconfigure_content_t *reconfig);
   void checkMessages();
@@ -50,5 +49,4 @@ private:
   void updateOperationConfig();
   void updateTimings(const float frequency);
 };
-
 } // namespace unav::modules
