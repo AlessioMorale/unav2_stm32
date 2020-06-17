@@ -5,7 +5,6 @@
 #include <unav2_msgs/EncoderConfig.h>
 #include <unav2_msgs/JointCommand.h>
 #include <unav2_msgs/JointState.h>
-#include <unav2_msgs/LimitsConfig.h>
 #include <unav2_msgs/MechanicalConfig.h>
 #include <unav2_msgs/OperationConfig.h>
 #include <unav2_msgs/PIDConfig.h>

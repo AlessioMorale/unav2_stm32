@@ -14,20 +14,28 @@ namespace unav2_msgs
     public:
       typedef float _temp_warning_type;
       _temp_warning_type temp_warning;
-      typedef float _temp_critical_type;
-      _temp_critical_type temp_critical;
+      typedef float _temp_limit_type;
+      _temp_limit_type temp_limit;
       typedef int16_t _temp_timeout_type;
       _temp_timeout_type temp_timeout;
       typedef int16_t _temp_autorestore_type;
       _temp_autorestore_type temp_autorestore;
-      typedef float _cur_warning_type;
-      _cur_warning_type cur_warning;
-      typedef float _cur_critical_type;
-      _cur_critical_type cur_critical;
-      typedef int16_t _cur_timeout_type;
-      _cur_timeout_type cur_timeout;
-      typedef int16_t _cur_autorestore_type;
-      _cur_autorestore_type cur_autorestore;
+      typedef float _current_warning_type;
+      _current_warning_type current_warning;
+      typedef float _current_limit_type;
+      _current_limit_type current_limit;
+      typedef int16_t _current_timeout_type;
+      _current_timeout_type current_timeout;
+      typedef int16_t _current_autorestore_type;
+      _current_autorestore_type current_autorestore;
+      typedef float _position_limit_type;
+      _position_limit_type position_limit;
+      typedef float _velocity_limit_type;
+      _velocity_limit_type velocity_limit;
+      typedef int8_t _pwm_limit_type;
+      _pwm_limit_type pwm_limit;
+      typedef int8_t _error_limit_type;
+      _error_limit_type error_limit;
       typedef int16_t _slope_time_type;
       _slope_time_type slope_time;
       typedef int16_t _bridge_off_type;
@@ -39,13 +47,17 @@ namespace unav2_msgs
 
     SafetyConfig():
       temp_warning(0),
-      temp_critical(0),
+      temp_limit(0),
       temp_timeout(0),
       temp_autorestore(0),
-      cur_warning(0),
-      cur_critical(0),
-      cur_timeout(0),
-      cur_autorestore(0),
+      current_warning(0),
+      current_limit(0),
+      current_timeout(0),
+      current_autorestore(0),
+      position_limit(0),
+      velocity_limit(0),
+      pwm_limit(0),
+      error_limit(0),
       slope_time(0),
       bridge_off(0),
       timeout(0),
@@ -69,13 +81,13 @@ namespace unav2_msgs
       union {
         float real;
         uint32_t base;
-      } u_temp_critical;
-      u_temp_critical.real = this->temp_critical;
-      *(outbuffer + offset + 0) = (u_temp_critical.base >> (8 * 0)) & 0xFF;
-      *(outbuffer + offset + 1) = (u_temp_critical.base >> (8 * 1)) & 0xFF;
-      *(outbuffer + offset + 2) = (u_temp_critical.base >> (8 * 2)) & 0xFF;
-      *(outbuffer + offset + 3) = (u_temp_critical.base >> (8 * 3)) & 0xFF;
-      offset += sizeof(this->temp_critical);
+      } u_temp_limit;
+      u_temp_limit.real = this->temp_limit;
+      *(outbuffer + offset + 0) = (u_temp_limit.base >> (8 * 0)) & 0xFF;
+      *(outbuffer + offset + 1) = (u_temp_limit.base >> (8 * 1)) & 0xFF;
+      *(outbuffer + offset + 2) = (u_temp_limit.base >> (8 * 2)) & 0xFF;
+      *(outbuffer + offset + 3) = (u_temp_limit.base >> (8 * 3)) & 0xFF;
+      offset += sizeof(this->temp_limit);
       union {
         int16_t real;
         uint16_t base;
@@ -95,39 +107,73 @@ namespace unav2_msgs
       union {
         float real;
         uint32_t base;
-      } u_cur_warning;
-      u_cur_warning.real = this->cur_warning;
-      *(outbuffer + offset + 0) = (u_cur_warning.base >> (8 * 0)) & 0xFF;
-      *(outbuffer + offset + 1) = (u_cur_warning.base >> (8 * 1)) & 0xFF;
-      *(outbuffer + offset + 2) = (u_cur_warning.base >> (8 * 2)) & 0xFF;
-      *(outbuffer + offset + 3) = (u_cur_warning.base >> (8 * 3)) & 0xFF;
-      offset += sizeof(this->cur_warning);
+      } u_current_warning;
+      u_current_warning.real = this->current_warning;
+      *(outbuffer + offset + 0) = (u_current_warning.base >> (8 * 0)) & 0xFF;
+      *(outbuffer + offset + 1) = (u_current_warning.base >> (8 * 1)) & 0xFF;
+      *(outbuffer + offset + 2) = (u_current_warning.base >> (8 * 2)) & 0xFF;
+      *(outbuffer + offset + 3) = (u_current_warning.base >> (8 * 3)) & 0xFF;
+      offset += sizeof(this->current_warning);
       union {
         float real;
         uint32_t base;
-      } u_cur_critical;
-      u_cur_critical.real = this->cur_critical;
-      *(outbuffer + offset + 0) = (u_cur_critical.base >> (8 * 0)) & 0xFF;
-      *(outbuffer + offset + 1) = (u_cur_critical.base >> (8 * 1)) & 0xFF;
-      *(outbuffer + offset + 2) = (u_cur_critical.base >> (8 * 2)) & 0xFF;
-      *(outbuffer + offset + 3) = (u_cur_critical.base >> (8 * 3)) & 0xFF;
-      offset += sizeof(this->cur_critical);
+      } u_current_limit;
+      u_current_limit.real = this->current_limit;
+      *(outbuffer + offset + 0) = (u_current_limit.base >> (8 * 0)) & 0xFF;
+      *(outbuffer + offset + 1) = (u_current_limit.base >> (8 * 1)) & 0xFF;
+      *(outbuffer + offset + 2) = (u_current_limit.base >> (8 * 2)) & 0xFF;
+      *(outbuffer + offset + 3) = (u_current_limit.base >> (8 * 3)) & 0xFF;
+      offset += sizeof(this->current_limit);
       union {
         int16_t real;
         uint16_t base;
-      } u_cur_timeout;
-      u_cur_timeout.real = this->cur_timeout;
-      *(outbuffer + offset + 0) = (u_cur_timeout.base >> (8 * 0)) & 0xFF;
-      *(outbuffer + offset + 1) = (u_cur_timeout.base >> (8 * 1)) & 0xFF;
-      offset += sizeof(this->cur_timeout);
+      } u_current_timeout;
+      u_current_timeout.real = this->current_timeout;
+      *(outbuffer + offset + 0) = (u_current_timeout.base >> (8 * 0)) & 0xFF;
+      *(outbuffer + offset + 1) = (u_current_timeout.base >> (8 * 1)) & 0xFF;
+      offset += sizeof(this->current_timeout);
       union {
         int16_t real;
         uint16_t base;
-      } u_cur_autorestore;
-      u_cur_autorestore.real = this->cur_autorestore;
-      *(outbuffer + offset + 0) = (u_cur_autorestore.base >> (8 * 0)) & 0xFF;
-      *(outbuffer + offset + 1) = (u_cur_autorestore.base >> (8 * 1)) & 0xFF;
-      offset += sizeof(this->cur_autorestore);
+      } u_current_autorestore;
+      u_current_autorestore.real = this->current_autorestore;
+      *(outbuffer + offset + 0) = (u_current_autorestore.base >> (8 * 0)) & 0xFF;
+      *(outbuffer + offset + 1) = (u_current_autorestore.base >> (8 * 1)) & 0xFF;
+      offset += sizeof(this->current_autorestore);
+      union {
+        float real;
+        uint32_t base;
+      } u_position_limit;
+      u_position_limit.real = this->position_limit;
+      *(outbuffer + offset + 0) = (u_position_limit.base >> (8 * 0)) & 0xFF;
+      *(outbuffer + offset + 1) = (u_position_limit.base >> (8 * 1)) & 0xFF;
+      *(outbuffer + offset + 2) = (u_position_limit.base >> (8 * 2)) & 0xFF;
+      *(outbuffer + offset + 3) = (u_position_limit.base >> (8 * 3)) & 0xFF;
+      offset += sizeof(this->position_limit);
+      union {
+        float real;
+        uint32_t base;
+      } u_velocity_limit;
+      u_velocity_limit.real = this->velocity_limit;
+      *(outbuffer + offset + 0) = (u_velocity_limit.base >> (8 * 0)) & 0xFF;
+      *(outbuffer + offset + 1) = (u_velocity_limit.base >> (8 * 1)) & 0xFF;
+      *(outbuffer + offset + 2) = (u_velocity_limit.base >> (8 * 2)) & 0xFF;
+      *(outbuffer + offset + 3) = (u_velocity_limit.base >> (8 * 3)) & 0xFF;
+      offset += sizeof(this->velocity_limit);
+      union {
+        int8_t real;
+        uint8_t base;
+      } u_pwm_limit;
+      u_pwm_limit.real = this->pwm_limit;
+      *(outbuffer + offset + 0) = (u_pwm_limit.base >> (8 * 0)) & 0xFF;
+      offset += sizeof(this->pwm_limit);
+      union {
+        int8_t real;
+        uint8_t base;
+      } u_error_limit;
+      u_error_limit.real = this->error_limit;
+      *(outbuffer + offset + 0) = (u_error_limit.base >> (8 * 0)) & 0xFF;
+      offset += sizeof(this->error_limit);
       union {
         int16_t real;
         uint16_t base;
@@ -177,14 +223,14 @@ namespace unav2_msgs
       union {
         float real;
         uint32_t base;
-      } u_temp_critical;
-      u_temp_critical.base = 0;
-      u_temp_critical.base |= ((uint32_t) (*(inbuffer + offset + 0))) << (8 * 0);
-      u_temp_critical.base |= ((uint32_t) (*(inbuffer + offset + 1))) << (8 * 1);
-      u_temp_critical.base |= ((uint32_t) (*(inbuffer + offset + 2))) << (8 * 2);
-      u_temp_critical.base |= ((uint32_t) (*(inbuffer + offset + 3))) << (8 * 3);
-      this->temp_critical = u_temp_critical.real;
-      offset += sizeof(this->temp_critical);
+      } u_temp_limit;
+      u_temp_limit.base = 0;
+      u_temp_limit.base |= ((uint32_t) (*(inbuffer + offset + 0))) << (8 * 0);
+      u_temp_limit.base |= ((uint32_t) (*(inbuffer + offset + 1))) << (8 * 1);
+      u_temp_limit.base |= ((uint32_t) (*(inbuffer + offset + 2))) << (8 * 2);
+      u_temp_limit.base |= ((uint32_t) (*(inbuffer + offset + 3))) << (8 * 3);
+      this->temp_limit = u_temp_limit.real;
+      offset += sizeof(this->temp_limit);
       union {
         int16_t real;
         uint16_t base;
@@ -206,43 +252,81 @@ namespace unav2_msgs
       union {
         float real;
         uint32_t base;
-      } u_cur_warning;
-      u_cur_warning.base = 0;
-      u_cur_warning.base |= ((uint32_t) (*(inbuffer + offset + 0))) << (8 * 0);
-      u_cur_warning.base |= ((uint32_t) (*(inbuffer + offset + 1))) << (8 * 1);
-      u_cur_warning.base |= ((uint32_t) (*(inbuffer + offset + 2))) << (8 * 2);
-      u_cur_warning.base |= ((uint32_t) (*(inbuffer + offset + 3))) << (8 * 3);
-      this->cur_warning = u_cur_warning.real;
-      offset += sizeof(this->cur_warning);
+      } u_current_warning;
+      u_current_warning.base = 0;
+      u_current_warning.base |= ((uint32_t) (*(inbuffer + offset + 0))) << (8 * 0);
+      u_current_warning.base |= ((uint32_t) (*(inbuffer + offset + 1))) << (8 * 1);
+      u_current_warning.base |= ((uint32_t) (*(inbuffer + offset + 2))) << (8 * 2);
+      u_current_warning.base |= ((uint32_t) (*(inbuffer + offset + 3))) << (8 * 3);
+      this->current_warning = u_current_warning.real;
+      offset += sizeof(this->current_warning);
       union {
         float real;
         uint32_t base;
-      } u_cur_critical;
-      u_cur_critical.base = 0;
-      u_cur_critical.base |= ((uint32_t) (*(inbuffer + offset + 0))) << (8 * 0);
-      u_cur_critical.base |= ((uint32_t) (*(inbuffer + offset + 1))) << (8 * 1);
-      u_cur_critical.base |= ((uint32_t) (*(inbuffer + offset + 2))) << (8 * 2);
-      u_cur_critical.base |= ((uint32_t) (*(inbuffer + offset + 3))) << (8 * 3);
-      this->cur_critical = u_cur_critical.real;
-      offset += sizeof(this->cur_critical);
+      } u_current_limit;
+      u_current_limit.base = 0;
+      u_current_limit.base |= ((uint32_t) (*(inbuffer + offset + 0))) << (8 * 0);
+      u_current_limit.base |= ((uint32_t) (*(inbuffer + offset + 1))) << (8 * 1);
+      u_current_limit.base |= ((uint32_t) (*(inbuffer + offset + 2))) << (8 * 2);
+      u_current_limit.base |= ((uint32_t) (*(inbuffer + offset + 3))) << (8 * 3);
+      this->current_limit = u_current_limit.real;
+      offset += sizeof(this->current_limit);
       union {
         int16_t real;
         uint16_t base;
-      } u_cur_timeout;
-      u_cur_timeout.base = 0;
-      u_cur_timeout.base |= ((uint16_t) (*(inbuffer + offset + 0))) << (8 * 0);
-      u_cur_timeout.base |= ((uint16_t) (*(inbuffer + offset + 1))) << (8 * 1);
-      this->cur_timeout = u_cur_timeout.real;
-      offset += sizeof(this->cur_timeout);
+      } u_current_timeout;
+      u_current_timeout.base = 0;
+      u_current_timeout.base |= ((uint16_t) (*(inbuffer + offset + 0))) << (8 * 0);
+      u_current_timeout.base |= ((uint16_t) (*(inbuffer + offset + 1))) << (8 * 1);
+      this->current_timeout = u_current_timeout.real;
+      offset += sizeof(this->current_timeout);
       union {
         int16_t real;
         uint16_t base;
-      } u_cur_autorestore;
-      u_cur_autorestore.base = 0;
-      u_cur_autorestore.base |= ((uint16_t) (*(inbuffer + offset + 0))) << (8 * 0);
-      u_cur_autorestore.base |= ((uint16_t) (*(inbuffer + offset + 1))) << (8 * 1);
-      this->cur_autorestore = u_cur_autorestore.real;
-      offset += sizeof(this->cur_autorestore);
+      } u_current_autorestore;
+      u_current_autorestore.base = 0;
+      u_current_autorestore.base |= ((uint16_t) (*(inbuffer + offset + 0))) << (8 * 0);
+      u_current_autorestore.base |= ((uint16_t) (*(inbuffer + offset + 1))) << (8 * 1);
+      this->current_autorestore = u_current_autorestore.real;
+      offset += sizeof(this->current_autorestore);
+      union {
+        float real;
+        uint32_t base;
+      } u_position_limit;
+      u_position_limit.base = 0;
+      u_position_limit.base |= ((uint32_t) (*(inbuffer + offset + 0))) << (8 * 0);
+      u_position_limit.base |= ((uint32_t) (*(inbuffer + offset + 1))) << (8 * 1);
+      u_position_limit.base |= ((uint32_t) (*(inbuffer + offset + 2))) << (8 * 2);
+      u_position_limit.base |= ((uint32_t) (*(inbuffer + offset + 3))) << (8 * 3);
+      this->position_limit = u_position_limit.real;
+      offset += sizeof(this->position_limit);
+      union {
+        float real;
+        uint32_t base;
+      } u_velocity_limit;
+      u_velocity_limit.base = 0;
+      u_velocity_limit.base |= ((uint32_t) (*(inbuffer + offset + 0))) << (8 * 0);
+      u_velocity_limit.base |= ((uint32_t) (*(inbuffer + offset + 1))) << (8 * 1);
+      u_velocity_limit.base |= ((uint32_t) (*(inbuffer + offset + 2))) << (8 * 2);
+      u_velocity_limit.base |= ((uint32_t) (*(inbuffer + offset + 3))) << (8 * 3);
+      this->velocity_limit = u_velocity_limit.real;
+      offset += sizeof(this->velocity_limit);
+      union {
+        int8_t real;
+        uint8_t base;
+      } u_pwm_limit;
+      u_pwm_limit.base = 0;
+      u_pwm_limit.base |= ((uint8_t) (*(inbuffer + offset + 0))) << (8 * 0);
+      this->pwm_limit = u_pwm_limit.real;
+      offset += sizeof(this->pwm_limit);
+      union {
+        int8_t real;
+        uint8_t base;
+      } u_error_limit;
+      u_error_limit.base = 0;
+      u_error_limit.base |= ((uint8_t) (*(inbuffer + offset + 0))) << (8 * 0);
+      this->error_limit = u_error_limit.real;
+      offset += sizeof(this->error_limit);
       union {
         int16_t real;
         uint16_t base;
@@ -279,7 +363,7 @@ namespace unav2_msgs
     }
 
     const char * getType(){ return "unav2_msgs/SafetyConfig"; };
-    const char * getMD5(){ return "5098fdef18b6b6b71cd686821aea7d45"; };
+    const char * getMD5(){ return "ada20023c4629ab2a438eed5e22fcee7"; };
 
   };
 

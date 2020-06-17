@@ -281,9 +281,9 @@ void MotorManagerModule::configure(const reconfigure_content_t *reconfig) {
 void MotorManagerModule::updatePidConfig() {
   const auto cfg = Application::configuration.getPIDConfig();
   for (uint32_t i = 0; i < MOTORS_COUNT; i++) {
-    pidControllers[i].setGains(cfg.vel_kp, cfg.vel_ki, cfg.vel_kd, cfg.vel_kaw);
+    pidControllers[i].setGains(cfg.velocity_kp, cfg.velocity_ki, cfg.velocity_kd, cfg.velocity_kaw);
   }
-  updateTimings(cfg.vel_frequency);
+  updateTimings(cfg.velocity_frequency);
 }
 
 void MotorManagerModule::updateEncoderConfig() {

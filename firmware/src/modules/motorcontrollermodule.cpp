@@ -125,9 +125,10 @@ void MotorControllerModule::updateConfiguration(const reconfigure_content_t *rec
 void MotorControllerModule::updatePidConfig() {
   const auto cfg = unav::Application::configuration.getPIDConfig();
   for (uint32_t i = 0; i < MOTORS_COUNT; i++) {
-    pidControllers[i].setGains(cfg.cur_kp, cfg.cur_ki, cfg.cur_kd, cfg.cur_kaw);
+    pidControllers[i].setGains(cfg.current_kp, cfg.current_ki, cfg.current_kd, cfg.current_kaw);
   }
-  updateTimings(cfg.cur_frequency);
+  pid_debug = cfg.pid_debug;
+  updateTimings(cfg.current_frequency);
 }
 
 void MotorControllerModule::updateLimitsConfig() {
@@ -147,7 +148,6 @@ void MotorControllerModule::updateTimings(const float frequency) {
 
 void MotorControllerModule::updateOperationConfig() {
   const auto cfg = unav::Application::configuration.getOperationConfig();
-  pid_debug = cfg.pid_debug;
 }
 
 template class BaseRosModule<MOTORCONTROLLERSTACKSIZE>;

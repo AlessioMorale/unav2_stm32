@@ -12,7 +12,6 @@
 #include <unav2_msgs/EncoderConfig.h>
 #include <unav2_msgs/JointCommand.h>
 #include <unav2_msgs/JointState.h>
-#include <unav2_msgs/LimitsConfig.h>
 #include <unav2_msgs/MechanicalConfig.h>
 #include <unav2_msgs/OperationConfig.h>
 #include <unav2_msgs/PIDConfig.h>
@@ -61,7 +60,6 @@ private:
   ros::Subscriber<unav2_msgs::JointCommand> subJointCmd;
   ros::Subscriber<unav2_msgs::BridgeConfig> subBridgeCfg;
   ros::Subscriber<unav2_msgs::EncoderConfig> subEncoderCfg;
-  ros::Subscriber<unav2_msgs::LimitsConfig> subLimitCfg;
   ros::Subscriber<unav2_msgs::MechanicalConfig> subMechanicalCfg;
   ros::Subscriber<unav2_msgs::OperationConfig> subOperationCfg;
   ros::Subscriber<unav2_msgs::PIDConfig> subPIDCfg;

@@ -15,7 +15,6 @@ enum class message_types_t : int32_t {
   inbound_JointCommand = 40,
   inbound_BridgeConfig = 60,
   inbound_EncoderConfig = 61,
-  inbound_LimitsConfig = 62,
   inbound_MechanicalConfig = 63,
   inbound_OperationConfig = 64,
   inbound_PIDConfig = 65,
@@ -60,31 +59,25 @@ typedef struct jointcommand_content {
 typedef struct pidconfig_content {
   message_types_t type;
   uint32_t transactionId;
-  float vel_kp;
-  float vel_ki;
-  float vel_kd;
-  float vel_kaw;
-  float cur_kp;
-  float cur_ki;
-  float cur_kd;
-  float cur_kaw;
-  uint16_t vel_frequency;
-  uint16_t cur_frequency;
-  bool cur_enable;
+  float velocity_kp;
+  float velocity_ki;
+  float velocity_kd;
+  float velocity_kaw;
+  float current_kp;
+  float current_ki;
+  float current_kd;
+  float current_kaw;
+  uint16_t velocity_frequency;
+  uint16_t current_frequency;
+  bool current_enable;
+  bool pid_debug;
 } pidconfig_content_t;
 
 typedef struct bridgeconfig_content {
   message_types_t type;
   uint32_t transactionId;
-  bool bridge_enable_polarity;
-  bool bridge_disable_mode_outa;
-  bool bridge_disable_mode_outb;
   uint16_t pwm_dead_time;
   uint16_t pwm_frequency;
-  float volt_gain;
-  float volt_offset;
-  float current_offset;
-  float current_gain;
 } bridgeconfig_content_t;
 
 enum class encoderconfig_position_t : int8_t { after_gear = 0, before_gear = 1 };
@@ -98,16 +91,6 @@ typedef struct encoderconfig_content {
   bool invert0;
   bool invert1;
 } encoderconfig_content_t;
-
-typedef struct limitsconfig_content {
-  message_types_t type;
-  uint32_t transactionId;
-  float position;
-  float velocity;
-  float current;
-  float effort;
-  float pwm;
-} limitsconfig_content_t;
 
 typedef struct mechanicalconfig_content {
   message_types_t type;
@@ -125,8 +108,8 @@ enum class operationconfig_opmode_t : uint16_t { disabled = 0, normal = 1, emerg
 typedef struct operationconfig_content {
   message_types_t type;
   uint32_t transactionId;
-  operationconfig_settingscommand_t settings_command;
   operationconfig_opmode_t operation_mode;
+  bool reset_to_dfu;
   bool pid_debug;
 } operationconfig_content_t;
 
@@ -134,13 +117,17 @@ typedef struct safetyconfig_content {
   message_types_t type;
   uint32_t transactionId;
   float temp_warning;
-  float temp_critical;
+  float temp_limit;
   int16_t temp_timeout;
   int16_t temp_autorestore;
-  float cur_warning;
-  float cur_critical;
-  int16_t cur_timeout;
-  int16_t cur_autorestore;
+  float current_warning;
+  float current_limit;
+  int16_t current_timeout;
+  int16_t current_autorestore;
+  float position_limit;
+  float velocity_limit;
+  int8_t pwm_limit;
+  int8_t error_limit;
   int16_t slope_time;
   int16_t bridge_off;
   int16_t timeout;
@@ -197,7 +184,6 @@ typedef struct _configuration_message {
     pidconfig_content_t pidconfig;
     bridgeconfig_content_t bridgeconfig;
     encoderconfig_content_t encoderconfig;
-    limitsconfig_content_t limitsconfig;
     mechanicalconfig_content_t mechanicalconfig;
     operationconfig_content_t operationconfig;
     safetyconfig_content_t safetyconfig;
@@ -208,7 +194,6 @@ typedef struct _configuration_message {
   ENTRY(pidconfig, 0, inbound_PIDConfig)                                                                                                                       \
   ENTRY(bridgeconfig, 1, inbound_BridgeConfig)                                                                                                                 \
   ENTRY(encoderconfig, 2, inbound_EncoderConfig)                                                                                                               \
-  ENTRY(limitsconfig, 3, inbound_LimitsConfig)                                                                                                                 \
   ENTRY(mechanicalconfig, 4, inbound_MechanicalConfig)                                                                                                         \
   ENTRY(operationconfig, 5, inbound_OperationConfig)                                                                                                           \
   ENTRY(safetyconfig, 6, inbound_SafetyConfig)

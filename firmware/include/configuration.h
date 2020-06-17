@@ -20,10 +20,6 @@ public:
     return  encoderConfig;
   }
 
-  limitsconfig_content_t getLimitsConfig() {
-    return  limitsConfig;
-  }
-
   mechanicalconfig_content_t getMechanicalConfig() {
     return  mechanicalConfig;
   }
@@ -49,11 +45,6 @@ public:
   void setEncoderConfig(encoderconfig_content_t cfg) {
     encoderConfig= cfg;
     __atomic_or_fetch(&configuredItems, static_cast<uint32_t>(configuration_item_t::encoderconfig), __ATOMIC_RELAXED);
-  }
-
-  void setLimitsConfig(limitsconfig_content_t cfg) {
-    limitsConfig= cfg;
-    __atomic_or_fetch(&configuredItems, static_cast<uint32_t>(configuration_item_t::limitsconfig), __ATOMIC_RELAXED);
   }
 
   void setMechanicalConfig(mechanicalconfig_content_t cfg) {
@@ -83,9 +74,6 @@ public:
     case message_types_t::inbound_EncoderConfig: {
       setEncoderConfig(msg->encoderconfig);
     } break;
-    case message_types_t::inbound_LimitsConfig: {
-      setLimitsConfig(msg->limitsconfig);
-    } break;
     case message_types_t::inbound_MechanicalConfig: {
       setMechanicalConfig(msg->mechanicalconfig);
     } break;
@@ -109,7 +97,6 @@ private:
   pidconfig_content_t pidConfig;
   bridgeconfig_content_t bridgeConfig;
   encoderconfig_content_t encoderConfig;
-  limitsconfig_content_t limitsConfig;
   mechanicalconfig_content_t mechanicalConfig;
   operationconfig_content_t operationConfig;
   safetyconfig_content_t safetyConfig;

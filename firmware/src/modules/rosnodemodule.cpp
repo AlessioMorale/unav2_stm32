@@ -23,7 +23,6 @@ RosNodeModule::RosNodeModule()
       subPIDCfg("unav2/config/pid", [](const unav2_msgs::PIDConfig &msg) { rosNode->handleRosConfigMessage(msg); }),
       subBridgeCfg("unav2/config/bridge", [](const unav2_msgs::BridgeConfig &msg) { rosNode->handleRosConfigMessage(msg); }),
       subEncoderCfg("unav2/config/encoder", [](const unav2_msgs::EncoderConfig &msg) { rosNode->handleRosConfigMessage(msg); }),
-      subLimitCfg("unav2/config/limits", [](const unav2_msgs::LimitsConfig &msg) { rosNode->handleRosConfigMessage(msg); }),
       subMechanicalCfg("unav2/config/mechanical", [](const unav2_msgs::MechanicalConfig &msg) { rosNode->handleRosConfigMessage(msg); }),
       subOperationCfg("unav2/config/operation", [](const unav2_msgs::OperationConfig &msg) { rosNode->handleRosConfigMessage(msg); }),
       subSafetyCfg("unav2/config/safety", [](const unav2_msgs::SafetyConfig &msg) { rosNode->handleRosConfigMessage(msg); }) {
@@ -70,7 +69,6 @@ void RosNodeModule::moduleThreadStart() {
   getNodeHandle().subscribe(subJointCmd);
   getNodeHandle().subscribe(subBridgeCfg);
   getNodeHandle().subscribe(subEncoderCfg);
-  getNodeHandle().subscribe(subLimitCfg);
   getNodeHandle().subscribe(subMechanicalCfg);
   getNodeHandle().subscribe(subOperationCfg);
   getNodeHandle().subscribe(subPIDCfg);

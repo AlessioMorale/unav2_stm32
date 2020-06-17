@@ -12,7 +12,6 @@
 #include <unav2_msgs/EncoderConfig.h>
 #include <unav2_msgs/JointCommand.h>
 #include <unav2_msgs/JointState.h>
-#include <unav2_msgs/LimitsConfig.h>
 #include <unav2_msgs/MechanicalConfig.h>
 #include <unav2_msgs/OperationConfig.h>
 #include <unav2_msgs/PIDConfig.h>
@@ -37,17 +36,17 @@ public:
     pidconfig_content_t *c = &msg->pidconfig;
     c->type = message_types_t::inbound_PIDConfig;
     c->transactionId = rosmsg.transactionId;
-    c->vel_kp = rosmsg.vel_kp;
-    c->vel_ki = rosmsg.vel_ki;
-    c->vel_kd = rosmsg.vel_kd;
-    c->vel_kaw = rosmsg.vel_kaw;
-    c->cur_kp = rosmsg.cur_kp;
-    c->cur_ki = rosmsg.cur_ki;
-    c->cur_kd = rosmsg.cur_kd;
-    c->cur_kaw = rosmsg.cur_kaw;
-    c->vel_frequency = rosmsg.vel_frequency;
-    c->cur_frequency = rosmsg.cur_frequency;
-    c->cur_enable = rosmsg.cur_enable;
+    c->velocity_kp = rosmsg.velocity_kp;
+    c->velocity_ki = rosmsg.velocity_ki;
+    c->velocity_kd = rosmsg.velocity_kd;
+    c->velocity_kaw = rosmsg.velocity_kaw;
+    c->current_kp = rosmsg.current_kp;
+    c->current_ki = rosmsg.current_ki;
+    c->current_kd = rosmsg.current_kd;
+    c->current_kaw = rosmsg.current_kaw;
+    c->velocity_frequency = rosmsg.velocity_frequency;
+    c->current_frequency = rosmsg.current_frequency;
+    c->current_enable = rosmsg.current_enable;
   }
 };
 
@@ -63,20 +62,6 @@ public:
     c->channels = rosmsg.channels == rosmsg.ENCODER_CHANNELS_ONE ? 1 : 2;
     c->invert0 = rosmsg.invert0;
     c->invert1 = rosmsg.invert1;
-  }
-};
-
-template <> class ConfigurationMessageConverter<unav2_msgs::LimitsConfig> {
-public:
-  static void fromRosMsg(const unav2_msgs::LimitsConfig &rosmsg, configuration_message_t *msg) {
-    auto c = &msg->limitsconfig;
-    c->type = message_types_t::inbound_LimitsConfig;
-    c->transactionId = rosmsg.transactionId;
-    c->position = rosmsg.position;
-    c->velocity = rosmsg.velocity;
-    c->current = rosmsg.current;
-    c->effort = rosmsg.effort;
-    c->pwm = rosmsg.pwm;
   }
 };
 
@@ -98,16 +83,11 @@ public:
     auto c = &msg->operationconfig;
     c->type = message_types_t::inbound_OperationConfig;
     c->transactionId = rosmsg.transactionId;
-    c->settings_command =
-        (rosmsg.settings_command == rosmsg.SETTINGS_COMMAND_STORE)
-            ? operationconfig_settingscommand_t::store
-            : (rosmsg.settings_command == rosmsg.SETTINGS_COMMAND_RELOAD) ? operationconfig_settingscommand_t::reload : operationconfig_settingscommand_t::none;
-
     c->operation_mode =
         (rosmsg.operation_mode == rosmsg.OPERATION_MODE_MOTORS_EMERGENCY_STOP)
             ? operationconfig_opmode_t::emergency_stop
             : (rosmsg.operation_mode == rosmsg.OPERATION_MODE_MOTORS_DISABLED) ? operationconfig_opmode_t::disabled : operationconfig_opmode_t::normal;
-    c->pid_debug = rosmsg.pid_debug;
+    c->reset_to_dfu = rosmsg.reset_to_dfu;
   }
 };
 
@@ -118,13 +98,17 @@ public:
     c->type = message_types_t::inbound_SafetyConfig;
     c->transactionId = rosmsg.transactionId;
     c->temp_warning = rosmsg.temp_warning;
-    c->temp_critical = rosmsg.temp_critical;
+    c->temp_limit = rosmsg.temp_limit;
     c->temp_timeout = rosmsg.temp_timeout;
     c->temp_autorestore = rosmsg.temp_autorestore;
-    c->cur_warning = rosmsg.cur_warning;
-    c->cur_critical = rosmsg.cur_critical;
-    c->cur_timeout = rosmsg.cur_timeout;
-    c->cur_autorestore = rosmsg.cur_autorestore;
+    c->current_warning = rosmsg.current_warning;
+    c->current_limit = rosmsg.current_limit;
+    c->current_timeout = rosmsg.current_timeout;
+    c->current_autorestore = rosmsg.current_autorestore;
+    c->position_limit = rosmsg.position_limit;
+    c->velocity_limit = rosmsg.velocity_limit;
+    c->pwm_limit = rosmsg.pwm_limit;
+    c->error_limit= rosmsg.error_limit;
     c->slope_time = rosmsg.slope_time;
     c->bridge_off = rosmsg.bridge_off;
     c->timeout = rosmsg.timeout;
@@ -137,15 +121,8 @@ public:
     auto c = &msg->bridgeconfig;
     c->type = message_types_t::inbound_BridgeConfig;
     c->transactionId = rosmsg.transactionId;
-    c->bridge_enable_polarity = rosmsg.bridge_enable_polarity;
-    c->bridge_disable_mode_outa = rosmsg.bridge_disable_mode_outa;
-    c->bridge_disable_mode_outb = rosmsg.bridge_disable_mode_outb;
     c->pwm_dead_time = rosmsg.pwm_dead_time;
     c->pwm_frequency = rosmsg.pwm_frequency;
-    c->volt_gain = rosmsg.volt_gain;
-    c->volt_offset = rosmsg.volt_offset;
-    c->current_offset = rosmsg.current_offset;
-    c->current_gain = rosmsg.current_gain;
   }
 };
 
