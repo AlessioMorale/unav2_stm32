@@ -30,7 +30,7 @@ extern "C" {
 #endif
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f4xx_hal.h"
-
+#include <error.h>
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
@@ -52,7 +52,6 @@ extern "C" {
 /* USER CODE END EM */
 
 /* Exported functions prototypes ---------------------------------------------*/
-void Error_Handler(void) __attribute__((noreturn));
 
 /* USER CODE BEGIN EFP */
 

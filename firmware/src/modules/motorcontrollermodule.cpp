@@ -29,6 +29,7 @@ MotorControllerModule::MotorControllerModule()
 
 void MotorControllerModule::initialize() {
   internalMessaging.initialize(MotorControllerModule::ModuleName);
+  Application::configuration.Attach(this);
   initializeTask(osPriority::osPriorityAboveNormal, MotorControllerModule::ModuleName);
 }
 
@@ -86,37 +87,27 @@ void MotorControllerModule::checkMessages() {
         }
       }
     } break;
-    case message_types_t::internal_reconfigure: {
-      const reconfigure_content_t *reconfig = &receivedMsg.reconfigure;
-      updateConfiguration(reconfig);
-    } break;
-
     default:
       break;
     }
   }
 }
-
-void MotorControllerModule::updateConfiguration(const reconfigure_content_t *reconfig) {
-  switch (reconfig->item) {
-  case configuration_item_t::pidconfig: {
+void MotorControllerModule::configurationUpdated(const unav::ConfigurationMessageTypes_t configuredItem) {
+  switch (configuredItem) {
+  case ConfigurationMessageTypes_t::pidconfig: {
     updatePidConfig();
   } break;
-  case configuration_item_t::mechanicalconfig:
+  case ConfigurationMessageTypes_t::mechanicalconfig:
     break;
-  case configuration_item_t::bridgeconfig: {
+  case ConfigurationMessageTypes_t::bridgeconfig: {
     updateBridgeConfig();
   } break;
 
-  case configuration_item_t::safetyconfig: {
+  case ConfigurationMessageTypes_t::safetyconfig: {
     updateSafetyConfig();
   } break;
 
-  case configuration_item_t::limitsconfig: {
-    updateLimitsConfig();
-  } break;
-
-  case configuration_item_t::operationconfig: {
+  case ConfigurationMessageTypes_t::operationconfig: {
     updateOperationConfig();
   } break;
   }
@@ -129,10 +120,6 @@ void MotorControllerModule::updatePidConfig() {
   }
   pid_debug = cfg.pid_debug;
   updateTimings(cfg.current_frequency);
-}
-
-void MotorControllerModule::updateLimitsConfig() {
-  // const auto cfg = unav::Application::configuration.getLimitsConfig();
 }
 
 void MotorControllerModule::updateSafetyConfig() {

@@ -2,7 +2,6 @@
 #include "CppUTestExt/MockSupport.h"
 #include "drivers/ina219.h"
 #include "mocks/i2cmocks.h"
-#include "modules/system/systemhealthchecker.h"
 #include <endian.h>
 #include <iostream>
 

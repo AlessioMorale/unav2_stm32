@@ -108,6 +108,7 @@ extern "C" void MX_FREERTOS_Init(void) {
   unav::Modules::motorManagerModule = &motorManager;
   unav::Modules::systemModule = &systemModule;
 
+  unav::Application::setup();
   rosNodeModule.initialize();
   motorManager.initialize();
   motorController.initialize();

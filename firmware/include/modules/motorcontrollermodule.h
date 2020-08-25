@@ -14,14 +14,16 @@ namespace unav::modules {
 #define MOTORCONTROLLERSTACKSIZE 1024
 #define MOTORCONTROLLERSTACKSIZE 1024
 
-class MotorControllerModule : protected BaseRosModule<MOTORCONTROLLERSTACKSIZE> {
+class MotorControllerModule : 
+  protected BaseRosModule<MOTORCONTROLLERSTACKSIZE>,
+  public ConfigurationObserver {
 public:
   static constexpr char *ModuleName{"MotCtl"};
   MotorControllerModule();
   void initialize();
 
   void processMessage(internal_message_t &message);
-
+  void configurationUpdated(const unav::ConfigurationMessageTypes_t configuredItem); 
 protected:
   virtual void moduleThreadStart() __attribute__((noreturn));
 
@@ -40,7 +42,6 @@ private:
   unav::controls::PID pidControllers[MOTORS_COUNT];
   unav::SimpleMessaging<internal_message_t, 5> internalMessaging;
   void setup();
-  void updateConfiguration(const reconfigure_content_t *reconfig);
   void checkMessages();
   void updatePidConfig();
   void updateLimitsConfig();

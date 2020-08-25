@@ -39,12 +39,6 @@ template <typename T> void RosNodeModule::handleRosConfigMessage(const T &msg) {
   static configuration_message_t c;
   unav::ConfigurationMessageConverter<T>::fromRosMsg(msg, &c);
   Application::configuration.set(&c);
-  auto t = getConfigurationItemFromMessageType(c.header.type);
-
-  internal_message_t m;
-  m.type = message_types_t::internal_reconfigure;
-  m.reconfigure.item = t;
-  unav::Modules::motorManagerModule->processMessage(m);
   msgack.data = c.header.transactionId;
   pubAck.publish(&msgack);
 }
