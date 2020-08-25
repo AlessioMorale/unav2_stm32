@@ -228,7 +228,6 @@ SRC_DIRS = \
 	src/Platforms/$(CPP_PLATFORM) 
 
 SRC_FILES = \
-	src/modules/system/systemhealthchecker.cpp \
 	src/drivers/ina219.cpp \
 
 
@@ -322,6 +321,9 @@ clean:
 # dependencies
 #######################################
 -include $(wildcard $(BUILD_DIR)/*.d)
+
+.PHONY: firmware
+firmware:  $(BUILD_DIR)/$(TARGET).elf
 
 .PHONY: flash
 flash:  $(BUILD_DIR)/$(TARGET).elf

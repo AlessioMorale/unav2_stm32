@@ -20,7 +20,6 @@ enum class message_types_t : int32_t {
   inbound_PIDConfig = 65,
   inbound_SafetyConfig = 66,
   internal_motor_control = 100,
-  internal_reconfigure = 101
 };
 
 typedef struct _pidstate_content {
@@ -110,7 +109,6 @@ typedef struct operationconfig_content {
   uint32_t transactionId;
   operationconfig_opmode_t operation_mode;
   bool reset_to_dfu;
-  bool pid_debug;
 } operationconfig_content_t;
 
 typedef struct safetyconfig_content {
@@ -211,7 +209,6 @@ static inline configuration_item_t getConfigurationItemFromMessageType(message_t
     CONFIGURATION_ENTRIES_TABLE(CONFIGURATION_ENTRY_EXPAND_TYPE_CASE)
   case message_types_t::inbound_JointCommand:
   case message_types_t::internal_motor_control:
-  case message_types_t::internal_reconfigure:
   case message_types_t::outbound_ack:
   case message_types_t::outbound_CurPIDState:
   case message_types_t::outbound_JointState:

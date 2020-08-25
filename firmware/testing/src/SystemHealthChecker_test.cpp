@@ -26,24 +26,27 @@
  */
 
 #include "CppUTest/TestHarness.h"
-#include "modules/system/systemhealthchecker.h"
+#include "systemhealthchecker.h"
 
-TEST_GROUP(ConfigurationChecks){
+TEST_GROUP(HealthChecks){
     void setup(){}    //
     void teardown(){} //
 };
 
-TEST(ConfigurationChecks, CanCheckConfigurations) {
-  unav::modules::system::SystemHealthChecker systemHealthChecker;
+TEST(HealthChecks, CanCheckConfigurationHealth) {
+  unav::SystemHealthChecker systemHealthChecker;
   CHECK(systemHealthChecker.isConfigured());
-
-  systemHealthChecker.setRequiredFlag(unav::ConfigurationMessageTypes_t::bridgeconfig);
+  systemHealthChecker.setRequiredFlags({unav::ConfigurationMessageTypes_t::pidconfig, 
+      unav::ConfigurationMessageTypes_t::bridgeconfig});
   systemHealthChecker.setRequiredFlag(unav::ConfigurationMessageTypes_t::encoderconfig);
+  
   CHECK_FALSE(systemHealthChecker.isConfigured());
 
   systemHealthChecker.setReceivedConfig(unav::ConfigurationMessageTypes_t::bridgeconfig);
   CHECK_FALSE(systemHealthChecker.isConfigured());
 
   systemHealthChecker.setReceivedConfig(unav::ConfigurationMessageTypes_t::encoderconfig);
+  systemHealthChecker.setReceivedConfig(unav::ConfigurationMessageTypes_t::pidconfig);
+  
   CHECK(systemHealthChecker.isConfigured());
 }

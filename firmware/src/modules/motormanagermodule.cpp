@@ -20,12 +20,14 @@ namespace unav::modules {
 #define MAX_TIMEOUT 5
 
 MotorManagerModule::MotorManagerModule()
-    : configurationFlags{0}, operationModeNormal{false}, status(status_t::unconfigured), timeoutCounter{0},
+    : operationModeNormal{false}, status(status_t::unconfigured), timeoutCounter{0},
       timer(), encoders{unav::drivers::Encoder(&TIM_ENC1), unav::drivers::Encoder(&TIM_ENC2)}, mode{unav::jointcommand_mode_t::disabled}, wait{0}, nominalDt{0},
       dt{0}, cmd{0.0f}, pid_publish_rate{10}, pid_debug{false}, control_mode{motorcontrol_mode_t::disabled}, inverted_rotation{false} {
 }
 
 void MotorManagerModule::initialize() {
+  Application::healthChecker.setRequiredFlags({ ConfigurationMessageTypes_t::encoderconfig, ConfigurationMessageTypes_t::mechanicalconfig, ConfigurationMessageTypes_t::pidconfig});
+  Application::configuration.Attach(this);
   internalMessaging.initialize(MotorManagerModule::ModuleName);
   initializeTask(osPriority::osPriorityAboveNormal, MotorManagerModule::ModuleName);
 }
@@ -60,7 +62,7 @@ void MotorManagerModule::moduleThreadStart() {
     // [unconfigured]  --- all required configurations set ---> [stopped]
     case status_t::unconfigured:
       leds_setPattern(LED_WAR_ERROR, &leds_pattern_on);
-      if ((configurationFlags & REQUIRED_CONFIGURATION_FLAGS) == REQUIRED_CONFIGURATION_FLAGS) {
+      if (Application::healthChecker.isConfigured()) {
         status = status_t::stopped;
         leds_setPattern(LED_WAR_ERROR, &leds_pattern_off);
       }
@@ -226,54 +228,34 @@ void MotorManagerModule::checkMessages() {
       }
     } break;
 
-    case message_types_t::internal_reconfigure: {
-      const reconfigure_content_t *reconfig = &receivedMsg.reconfigure;
-      configure(reconfig);
-      unav::Modules::motorControllerModule->processMessage(receivedMsg);
-    } break;
-
     default:
       break;
     }
   }
 }
 
-// TODO! add logic to handle configuration check as precondition to disable failsafe
-
-void MotorManagerModule::configure(const reconfigure_content_t *reconfig) {
-  switch (reconfig->item) {
-  case configuration_item_t::pidconfig: {
+void MotorManagerModule::configurationUpdated(const unav::ConfigurationMessageTypes_t configuredItem) {
+  switch (configuredItem) {
+  case ConfigurationMessageTypes_t::pidconfig: {
     updatePidConfig();
-    configurationFlags |= (uint32_t)configuration_item_t::pidconfig;
   } break;
-  case configuration_item_t::encoderconfig: {
+  case ConfigurationMessageTypes_t::encoderconfig: {
     updateEncoderConfig();
-    configurationFlags |= (uint32_t)configuration_item_t::encoderconfig;
   } break;
 
-  case configuration_item_t::bridgeconfig: {
+  case ConfigurationMessageTypes_t::bridgeconfig: {
     updateBridgeConfig();
-    configurationFlags |= (uint32_t)configuration_item_t::bridgeconfig;
   } break;
 
-  case configuration_item_t::mechanicalconfig: {
+  case ConfigurationMessageTypes_t::mechanicalconfig: {
     updateMechanicalConfig();
-    configurationFlags |= (uint32_t)configuration_item_t::mechanicalconfig;
   } break;
 
-  case configuration_item_t::safetyconfig: {
+  case ConfigurationMessageTypes_t::safetyconfig: {
     updateSafetyConfig();
-    configurationFlags |= (uint32_t)configuration_item_t::safetyconfig;
   } break;
 
-  case configuration_item_t::limitsconfig: {
-    updateLimitsConfig();
-    configurationFlags |= (uint32_t)configuration_item_t::limitsconfig;
-  } break;
-
-  case configuration_item_t::operationconfig: {
-    updateOperationConfig();
-    configurationFlags |= (uint32_t)configuration_item_t::operationconfig;
+  case ConfigurationMessageTypes_t::operationconfig: {
   } break;
   }
 }
@@ -283,6 +265,7 @@ void MotorManagerModule::updatePidConfig() {
   for (uint32_t i = 0; i < MOTORS_COUNT; i++) {
     pidControllers[i].setGains(cfg.velocity_kp, cfg.velocity_ki, cfg.velocity_kd, cfg.velocity_kaw);
   }
+  pid_debug = cfg.pid_debug;
   updateTimings(cfg.velocity_frequency);
 }
 
@@ -302,10 +285,6 @@ void MotorManagerModule::updateBridgeConfig() {
   // const auto cfg = Application::configuration.getBridgeConfig();
 }
 
-void MotorManagerModule::updateLimitsConfig() {
-  // const auto cfg = Application::configuration.getLimitsConfig();
-}
-
 void MotorManagerModule::updateMechanicalConfig() {
   const auto cfg = Application::configuration.getMechanicalConfig();
   bool inverted[]{cfg.rotation0, cfg.rotation1};
@@ -313,11 +292,6 @@ void MotorManagerModule::updateMechanicalConfig() {
     encoders[i].setGear(cfg.ratio);
     inverted_rotation[i] = inverted[i] ? -1.0 : 1.0;
   }
-}
-
-void MotorManagerModule::updateOperationConfig() {
-  const auto cfg = Application::configuration.getOperationConfig();
-  pid_debug = cfg.pid_debug;
 }
 
 void MotorManagerModule::updateSafetyConfig() {
