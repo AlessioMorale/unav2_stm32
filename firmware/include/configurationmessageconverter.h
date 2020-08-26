@@ -47,6 +47,7 @@ public:
     c->velocity_frequency = rosmsg.velocity_frequency;
     c->current_frequency = rosmsg.current_frequency;
     c->current_enable = rosmsg.current_enable;
+    c->pid_debug = rosmsg.pid_debug;
   }
 };
 
