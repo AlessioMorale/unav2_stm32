@@ -5,6 +5,8 @@
 #pragma once
 namespace unav {
 class Modules {
+  Modules() = delete;
+
 public:
   inline static unav::modules::RosNodeModule *rosNodeModule;
   inline static unav::modules::MotorControllerModule *motorControllerModule;
@@ -12,6 +14,5 @@ public:
   inline static unav::modules::SystemModule *systemModule;
 
 private:
-  Modules();
 };
 } // namespace unav

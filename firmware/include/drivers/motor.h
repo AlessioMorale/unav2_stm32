@@ -18,12 +18,11 @@ struct MotorConfiguration {
 
 class Motor {
 public:
-  Motor(const MotorConfiguration config) : configuration{config} {
-  }
-  Motor() : configuration{0} {
+
+  Motor() : configuration{} {
   }
 
-  void configure(const MotorConfiguration config) {
+  void configure(const MotorConfiguration &config) {
     configuration = config;
   }
 
