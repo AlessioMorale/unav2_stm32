@@ -70,6 +70,8 @@ void RosNodeModule::moduleThreadStart() {
 
   auto t = timing_getRaw();
   auto t_diag = timing_getRaw();
+  auto t_request_config = timing_getRaw();
+  bool configuration_complete = false;
   bool connected = true;
 
   while (true) {
@@ -90,6 +92,16 @@ void RosNodeModule::moduleThreadStart() {
       if (timing_getUsSince(t) > 5000ul) {
         t = timing_getRaw();
         getNodeHandle().spinOnce();
+      }
+    }
+
+    if (!configuration_complete && timing_getUsSince(t_request_config) > 250'000ul) {
+      t_request_config = timing_getRaw();
+      if(!Application::healthChecker.isConfigured()){
+        msgack.data = MESSAGE_ACK_REQUEST_CONFIG;
+        pubAck.publish(&msgack);
+      } else {
+        configuration_complete = true;
       }
     }
 

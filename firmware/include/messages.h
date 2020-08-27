@@ -5,7 +5,7 @@
 #pragma once
 
 namespace unav {
-
+#define MESSAGE_ACK_REQUEST_CONFIG  0xFFFFFFFF
 enum class message_types_t : int32_t {
   NONE = 0,
   outbound_ack = 1,
