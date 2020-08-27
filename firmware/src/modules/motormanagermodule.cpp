@@ -18,7 +18,7 @@
 namespace unav::modules {
 
 MotorManagerModule::MotorManagerModule()
-    : operationModeNormal{false}, status(status_t::unconfigured), connectionTimeout{}, zeroTimeout{},
+    : operationModeNormal{false}, status(status_t::unconfigured), connectionTimeout{}, zeroTimeout{}, errorLimitTimeout{},
       timer(), encoders{unav::drivers::Encoder(&TIM_ENC1), unav::drivers::Encoder(&TIM_ENC2)}, mode{unav::jointcommand_mode_t::disabled}, wait{0}, nominalDt{0},
       dt{0}, cmd{0.0f}, pid_publish_rate{10}, pid_debug{false}, control_mode{motorcontrol_mode_t::disabled}, inverted_rotation{false} {
 }
@@ -40,7 +40,7 @@ void MotorManagerModule::moduleThreadStart() {
     encoders[i].setCPR(11);
     pidControllers[i].setGains(1, 0, 0, 1);
     pidControllers[i].setRange(-1.0f, 1.0f);
-    encoders[i].applyFilter(0.0f, 0.0f);
+    pidControllers[i].zero();
   }
 
   while (true) {
@@ -100,11 +100,20 @@ void MotorManagerModule::moduleThreadStart() {
     } break;
     // [stopping] ---> (stop motors) ---> [stopped]
     case status_t::stopping: {
+      for (int i = 0; i < MOTORS_COUNT; i++) {
+        pidControllers[i].zero();
+      }
       stop();
       status = status_t::stopped;
     } break;
       // TODO: [*]        ---> error condition ---> [failsafe]
     }
+
+    if(frequencyUpdated){
+      frequencyUpdated = false;
+      updateTimings(loopFrequency);
+    }
+
     vTaskDelayUntil(&c, wait);
   }
 }
@@ -208,12 +217,12 @@ void MotorManagerModule::checkMessages() {
   if (internalMessaging.receive(receivedMsg, wait)) {
     switch (receivedMsg.type) {
     case message_types_t::inbound_JointCommand: {
-      connectionTimeout.interval();
+      connectionTimeout.reset();
       const jointcommand_content_t *jcmd = &receivedMsg.jointcommand;
       for (uint32_t i = 0; i < MOTORS_COUNT; i++) {
         cmd[i] = jcmd->command[i];
         if (fabsf(cmd[i]) > 0.0001) {
-          zeroTimeout.interval();
+          zeroTimeout.reset();
         }
       }
 
@@ -269,7 +278,8 @@ void MotorManagerModule::updatePidConfig() {
     pidControllers[i].setGains(cfg.velocity_kp, cfg.velocity_ki, cfg.velocity_kd, cfg.velocity_kaw);
   }
   pid_debug = cfg.pid_debug;
-  updateTimings(cfg.velocity_frequency);
+  loopFrequency =  cfg.velocity_frequency;
+  frequencyUpdated = true;
 }
 
 void MotorManagerModule::updateEncoderConfig() {
@@ -302,13 +312,14 @@ void MotorManagerModule::updateSafetyConfig() {
 }
 
 void MotorManagerModule::updateTimings(const float frequency) {
-  if (mode == jointcommand_mode_t::disabled && (frequency > 0)) {
-    wait = 1000 / frequency;
-    if (wait < 4) {
-      wait = 4;
-    }
-    nominalDt = ((float)wait) / 1000.0f;
-    pid_publish_rate = (uint8_t)frequency / 10.0f;
+  wait = 1000 / frequency;
+  if (wait < 4) {
+    wait = 4;
+  }
+  nominalDt = ((float)wait) / 1000.0f;
+  pid_publish_rate = (uint8_t)frequency / 10.0f;
+  for (uint32_t i = 0; i < MOTORS_COUNT; i++) {
+    encoders[i].applyFilter(nominalDt, ENC_CUTOFF);
   }
 }
 

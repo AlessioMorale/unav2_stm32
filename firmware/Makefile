@@ -61,7 +61,6 @@ src/controls/pid.cpp \
 src/drivers/encoder.cpp \
 src/driver/lm75.cpp \
 src/driver/ina219.cpp \
-src/utils/timer.cpp \
 src/messaging.cpp
 
 
@@ -328,7 +327,6 @@ firmware:  $(BUILD_DIR)/$(TARGET).elf
 .PHONY: flash
 flash:  $(BUILD_DIR)/$(TARGET).elf
 	openocd -f openocd.cfg -c "program  $(BUILD_DIR)/$(TARGET).elf verify reset" -c "shutdown"
-# *** EOF ***
 .PHONY: format
 format: 
 	@echo formatting source code
@@ -336,3 +334,4 @@ format:
 	./format ./testing/include
 	./format ./testing/src
 	@echo -
+# *** EOF ***
