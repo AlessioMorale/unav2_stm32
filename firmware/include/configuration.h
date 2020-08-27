@@ -1,7 +1,7 @@
 #pragma once
 #include <messages.h>
 #include <vector>
-#include <error.h>
+#include <utils/assert.h>
 namespace unav {
 
 class ConfigurationObserver {
