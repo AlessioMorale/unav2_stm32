@@ -7,6 +7,7 @@ namespace unav {
 class ConfigurationObserver {
 public:
   virtual void configurationUpdated(const unav::ConfigurationMessageTypes_t configuredItem) = 0;
+  virtual ~ConfigurationObserver() {}
 };
 
 class Configuration {

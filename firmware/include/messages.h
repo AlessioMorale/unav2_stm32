@@ -192,9 +192,9 @@ typedef struct _configuration_message {
   ENTRY(pidconfig, 0, inbound_PIDConfig)                                                                                                                       \
   ENTRY(bridgeconfig, 1, inbound_BridgeConfig)                                                                                                                 \
   ENTRY(encoderconfig, 2, inbound_EncoderConfig)                                                                                                               \
-  ENTRY(mechanicalconfig, 4, inbound_MechanicalConfig)                                                                                                         \
-  ENTRY(operationconfig, 5, inbound_OperationConfig)                                                                                                           \
-  ENTRY(safetyconfig, 6, inbound_SafetyConfig)
+  ENTRY(mechanicalconfig, 3, inbound_MechanicalConfig)                                                                                                         \
+  ENTRY(operationconfig, 4, inbound_OperationConfig)                                                                                                           \
+  ENTRY(safetyconfig, 5, inbound_SafetyConfig)
 
 #define CONFIGURATION_ENTRY_EXPAND_ENUM(name, index, _x) name = index,
 

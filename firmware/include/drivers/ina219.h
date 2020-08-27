@@ -82,15 +82,15 @@ protected:
   I2C_HandleTypeDef *i2cport;
   uint8_t address;
 
-  uint16_t calibrationConfig;
-  float shuntConfig;
+  uint16_t calibrationConfig {0};
+  float shuntConfig {0.0f};
 
-  float currentLsb;
-  float powerLsb;
-  const float currentLsbFactor = 0.04096f;
-  const float voltageLsb = 0.004f; // LSB at full scale = 30V
+  float currentLsb {0.0f};
+  float powerLsb {0.0f};
+  const float currentLsbFactor {0.04096f};
+  const float voltageLsb {0.004f}; // LSB at full scale = 30V
 
-  const float powerCalibrationFactor = 20;
+  const float powerCalibrationFactor {20};
   void writeUint16(Ina219Registers destination, uint16_t value);
   uint16_t readUint16(Ina219Registers source);
 

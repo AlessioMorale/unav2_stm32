@@ -13,6 +13,7 @@ class configurationObserverTester : public unav::ConfigurationObserver {
       (void)configuredItem;
       received.push_back(configuredItem);
     }
+    ~configurationObserverTester(){}
     std::vector<unav::ConfigurationMessageTypes_t> received;
 };
 

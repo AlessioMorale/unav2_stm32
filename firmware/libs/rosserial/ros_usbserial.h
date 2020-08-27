@@ -43,16 +43,7 @@ public:
     if (!rxStream && !(rxStream = CDC_GetRxStream())) {
       return;
     }
-    /*while (length){
-       uint16_t tosend = MIN(MAXBLOCK, length);
-        if(CDC_Transmit_FS(data, tosend) != USBD_FAIL)
-        {
-          while(((USBD_CDC_HandleTypeDef*)(hUsbDeviceFS.pClassData))->TxState!=0);
-          length -= tosend;
-          data+= tosend;
-        }
-    }0
-    */
+
     while (CDC_Transmit_FS(data, length) == USBD_BUSY)
       ;
   }
@@ -63,7 +54,6 @@ public:
 
 private:
   StreamBufferHandle_t rxStream;
-  osThreadId commTaskHandle;
 };
 
 #endif /* ROS_USBSERIAL_H */
