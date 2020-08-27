@@ -17,10 +17,8 @@
 #include <timers.h>
 namespace unav::modules {
 
-#define MAX_TIMEOUT 5
-
 MotorManagerModule::MotorManagerModule()
-    : operationModeNormal{false}, status(status_t::unconfigured), timeoutCounter{0},
+    : operationModeNormal{false}, status(status_t::unconfigured), connectionTimeout{}, zeroTimeout{},
       timer(), encoders{unav::drivers::Encoder(&TIM_ENC1), unav::drivers::Encoder(&TIM_ENC2)}, mode{unav::jointcommand_mode_t::disabled}, wait{0}, nominalDt{0},
       dt{0}, cmd{0.0f}, pid_publish_rate{10}, pid_debug{false}, control_mode{motorcontrol_mode_t::disabled}, inverted_rotation{false} {
 }
@@ -85,16 +83,20 @@ void MotorManagerModule::moduleThreadStart() {
       [running]  ---> valid command               ---> [running]
     */
     case status_t::running: {
-      if (timeoutCounter > MAX_TIMEOUT) {
+      
+      if (connectionTimeout.elapsed() > CONNECTION_TIMEOUT ||
+          zeroTimeout.elapsed() > ZERO_TIMEOUT) {
         mode = jointcommand_mode_t::disabled;
       }
+
       if (mode > jointcommand_mode_t::disabled) {
-        timeoutCounter++;
         runControlLoop();
       }
+
       if (mode <= jointcommand_mode_t::disabled) {
         status = status_t::stopping;
       }
+
     } break;
     // [stopping] ---> (stop motors) ---> [stopped]
     case status_t::stopping: {
@@ -206,11 +208,12 @@ void MotorManagerModule::checkMessages() {
   if (internalMessaging.receive(receivedMsg, wait)) {
     switch (receivedMsg.type) {
     case message_types_t::inbound_JointCommand: {
+      connectionTimeout.interval();
       const jointcommand_content_t *jcmd = &receivedMsg.jointcommand;
       for (uint32_t i = 0; i < MOTORS_COUNT; i++) {
         cmd[i] = jcmd->command[i];
         if (fabsf(cmd[i]) > 0.0001) {
-          timeoutCounter = 0;
+          zeroTimeout.interval();
         }
       }
 

@@ -29,11 +29,16 @@ protected:
   void moduleThreadStart() __attribute__((noreturn));
 
 private:
+  const float CONNECTION_TIMEOUT {0.250f};
+  const float ZERO_TIMEOUT {5.0f};
+  
   enum class status_t : int32_t { failsafe = -2, unconfigured = -1, stopped = 0, starting = 1, running = 2, stopping = 3 };
 
   bool operationModeNormal;
   status_t status;
-  int timeoutCounter;
+  utils::Timer connectionTimeout;
+  utils::Timer zeroTimeout;
+
   unav::utils::Timer timer;
   unav::drivers::Encoder encoders[MOTORS_COUNT];
   jointcommand_mode_t mode;
