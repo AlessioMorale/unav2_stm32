@@ -75,6 +75,10 @@ void MotorManagerModule::moduleThreadStart() {
     } break;
     // [starting] --- (unused right now)           ---> [running]
     case status_t::starting: {
+      errorLimitTimeout.reset();
+      zeroTimeout.reset();
+      connectionTimeout.reset();
+
       status = status_t::running;
     } break;
     /*
@@ -88,6 +92,14 @@ void MotorManagerModule::moduleThreadStart() {
           zeroTimeout.elapsed() > ZERO_TIMEOUT) {
         mode = jointcommand_mode_t::disabled;
       }
+
+      if(errorLimitTimeout.elapsed() > errorConditionTimeout){
+        mode = jointcommand_mode_t::failsafe;
+      }
+
+      //if(!errorThresholdCrossed){
+        errorLimitTimeout.reset();
+      //}
 
       if (mode > jointcommand_mode_t::disabled) {
         runControlLoop();
@@ -133,7 +145,7 @@ void MotorManagerModule::runControlLoop() {
   static int8_t pid_rate_counter = 0;
   static bool publish_pidstatus = false;
   static internal_message_t message;
-
+  errorThresholdCrossed = false;
   message.type = message_types_t::internal_motor_control;
   auto motorcontrol = &message.motorcontrol;
   dt = timer.interval();
@@ -165,23 +177,30 @@ void MotorManagerModule::runControlLoop() {
   // motor control message sent to motorcontroller module
 
   motorcontrol->mode = control_mode;
+  float measuredSpeed[MOTORS_COUNT];
+  for (uint32_t i = 0; i < MOTORS_COUNT; i++) {
+    measuredSpeed[i] = encoders[i].getVelocity();
+  }
+
+  planner.update(cmd, measuredSpeed, dt);
 
   for (uint32_t i = 0; i < MOTORS_COUNT; i++) {
-    const auto measuredSpeed = encoders[i].getVelocity();
-    auto effort = pidControllers[i].apply(cmd[i] * inverted_rotation[i], measuredSpeed, dt);
+    const auto setpoint = cmd[i] * inverted_rotation[i]; 
+    auto effort = pidControllers[i].apply(setpoint, measuredSpeed[i], dt);
     auto a = fabsf(effort);
-    if (a < 0.005f) {
+    if (a < 0.001f) {
       effort = 0.0f;
     }
 
     if (jointstate) {
-      jointstate->vel[i] = measuredSpeed * inverted_rotation[i];
+      jointstate->vel[i] = measuredSpeed[i] * inverted_rotation[i];
       jointstate->eff[i] = effort * inverted_rotation[i];
       jointstate->pos[i] = encoders[i].getPosition() * inverted_rotation[i];
     }
 
     motorcontrol->command[i] = effort;
-
+    auto s = pidControllers[i].getStatus();
+    //errorThresholdCrossed |= (s.error / setpoint) > errorlimit;
     // handle diagnostics and status reporting
     if (pidstate) {
       auto s = pidControllers[i].getStatus();
@@ -268,6 +287,7 @@ void MotorManagerModule::configurationUpdated(const unav::ConfigurationMessageTy
   } break;
 
   case ConfigurationMessageTypes_t::operationconfig: {
+    updateOperationConfig();
   } break;
   }
 }
@@ -308,7 +328,11 @@ void MotorManagerModule::updateMechanicalConfig() {
 }
 
 void MotorManagerModule::updateSafetyConfig() {
-  // const auto cfg = Application::configuration.getSafetyConfig();
+  const auto cfg = Application::configuration.getSafetyConfig();
+  errorlimit = ((float)cfg.error_limit) * 0.01f;
+  errorConditionTimeout = ((float)cfg.timeout) * 0.001f;
+  errorLimitTimeout.reset();
+  planner.setLimits(cfg.velocity_limit, cfg.max_acceleration);
 }
 
 void MotorManagerModule::updateTimings(const float frequency) {
@@ -323,6 +347,13 @@ void MotorManagerModule::updateTimings(const float frequency) {
   }
 }
 
-template class BaseRosModule<MOTORMANAGERSTACKSIZE>;
+void MotorManagerModule::updateOperationConfig() {
+  const auto cfg = unav::Application::configuration.getOperationConfig();
+  operationModeNormal = (cfg.operation_mode == operationconfig_opmode_t::normal);
+}
 
+template class BaseRosModule<MOTORMANAGERSTACKSIZE>;
 } // namespace unav::modules
+namespace unav::controls {
+  template class Planner<MOTORS_COUNT>; 
+}

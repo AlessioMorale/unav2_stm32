@@ -10,6 +10,7 @@
 #include <std_msgs/Int16.h>
 #include <std_msgs/Int32.h>
 #include <utils/timer.h>
+#include <controls/planner.h>
 #pragma once
 
 namespace unav::modules {
@@ -27,7 +28,7 @@ protected:
   void moduleThreadStart() __attribute__((noreturn));
 
 private:
-  const float ENC_CUTOFF{0.0f};
+  const float ENC_CUTOFF{100.0f};
   const float CONNECTION_TIMEOUT{0.250f};
   const float ZERO_TIMEOUT{5.0f};
 
@@ -40,6 +41,8 @@ private:
   utils::Timer errorLimitTimeout;
   float errorlimit{0.0f};
   float errorConditionTimeout{0.0f};
+  bool errorThresholdCrossed{false};
+  unav::controls::Planner<MOTORS_COUNT> planner{}; 
 
   unav::utils::Timer timer;
   unav::drivers::Encoder encoders[MOTORS_COUNT];
