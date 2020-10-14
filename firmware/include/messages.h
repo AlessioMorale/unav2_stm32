@@ -124,6 +124,8 @@ typedef struct safetyconfig_content {
   int16_t current_autorestore;
   float position_limit;
   float velocity_limit;
+  float max_acceleration;
+  float max_deceleration;
   int8_t pwm_limit;
   int8_t error_limit;
   int16_t slope_time;
