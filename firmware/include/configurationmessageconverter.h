@@ -108,6 +108,8 @@ public:
     c->current_autorestore = rosmsg.current_autorestore;
     c->position_limit = rosmsg.position_limit;
     c->velocity_limit = rosmsg.velocity_limit;
+    c->max_acceleration = rosmsg.max_acceleration;
+    c->max_deceleration = rosmsg.max_deceleration;
     c->pwm_limit = rosmsg.pwm_limit;
     c->error_limit= rosmsg.error_limit;
     c->slope_time = rosmsg.slope_time;

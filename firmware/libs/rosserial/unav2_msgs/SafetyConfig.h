@@ -32,6 +32,10 @@ namespace unav2_msgs
       _position_limit_type position_limit;
       typedef float _velocity_limit_type;
       _velocity_limit_type velocity_limit;
+      typedef float _max_acceleration_type;
+      _max_acceleration_type max_acceleration;
+      typedef float _max_deceleration_type;
+      _max_deceleration_type max_deceleration;
       typedef int8_t _pwm_limit_type;
       _pwm_limit_type pwm_limit;
       typedef int8_t _error_limit_type;
@@ -56,6 +60,8 @@ namespace unav2_msgs
       current_autorestore(0),
       position_limit(0),
       velocity_limit(0),
+      max_acceleration(0),
+      max_deceleration(0),
       pwm_limit(0),
       error_limit(0),
       slope_time(0),
@@ -160,6 +166,26 @@ namespace unav2_msgs
       *(outbuffer + offset + 2) = (u_velocity_limit.base >> (8 * 2)) & 0xFF;
       *(outbuffer + offset + 3) = (u_velocity_limit.base >> (8 * 3)) & 0xFF;
       offset += sizeof(this->velocity_limit);
+      union {
+        float real;
+        uint32_t base;
+      } u_max_acceleration;
+      u_max_acceleration.real = this->max_acceleration;
+      *(outbuffer + offset + 0) = (u_max_acceleration.base >> (8 * 0)) & 0xFF;
+      *(outbuffer + offset + 1) = (u_max_acceleration.base >> (8 * 1)) & 0xFF;
+      *(outbuffer + offset + 2) = (u_max_acceleration.base >> (8 * 2)) & 0xFF;
+      *(outbuffer + offset + 3) = (u_max_acceleration.base >> (8 * 3)) & 0xFF;
+      offset += sizeof(this->max_acceleration);
+      union {
+        float real;
+        uint32_t base;
+      } u_max_deceleration;
+      u_max_deceleration.real = this->max_deceleration;
+      *(outbuffer + offset + 0) = (u_max_deceleration.base >> (8 * 0)) & 0xFF;
+      *(outbuffer + offset + 1) = (u_max_deceleration.base >> (8 * 1)) & 0xFF;
+      *(outbuffer + offset + 2) = (u_max_deceleration.base >> (8 * 2)) & 0xFF;
+      *(outbuffer + offset + 3) = (u_max_deceleration.base >> (8 * 3)) & 0xFF;
+      offset += sizeof(this->max_deceleration);
       union {
         int8_t real;
         uint8_t base;
@@ -312,6 +338,28 @@ namespace unav2_msgs
       this->velocity_limit = u_velocity_limit.real;
       offset += sizeof(this->velocity_limit);
       union {
+        float real;
+        uint32_t base;
+      } u_max_acceleration;
+      u_max_acceleration.base = 0;
+      u_max_acceleration.base |= ((uint32_t) (*(inbuffer + offset + 0))) << (8 * 0);
+      u_max_acceleration.base |= ((uint32_t) (*(inbuffer + offset + 1))) << (8 * 1);
+      u_max_acceleration.base |= ((uint32_t) (*(inbuffer + offset + 2))) << (8 * 2);
+      u_max_acceleration.base |= ((uint32_t) (*(inbuffer + offset + 3))) << (8 * 3);
+      this->max_acceleration = u_max_acceleration.real;
+      offset += sizeof(this->max_acceleration);
+      union {
+        float real;
+        uint32_t base;
+      } u_max_deceleration;
+      u_max_deceleration.base = 0;
+      u_max_deceleration.base |= ((uint32_t) (*(inbuffer + offset + 0))) << (8 * 0);
+      u_max_deceleration.base |= ((uint32_t) (*(inbuffer + offset + 1))) << (8 * 1);
+      u_max_deceleration.base |= ((uint32_t) (*(inbuffer + offset + 2))) << (8 * 2);
+      u_max_deceleration.base |= ((uint32_t) (*(inbuffer + offset + 3))) << (8 * 3);
+      this->max_deceleration = u_max_deceleration.real;
+      offset += sizeof(this->max_deceleration);
+      union {
         int8_t real;
         uint8_t base;
       } u_pwm_limit;
@@ -363,7 +411,7 @@ namespace unav2_msgs
     }
 
     const char * getType(){ return "unav2_msgs/SafetyConfig"; };
-    const char * getMD5(){ return "ada20023c4629ab2a438eed5e22fcee7"; };
+    const char * getMD5(){ return "d90ade4da44f6914a1c08c1d3149dd3f"; };
 
   };
 
