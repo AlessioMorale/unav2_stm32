@@ -26,7 +26,7 @@ extern void failsafe_stop();
 #define ADC_TEMP_GPIO_Port GPIOA
 #define I_ABORT_Pin GPIO_PIN_4
 #define I_ABORT_GPIO_Port GPIOA
-#define TIM_ENC2_A_Pin GPIO_PIN_0
+#define TIM_ENC2_A_Pin GPIO_PIN_5
 #define TIM_ENC2_A_GPIO_Port GPIOA
 #define O_LED2_Pin GPIO_PIN_6
 #define O_LED2_GPIO_Port GPIOA
