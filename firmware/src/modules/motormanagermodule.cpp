@@ -89,10 +89,6 @@ void MotorManagerModule::moduleThreadStart() {
         mode = jointcommand_mode_t::disabled;
       }
 
-      if (mode > jointcommand_mode_t::disabled) {
-        runControlLoop();
-      }
-
       if (mode <= jointcommand_mode_t::disabled) {
         status = status_t::stopping;
       }
@@ -108,6 +104,8 @@ void MotorManagerModule::moduleThreadStart() {
     } break;
       // TODO: [*]        ---> error condition ---> [failsafe]
     }
+
+    runControlLoop();
 
     if(frequencyUpdated){
       frequencyUpdated = false;
@@ -129,6 +127,7 @@ void MotorManagerModule::stop() {
 }
 
 void MotorManagerModule::runControlLoop() {
+  const bool control_enabled = (status == status_t::running) && (mode > jointcommand_mode_t::disabled);
 
   static int8_t pid_rate_counter = 0;
   static bool publish_pidstatus = false;
@@ -168,7 +167,7 @@ void MotorManagerModule::runControlLoop() {
 
   for (uint32_t i = 0; i < MOTORS_COUNT; i++) {
     const auto measuredSpeed = encoders[i].getVelocity();
-    auto effort = pidControllers[i].apply(cmd[i] * inverted_rotation[i], measuredSpeed, dt);
+    auto effort = control_enabled ? pidControllers[i].apply(cmd[i] * inverted_rotation[i], measuredSpeed, dt) : 0.0f;
     auto a = fabsf(effort);
     if (a < 0.005f) {
       effort = 0.0f;

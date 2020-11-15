@@ -20,10 +20,14 @@ void PID::setRange(float min, float max) {
 }
 
 void PID::zero() {
-  _lastError = 0;
-  _status.i_term = 0;
-  _status.i_max = 0;
-  _status.i_min = 0;
+  _lastError = 0.0f;
+  _status.i_term = 0.0f;
+  _status.i_max = 0.0f;
+  _status.i_min = 0.0f;
+  _status.p_term = 0.0f;
+  _status.d_term = 0.0f;
+  _status.error = 0.0f;
+  _status.output = 0.0f;
 }
 
 const pid_status_t PID::getStatus() {
