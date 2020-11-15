@@ -45,11 +45,16 @@ private:
   TIM_HandleTypeDef *encoderTimer;
   unav::utils::Timer timer;
   float alpha;
+  bool useFilter;
   float filteredEncVelocity;
   int32_t enc_period;
   uint32_t lastReading;
+  float lastVelocity;
+  float lastDt;
   float position;
+  int32_t delta;
   float inverseReduction;
+  float inverseEncoderCPR;
   encoderConfig_t config;
 
   void recalcReduction();

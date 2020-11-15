@@ -5,7 +5,8 @@
 namespace unav::drivers {
 
 Encoder::Encoder(TIM_HandleTypeDef *tim)
-    : encoderTimer{tim}, timer(), alpha{1.0f}, filteredEncVelocity{0.0f}, enc_period{0}, lastReading{0}, position{0}, inverseReduction{1.0f}, config{0} {
+    : encoderTimer{tim}, timer(), alpha{1.0f}, useFilter{false}, filteredEncVelocity{0.0f}, enc_period{0}, lastReading{0},
+      lastVelocity{0}, lastDt{0}, delta{0}, position{0}, inverseReduction{1.0f}, inverseEncoderCPR{0}, config{0} {
 }
 Encoder::Encoder() : Encoder(nullptr) {
 }
@@ -21,10 +22,10 @@ bool Encoder::isCountingUp() {
 }
 
 float Encoder::getVelocity() {
-  float dt = timer.interval();
+  lastDt = timer.interval();
   uint32_t current = encoderTimer->Instance->CNT;
 
-  int32_t delta = current - lastReading;
+  delta = current - lastReading;
   lastReading = current;
 
   if (isCountingUp()) {
@@ -36,12 +37,15 @@ float Encoder::getVelocity() {
       delta = delta - enc_period;
     }
   }
-  float encVelocity = -((float)delta) / dt;
-  if (isfinite(encVelocity)) {
-    filteredEncVelocity = alpha * (encVelocity - filteredEncVelocity) + filteredEncVelocity;
-    float velocity = filteredEncVelocity * inverseReduction;
-    position += velocity * dt;
-    return velocity;
+  float delta_f = ((float)delta) * inverseReduction * inverseEncoderCPR;
+
+  position += delta_f;
+
+  lastVelocity = -delta_f / lastDt;
+
+  if (isfinite(lastVelocity)) {
+    filteredEncVelocity = useFilter ? alpha * (lastVelocity - filteredEncVelocity) + filteredEncVelocity : lastVelocity;
+    return filteredEncVelocity;
   } else {
     return 0.0f;
   }
@@ -72,12 +76,17 @@ void Encoder::setSingleChannel(bool isSingleChannel) {
 
 void Encoder::recalcReduction() {
   float reduction = 1.0f;
+
   if (config.cpr != 0) {
     reduction *= ((float)config.cpr);
   }
+
   if (!config.isSingleChannel) {
     reduction *= 2.0f;
   }
+  inverseEncoderCPR = 1.0f / reduction;
+
+  reduction = 1.0f;
   if (!config.isEncoderAfterGear && config.gear > 0.01f) {
     reduction *= config.gear;
   }
@@ -88,7 +97,8 @@ void Encoder::recalcReduction() {
 }
 
 void Encoder::applyFilter(float dt, float cutoff) {
-  alpha = (cutoff > 0.0f) ? LPF_ALPHA(dt, cutoff) : 1.0f;
+  useFilter = cutoff > 0.0f;
+  alpha = useFilter ? LPF_ALPHA(dt, cutoff) : 1.0f;
 }
 
 } // namespace unav::drivers
