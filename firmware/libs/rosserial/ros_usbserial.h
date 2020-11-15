@@ -12,7 +12,9 @@
 #include <stm32f4xx_hal.h>
 #include <usbd_cdc_if.h>
 extern USBD_HandleTypeDef hUsbDeviceFS;
-#define MAXBLOCK 60
+
+#define RX_BUFFER_SIZE 64
+
 class rosUSBSerial {
 public:
   rosUSBSerial() : rxStream{nullptr} {
@@ -32,18 +34,24 @@ public:
 
   // read a byte from the serial port. -1 = failure
   int read() {
-    uint8_t byte;
-    if ((!rxStream && !(rxStream = CDC_GetRxStream())) || !xStreamBufferReceive(rxStream, (void *)&byte, 1, 0)) {
-      return -1;
+    static uint8_t buffer[RX_BUFFER_SIZE] = {0};
+    static size_t count = 0;
+    static size_t pos = 0;
+
+    if(!count && !(!rxStream && !(rxStream = CDC_GetRxStream()))){
+        count = xStreamBufferReceive(rxStream, (void *)&buffer, RX_BUFFER_SIZE, 0);
+        pos = 0;
     }
-    return byte;
+
+    if(count){
+      count--;
+      return buffer[pos++];
+    }
+
+    return -1;
   }
 
   void write(uint8_t *data, int length) {
-    if (!rxStream && !(rxStream = CDC_GetRxStream())) {
-      return;
-    }
-
     while (CDC_Transmit_FS(data, length) == USBD_BUSY)
       ;
   }

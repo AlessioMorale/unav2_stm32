@@ -89,7 +89,7 @@ void RosNodeModule::moduleThreadStart() {
       sendRosMessage(msg);
       releaseMessage(msg);
 
-      if (timing_getUsSince(t) > 5000ul) {
+      if (timing_getUsSince(t) > 10000ul) {
         t = timing_getRaw();
         getNodeHandle().spinOnce();
       }
