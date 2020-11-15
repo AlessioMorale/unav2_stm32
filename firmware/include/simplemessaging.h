@@ -2,7 +2,7 @@
 #include <FreeRTOS.h>
 #include <stddef.h>
 #include <stdint.h>
-#include <utils/assert.h>
+#include <assert.h>
 
 namespace unav {
 template <typename T, int32_t count> class SimpleMessaging {

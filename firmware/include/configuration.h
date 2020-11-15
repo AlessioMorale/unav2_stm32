@@ -1,9 +1,10 @@
 #pragma once
 #include <messages.h>
-#include <vector>
-#include <utils/assert.h>
+#include <array>
+#include <assert.h>
 namespace unav {
 
+#define MAX_OBSERVERS 4
 class ConfigurationObserver {
 public:
   virtual void configurationUpdated(const unav::ConfigurationMessageTypes_t configuredItem) = 0;
@@ -13,12 +14,16 @@ public:
 class Configuration {
 
 public:
-  Configuration() : subscriptions(5){
-    subscriptions.clear();
-  };
+  Configuration() {};
 
   void Attach(ConfigurationObserver *observer) {
-    subscriptions.push_back(observer);
+    for (uint32_t i = 0; i < subscriptions.size(); i++){
+      if(subscriptions[i] == nullptr){
+        subscriptions[i] = observer;
+        return;
+      }
+    }
+    assert(false);
   }
 
   pidconfig_content_t getPIDConfig() {
@@ -79,12 +84,12 @@ public:
     case  message_types_t::inbound_JointCommand:
     case  message_types_t::internal_motor_control:
     default:
-      Error_Handler();
+      assert(false);
     }
   }
 
 private:
-  std::vector<ConfigurationObserver *> subscriptions;
+  std::array<ConfigurationObserver *, MAX_OBSERVERS> subscriptions{nullptr};
 
   pidconfig_content_t pidConfig;
   bridgeconfig_content_t bridgeConfig;
@@ -92,8 +97,12 @@ private:
   mechanicalconfig_content_t mechanicalConfig;
   operationconfig_content_t operationConfig;
   safetyconfig_content_t safetyConfig;
+
   void notify(const unav::ConfigurationMessageTypes_t configuredItem) {
     for (auto observer : subscriptions) {
+      if(!observer){
+        break;
+      }
       observer->configurationUpdated(configuredItem);
     }
   }

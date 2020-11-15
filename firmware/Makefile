@@ -48,7 +48,8 @@ src/leds.c \
 src/leds_hal.c \
 src/instrumentation/instrumentation.c \
 src/counters.c \
-src/freertos_support.c
+src/freertos_support.c \
+src/custom_assert.c
 
 CPP_SOURCES = \
 src/freertos.cpp \

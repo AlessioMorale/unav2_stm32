@@ -30,7 +30,7 @@ extern "C" {
 #endif
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f4xx_hal.h"
-#include <utils/assert.h>
+#include <assert.h>
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 

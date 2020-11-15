@@ -2,7 +2,7 @@
 #define INSTRUMENTATION_H
 #include <FreeRTOS.h>
 #include <timing.h>
-#include <utils/assert.h>
+#include <assert.h>
 #ifdef __cplusplus
 extern "C" {
 #endif

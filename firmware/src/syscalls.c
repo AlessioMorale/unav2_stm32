@@ -59,9 +59,11 @@
 /* Variables */
 //#undef errno
 extern int errno;
-extern int __io_putchar(int ch) __attribute__((weak));
-extern int __io_getchar(void) __attribute__((weak));
-
+void _DEFUN(__assert_func, (file, line, func, failedexpr), const char *file _AND int line _AND const char *func _AND const char *failedexpr) {
+  fiprintf(stderr, "assertion \"%s\" failed: file \"%s\", line %d%s%s\n", failedexpr, file, line, func ? ", function: " : "", func ? func : "");
+  abort();
+  /* NOTREACHED */
+}
 register char *stack_ptr asm("sp");
 
 char *__env[1] = {0};

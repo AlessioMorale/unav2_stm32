@@ -1,7 +1,7 @@
-#include <assert.h>
 #include <consts.h>
 #include <stdbool.h>
 #include <stdint.h>
+#include <assert.h>
 #pragma once
 
 namespace unav {
