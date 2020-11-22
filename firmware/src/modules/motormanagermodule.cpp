@@ -213,6 +213,7 @@ void MotorManagerModule::processMessage(internal_message_t &message) {
 void MotorManagerModule::checkMessages() {
   internal_message_t receivedMsg;
   int32_t wait = 0;
+  bool non_zero = false;
   if (internalMessaging.receive(receivedMsg, wait)) {
     switch (receivedMsg.type) {
     case message_types_t::inbound_JointCommand: {
@@ -222,10 +223,12 @@ void MotorManagerModule::checkMessages() {
         cmd[i] = jcmd->command[i];
         if (fabsf(cmd[i]) > 0.0001) {
           zeroTimeout.reset();
+          non_zero = true;
         }
       }
-
-      mode = jcmd->mode;
+      if(non_zero){
+        mode = jcmd->mode;
+      }
       switch (mode) {
       case jointcommand_mode_t::disabled:
         control_mode = motorcontrol_mode_t::disabled;

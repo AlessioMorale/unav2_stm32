@@ -49,7 +49,7 @@ void MotorControllerModule::moduleThreadStart() {
     if (mode >= motorcontrol_mode_t::normal) {
       timeoutCounter++;
       if (!driversEnabled) {
-        leds_setPattern(LED_ACTIVE, &leds_pattern_fast);
+        leds_setPattern(LED_ACTIVE, &leds_pattern_on);
         enable_motors();
         driversEnabled = true;
       }
