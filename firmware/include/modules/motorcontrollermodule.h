@@ -23,7 +23,11 @@ public:
   void initialize();
 
   void processMessage(internal_message_t &message);
-  void configurationUpdated(const unav::ConfigurationMessageTypes_t configuredItem); 
+  void configurationUpdated(const unav::ConfigurationMessageTypes_t configuredItem);
+  motorcontrol_mode_t getStatus(){
+    return mode;
+  }
+
 protected:
   virtual void moduleThreadStart() __attribute__((noreturn));
 

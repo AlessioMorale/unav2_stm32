@@ -1,24 +1,25 @@
 #pragma once
-#include <messages.h>
 #include <array>
 #include <assert.h>
+#include <messages.h>
 namespace unav {
 
 #define MAX_OBSERVERS 4
 class ConfigurationObserver {
 public:
   virtual void configurationUpdated(const unav::ConfigurationMessageTypes_t configuredItem) = 0;
-  virtual ~ConfigurationObserver() {}
+  virtual ~ConfigurationObserver() {
+  }
 };
 
 class Configuration {
 
 public:
-  Configuration() {};
+  Configuration(){};
 
   void Attach(ConfigurationObserver *observer) {
-    for (uint32_t i = 0; i < subscriptions.size(); i++){
-      if(subscriptions[i] == nullptr){
+    for (uint32_t i = 0; i < subscriptions.size(); i++) {
+      if (subscriptions[i] == nullptr) {
         subscriptions[i] = observer;
         return;
       }
@@ -77,12 +78,13 @@ public:
       notify(unav::ConfigurationMessageTypes_t::safetyconfig);
     } break;
     case message_types_t::NONE:
-    case  message_types_t::outbound_ack:
-    case  message_types_t::outbound_CurPIDState:
-    case  message_types_t::outbound_JointState:
-    case  message_types_t::outbound_VelPIDState:
-    case  message_types_t::inbound_JointCommand:
-    case  message_types_t::internal_motor_control:
+    case message_types_t::outbound_ack:
+    case message_types_t::outbound_CurPIDState:
+    case message_types_t::outbound_JointState:
+    case message_types_t::outbound_VelPIDState:
+    case message_types_t::outbound_SystemStatus:
+    case message_types_t::inbound_JointCommand:
+    case message_types_t::internal_motor_control:
     default:
       assert(false);
     }
@@ -100,7 +102,7 @@ private:
 
   void notify(const unav::ConfigurationMessageTypes_t configuredItem) {
     for (auto observer : subscriptions) {
-      if(!observer){
+      if (!observer) {
         break;
       }
       observer->configurationUpdated(configuredItem);

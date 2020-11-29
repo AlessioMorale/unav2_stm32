@@ -8,6 +8,7 @@
 #include <mathutils.h>
 #include <modules/systemmodule.h>
 #include <stm32f4xx.h>
+#include <modules.h>
 namespace unav::modules {
 
 SystemModule::SystemModule() : thermometer(&I2C_PORT, TEMP_SENSOR_ADDRESS), power(&I2C_PORT, POWER_MONITOR_ADDRESS), timer() {
@@ -26,19 +27,20 @@ void SystemModule::moduleThreadStart() {
   power.setup(unav::drivers::Ina219ConfigGain::gain1_40MV, unav::drivers::Ina219ConfigBusAdcResolution::adc12BIT,
               unav::drivers::Ina219ConfigShuntAdcResolution::adc12BIT_128S_69MS, 20480u, 0.002f);
   while (true) {
-    float v = thermometer.getTemperature();
+    auto msgsys = prepareMessage();
+    systemstatus_content_t *systemstatus = &msgsys->systemstatus;
+    msgsys->type = message_types_t::outbound_SystemStatus;
 
-    value = int32_t(v * 100);
-
-    instrumentation_setCounter(perf_sys_temp, value);
-
+    systemstatus->temp = thermometer.getTemperature();
     unav::drivers::PowerStatus_t p = power.getPowerStatus();
 
-    value = int32_t(p.current * 100);
-    instrumentation_setCounter(perf_sys_current, value);
-
-    value = int32_t(p.voltage * 100);
-    instrumentation_setCounter(perf_sys_voltage, value);
+    systemstatus->battery_current = p.current;
+    systemstatus->battery_voltage = p.voltage;
+    systemstatus->manager_status = static_cast<uint8_t>(unav::Modules::motorManagerModule->getStatus());
+    systemstatus->controller_status = static_cast<uint8_t>(unav::Modules::motorControllerModule->getStatus());
+    systemstatus->health_status = 0;
+    systemstatus->system_status = static_cast<uint8_t>(unav::Modules::motorManagerModule->getStatus());
+    sendMessage(msgsys, RosNodeModuleMessageId);
 
     vTaskDelayUntil(&c, wait);
   }

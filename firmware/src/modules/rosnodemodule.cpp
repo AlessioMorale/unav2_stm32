@@ -17,15 +17,16 @@ ros::NodeHandle RosNodeModule::nh;
 RosNodeModule *rosNode;
 
 RosNodeModule::RosNodeModule()
-    : incomingMessageQueue{nullptr}, pubJoints("unav2/status/joint", &msgjointstate), pubVelPIDState("unav2/status/vel_pid", &msgpidstate),
-      pubCurPIDState("unav2/status/cur_pid", &msgpidstate), pubAck("unav2/status/ack", &msgack), pubDiagnostic("unav2/diagnostic", &msgDiagnostic),
-      subJointCmd("unav2/control/joint_cmd", [](const unav2_msgs::JointCommand &msg) { rosNode->sendToMotorManager(msg); }),
-      subPIDCfg("unav2/config/pid", [](const unav2_msgs::PIDConfig &msg) { rosNode->handleRosConfigMessage(msg); }),
-      subBridgeCfg("unav2/config/bridge", [](const unav2_msgs::BridgeConfig &msg) { rosNode->handleRosConfigMessage(msg); }),
-      subEncoderCfg("unav2/config/encoder", [](const unav2_msgs::EncoderConfig &msg) { rosNode->handleRosConfigMessage(msg); }),
-      subMechanicalCfg("unav2/config/mechanical", [](const unav2_msgs::MechanicalConfig &msg) { rosNode->handleRosConfigMessage(msg); }),
-      subOperationCfg("unav2/config/operation", [](const unav2_msgs::OperationConfig &msg) { rosNode->handleRosConfigMessage(msg); }),
-      subSafetyCfg("unav2/config/safety", [](const unav2_msgs::SafetyConfig &msg) { rosNode->handleRosConfigMessage(msg); }) {
+    : incomingMessageQueue{nullptr}, pubJoints("status/joints", &msgjointstate), pubVelPIDState("status/vel_pid", &msgpidstate),
+      pubCurPIDState("status/cur_pid", &msgpidstate), pubAck("status/ack", &msgack), pubDiagnostic("diagnostic", &msgdiagnostic),
+      pubSystemStatus("status/system", &msgsystemstatus),
+      subJointCmd("control/joints_cmd", [](const unav2_msgs::JointCommand &msg) { rosNode->sendToMotorManager(msg); }),
+      subPIDCfg("config/pid", [](const unav2_msgs::PIDConfig &msg) { rosNode->handleRosConfigMessage(msg); }),
+      subBridgeCfg("config/bridge", [](const unav2_msgs::BridgeConfig &msg) { rosNode->handleRosConfigMessage(msg); }),
+      subEncoderCfg("config/encoder", [](const unav2_msgs::EncoderConfig &msg) { rosNode->handleRosConfigMessage(msg); }),
+      subMechanicalCfg("config/mechanical", [](const unav2_msgs::MechanicalConfig &msg) { rosNode->handleRosConfigMessage(msg); }),
+      subOperationCfg("config/operation", [](const unav2_msgs::OperationConfig &msg) { rosNode->handleRosConfigMessage(msg); }),
+      subSafetyCfg("config/safety", [](const unav2_msgs::SafetyConfig &msg) { rosNode->handleRosConfigMessage(msg); }) {
   rosNode = this;
 }
 
@@ -55,6 +56,7 @@ void RosNodeModule::initialize() {
 
 void RosNodeModule::moduleThreadStart() {
   getNodeHandle().advertise(pubDiagnostic);
+  getNodeHandle().advertise(pubSystemStatus);
   getNodeHandle().advertise(pubJoints);
   getNodeHandle().advertise(pubCurPIDState);
   getNodeHandle().advertise(pubVelPIDState);
@@ -97,7 +99,7 @@ void RosNodeModule::moduleThreadStart() {
 
     if (!configuration_complete && timing_getUsSince(t_request_config) > 250'000ul) {
       t_request_config = timing_getRaw();
-      if(!Application::healthChecker.isConfigured()){
+      if (!Application::healthChecker.isConfigured()) {
         msgack.data = MESSAGE_ACK_REQUEST_CONFIG;
         pubAck.publish(&msgack);
       } else {
@@ -117,9 +119,9 @@ void RosNodeModule::publishDiagnostic() {
   instrumentation_forEachCounter([](const perf_counter_t *counter, const int8_t index,
                                     void *context) { MessageConverter<unav2_msgs::PerfCounter>::toRosMsg(counter, rosNode->msgPerfCounter[index]); },
                                  nullptr);
-  msgDiagnostic.counters = msgPerfCounter;
-  msgDiagnostic.counters_length = COUNTERS_COUNT;
-  pubDiagnostic.publish(&msgDiagnostic);
+  msgdiagnostic.counters = msgPerfCounter;
+  msgdiagnostic.counters_length = COUNTERS_COUNT;
+  pubDiagnostic.publish(&msgdiagnostic);
 }
 
 void RosNodeModule::sendRosMessage(message_t *msg) {
@@ -138,6 +140,11 @@ void RosNodeModule::sendRosMessage(message_t *msg) {
     unav::MessageConverter<unav2_msgs::PIDState>::toRosMsg(msg, msgpidstate);
     msgpidstate.stamp = getNodeHandle().now();
     pubCurPIDState.publish(&msgpidstate);
+    break;
+  case unav::message_types_t::outbound_SystemStatus:
+    unav::MessageConverter<unav2_msgs::SystemStatus>::toRosMsg(msg, msgsystemstatus);
+    msgsystemstatus.stamp = getNodeHandle().now();
+    pubSystemStatus.publish(&msgsystemstatus);
     break;
   case unav::message_types_t::outbound_ack:
     msgack.data = msg->ackcontent.transactionId;

@@ -11,6 +11,7 @@
 #include <unav2_msgs/PIDState.h>
 #include <unav2_msgs/PerfCounter.h>
 #include <unav2_msgs/SafetyConfig.h>
+#include <unav2_msgs/SystemStatus.h>
 #pragma once
 namespace unav {
 
@@ -92,6 +93,20 @@ public:
     rosmsg.i_max = const_cast<float *>(msg->pidstate.i_max);
   }
 };
+
+template <> class MessageConverter<unav2_msgs::SystemStatus> {
+public:
+  static void toRosMsg(const message_t *msg, unav2_msgs::SystemStatus &rosmsg) {
+    rosmsg.battery_voltage = msg->systemstatus.battery_voltage;
+    rosmsg.battery_current = msg->systemstatus.battery_current;
+    rosmsg.temp = msg->systemstatus.temp;
+    rosmsg.manager_status = msg->systemstatus.manager_status;
+    rosmsg.controller_status = msg->systemstatus.controller_status;
+    rosmsg.health_status = msg->systemstatus.health_status;
+    rosmsg.system_status = msg->systemstatus.system_status;
+  }
+};
+
 template <> class MessageConverter<unav2_msgs::PerfCounter> {
 public:
   static void toRosMsg(const perf_counter_t *c, unav2_msgs::PerfCounter &rosmsg) {
@@ -102,4 +117,6 @@ public:
     rosmsg.lastUpdateTS = c->lastUpdateTS;
   }
 };
+
+
 } // namespace unav

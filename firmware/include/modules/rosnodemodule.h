@@ -18,6 +18,7 @@
 #include <unav2_msgs/PIDState.h>
 #include <unav2_msgs/PerfCounter.h>
 #include <unav2_msgs/SafetyConfig.h>
+#include <unav2_msgs/SystemStatus.h>
 
 #ifndef ROSNODEMODULE_H
 #define ROSNODEMODULE_H
@@ -50,13 +51,16 @@ private:
   void publishDiagnostic();
   unav2_msgs::JointState msgjointstate;
   unav2_msgs::PIDState msgpidstate;
-  unav2_msgs::Diagnostic msgDiagnostic;
+  unav2_msgs::Diagnostic msgdiagnostic;
+  unav2_msgs::SystemStatus msgsystemstatus;
+
   std_msgs::UInt32 msgack;
   ros::Publisher pubJoints;
   ros::Publisher pubVelPIDState;
   ros::Publisher pubCurPIDState;
   ros::Publisher pubAck;
   ros::Publisher pubDiagnostic;
+  ros::Publisher pubSystemStatus;
   ros::Subscriber<unav2_msgs::JointCommand> subJointCmd;
   ros::Subscriber<unav2_msgs::BridgeConfig> subBridgeCfg;
   ros::Subscriber<unav2_msgs::EncoderConfig> subEncoderCfg;

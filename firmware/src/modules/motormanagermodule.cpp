@@ -166,6 +166,9 @@ void MotorManagerModule::runControlLoop() {
   motorcontrol->mode = control_mode;
 
   for (uint32_t i = 0; i < MOTORS_COUNT; i++) {
+    if (fabsf(cmd[i]) < 0.0001) {
+      pidControllers[i].zero();
+    }
     const auto measuredSpeed = encoders[i].getVelocity();
     auto effort = control_enabled ? pidControllers[i].apply(cmd[i] * inverted_rotation[i], measuredSpeed, dt) : 0.0f;
     auto a = fabsf(effort);

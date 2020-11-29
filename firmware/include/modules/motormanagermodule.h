@@ -16,12 +16,18 @@ namespace unav::modules {
 #define MOTORMANAGERSTACKSIZE 1024
 class MotorManagerModule : public BaseRosModule<MOTORMANAGERSTACKSIZE>, public ConfigurationObserver {
 public:
+  enum class status_t : int32_t { failsafe = -2, unconfigured = -1, stopped = 0, starting = 1, running = 2, stopping = 3 };
+
   static constexpr char *ModuleName{"MotMan"};
 
   MotorManagerModule();
   virtual void initialize();
   void processMessage(internal_message_t &message);
   void configurationUpdated(const unav::ConfigurationMessageTypes_t configuredItem);
+  
+  status_t getStatus(){
+    return status;
+  };
 
 protected:
   void moduleThreadStart() __attribute__((noreturn));
@@ -31,7 +37,6 @@ private:
   const float CONNECTION_TIMEOUT{0.250f};
   const float ZERO_TIMEOUT{5.0f};
 
-  enum class status_t : int32_t { failsafe = -2, unconfigured = -1, stopped = 0, starting = 1, running = 2, stopping = 3 };
 
   bool operationModeNormal;
   status_t status;

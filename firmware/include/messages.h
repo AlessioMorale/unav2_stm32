@@ -12,6 +12,7 @@ enum class message_types_t : int32_t {
   outbound_VelPIDState = 10,
   outbound_CurPIDState = 11,
   outbound_JointState = 12,
+  outbound_SystemStatus = 13,
   inbound_JointCommand = 40,
   inbound_BridgeConfig = 60,
   inbound_EncoderConfig = 61,
@@ -40,6 +41,17 @@ typedef struct _jointstate_content {
   float pos[MOTORS_COUNT];
   float eff[MOTORS_COUNT];
 } jointstate_content_t;
+
+typedef struct _systemstatus_content {
+  message_types_t type;
+  float battery_voltage;
+  float battery_current;
+  float temp;
+  int8_t manager_status;
+  int8_t controller_status;
+  int8_t health_status;
+  int8_t system_status;
+} systemstatus_content_t;
 
 typedef struct _ack_content {
   message_types_t type;
@@ -163,6 +175,7 @@ typedef struct _generic_message {
     ack_content_t ackcontent;
     pidstate_content_t pidstate;
     jointstate_content_t jointstate;
+    systemstatus_content_t systemstatus;
   };
 } message_t;
 
@@ -215,6 +228,7 @@ static inline configuration_item_t getConfigurationItemFromMessageType(message_t
   case message_types_t::outbound_CurPIDState:
   case message_types_t::outbound_JointState:
   case message_types_t::outbound_VelPIDState:
+  case message_types_t::outbound_SystemStatus:
   case message_types_t::NONE:
   default:
     assert(false);
