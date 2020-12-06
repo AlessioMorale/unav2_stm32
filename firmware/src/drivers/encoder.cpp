@@ -41,7 +41,7 @@ float Encoder::getVelocity() {
 
   position += delta_f;
 
-  lastVelocity = -delta_f / lastDt;
+  lastVelocity = delta_f / lastDt;
 
   if (isfinite(lastVelocity)) {
     filteredEncVelocity = useFilter ? alpha * (lastVelocity - filteredEncVelocity) + filteredEncVelocity : lastVelocity;
