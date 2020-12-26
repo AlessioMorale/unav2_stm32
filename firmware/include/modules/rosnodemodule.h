@@ -1,6 +1,7 @@
-#include "baserosmodule.h"
+#include "basemodule.h"
 #include "message_buffer.h"
 #include "ros.h"
+#include <application.h>
 #include <configuration.h>
 #include <counters.h>
 #include <instrumentation/instrumentation.h>
@@ -27,9 +28,8 @@ namespace unav::modules {
 #define MESSAGING_BUFFER_SIZE 10
 #define ROSNODESTACKSIZE 512
 
-class RosNodeModule : public BaseRosModule<ROSNODESTACKSIZE> {
+class RosNodeModule : public BaseModule<ROSNODESTACKSIZE> {
 public:
-  static const uint32_t ModuleMessageId = BaseRosModule::RosNodeModuleMessageId;
   static constexpr char *ModuleName = "ROSNode";
 
   RosNodeModule();
@@ -37,13 +37,23 @@ public:
   unav2_msgs::PerfCounter msgPerfCounter[COUNTERS_COUNT];
 
 private:
+
   void sendRosMessage(message_t *msg);
   static ros::NodeHandle nh;
+
   ros::NodeHandle &getNodeHandle() {
     return nh;
   }
 
-  QueueHandle_t incomingMessageQueue;
+  inline void subscribe(uint32_t recipientId, const char *subscriberName) {
+    _incomingMessageQueue = unav::Application::messaging.subscribe(recipientId, subscriberName);
+  }
+
+  bool waitMessage(message_handle_t *msg, TickType_t wait) {
+    return unav::Application::messaging.receiveMessage(_incomingMessageQueue, (message_handle_t *)msg, wait);
+  }
+
+  QueueHandle_t _incomingMessageQueue;
   message_t _messageBuffer[MESSAGING_BUFFER_SIZE];
   template <typename T> void sendToMotorManager(const T &msg);
   template <typename T> void handleRosConfigMessage(const T &msg);

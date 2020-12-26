@@ -5,7 +5,7 @@
 #define MESSAGING_H
 namespace unav {
 #define MESSAGING_MAX_RECIPIENTS 10
-typedef void *message_handle_t;
+typedef message_t *message_handle_t;
 typedef struct {
   uint32_t recipientId;
   QueueHandle_t queue;
@@ -13,6 +13,8 @@ typedef struct {
 
 class Messaging {
 public:
+  static const uint32_t RosNodeModuleMessageId = 0x0100;
+
   Messaging() : _messagebuffer{nullptr}, _slotSize{0}, freeSlotInitialized{false}, _recipients{0}, _maxMessagesCount{0}, _freeMessagesQueue{nullptr} {
   }
 
@@ -25,7 +27,9 @@ public:
   void releaseMessage(message_handle_t message);
   QueueHandle_t subscribe(uint32_t recipientId, const char *subscriberName);
   bool receiveMessage(QueueHandle_t incomingMessageQueue, message_handle_t *msg, TickType_t wait);
-
+  inline void sendMessage(message_handle_t message){
+    sendMessage(message, RosNodeModuleMessageId);
+  }
 private:
   uint8_t *_messagebuffer;
   size_t _slotSize;

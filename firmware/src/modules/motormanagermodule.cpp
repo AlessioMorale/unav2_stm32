@@ -143,7 +143,8 @@ void MotorManagerModule::runControlLoop() {
       publish_pidstatus = true;
     }
   }
-  message_t *js = prepareMessage();
+  auto js = unav::Application::messaging.prepareMessage();
+
   jointstate_content_t *jointstate = nullptr;
 
   // no free slots to send messages toward the host (i.e.comm with host is lagging behind)
@@ -156,7 +157,8 @@ void MotorManagerModule::runControlLoop() {
   pidstate_content_t *pidstate{nullptr};
 
   if (publish_pidstatus) {
-    ps = prepareMessage();
+    ps = unav::Application::messaging.prepareMessage();
+
     pidstate = &ps->pidstate;
     pidstate->type = message_types_t::outbound_VelPIDState;
     publish_pidstatus = false;
@@ -205,10 +207,10 @@ void MotorManagerModule::runControlLoop() {
   PERF_TIMED_SECTION_START(perf_action_latency);
 
   if (js) {
-    sendMessage(js, RosNodeModuleMessageId);
+    unav::Application::messaging.sendMessage(js);
   }
   if (pidstate) {
-    sendMessage(ps, RosNodeModuleMessageId);
+    unav::Application::messaging.sendMessage(ps);
     pidstate = nullptr;
   }
 }
@@ -332,6 +334,6 @@ void MotorManagerModule::updateTimings(const float frequency) {
   }
 }
 
-template class BaseRosModule<MOTORMANAGERSTACKSIZE>;
+template class BaseModule<MOTORMANAGERSTACKSIZE>;
 
 } // namespace unav::modules

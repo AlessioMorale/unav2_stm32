@@ -137,6 +137,6 @@ void MotorControllerModule::updateOperationConfig() {
   const auto cfg = unav::Application::configuration.getOperationConfig();
 }
 
-template class BaseRosModule<MOTORCONTROLLERSTACKSIZE>;
+template class BaseModule<MOTORCONTROLLERSTACKSIZE>;
 
 } // namespace unav::modules

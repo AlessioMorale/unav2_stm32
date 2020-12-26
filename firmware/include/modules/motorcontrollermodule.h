@@ -4,7 +4,7 @@
 #include <controls/pid.h>
 #include <drivers/motor.h>
 #include <messages.h>
-#include <modules/baserosmodule.h>
+#include <modules/basemodule.h>
 #include <simplemessaging.h>
 #include <utils/timer.h>
 
@@ -15,7 +15,7 @@ namespace unav::modules {
 #define MOTORCONTROLLERSTACKSIZE 1024
 
 class MotorControllerModule : 
-  protected BaseRosModule<MOTORCONTROLLERSTACKSIZE>,
+  protected BaseModule<MOTORCONTROLLERSTACKSIZE>,
   public ConfigurationObserver {
 public:
   static constexpr char *ModuleName{"MotCtl"};

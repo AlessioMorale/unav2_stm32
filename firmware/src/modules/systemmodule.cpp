@@ -15,7 +15,6 @@ SystemModule::SystemModule() : thermometer(&I2C_PORT, TEMP_SENSOR_ADDRESS), powe
 }
 
 void SystemModule::initialize() {
-  subscribe(SystemModule::ModuleMessageId, SystemModule::ModuleName);
   initializeTask(osPriority::osPriorityAboveNormal, SystemModule::ModuleName);
   setup();
 }
@@ -27,7 +26,7 @@ void SystemModule::moduleThreadStart() {
   power.setup(unav::drivers::Ina219ConfigGain::gain1_40MV, unav::drivers::Ina219ConfigBusAdcResolution::adc12BIT,
               unav::drivers::Ina219ConfigShuntAdcResolution::adc12BIT_128S_69MS, 20480u, 0.002f);
   while (true) {
-    auto msgsys = prepareMessage();
+    auto msgsys = unav::Application::messaging.prepareMessage();
     systemstatus_content_t *systemstatus = &msgsys->systemstatus;
     msgsys->type = message_types_t::outbound_SystemStatus;
 
@@ -40,7 +39,8 @@ void SystemModule::moduleThreadStart() {
     systemstatus->controller_status = static_cast<uint8_t>(unav::Modules::motorControllerModule->getStatus());
     systemstatus->health_status = 0;
     systemstatus->system_status = static_cast<uint8_t>(unav::Modules::motorManagerModule->getStatus());
-    sendMessage(msgsys, RosNodeModuleMessageId);
+
+    unav::Application::messaging.sendMessage(msgsys);
 
     vTaskDelayUntil(&c, wait);
   }
@@ -49,20 +49,6 @@ void SystemModule::moduleThreadStart() {
 void SystemModule::setup() {
 }
 
-void SystemModule::checkMessages() {
-  message_t *receivedMsg = nullptr;
-  uint32_t transactionId = 0;
-  if (waitMessage(&receivedMsg, 0)) {
-    switch (receivedMsg->type) {
-    case message_types_t::internal_motor_control: {
-    } break;
-    default:
-      break;
-    }
-    releaseMessage(receivedMsg);
-  }
-}
-
-template class BaseRosModule<SYSTEMSTACKSIZE>;
+template class BaseModule<SYSTEMSTACKSIZE>;
 
 } // namespace unav::modules

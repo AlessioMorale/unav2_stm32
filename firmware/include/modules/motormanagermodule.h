@@ -1,4 +1,4 @@
-#include "baserosmodule.h"
+#include "basemodule.h"
 #include "ros.h"
 #include <configuration.h>
 #include <controls/pid.h>
@@ -14,7 +14,7 @@
 
 namespace unav::modules {
 #define MOTORMANAGERSTACKSIZE 1024
-class MotorManagerModule : public BaseRosModule<MOTORMANAGERSTACKSIZE>, public ConfigurationObserver {
+class MotorManagerModule : public BaseModule<MOTORMANAGERSTACKSIZE>, public ConfigurationObserver {
 public:
   enum class status_t : int32_t { failsafe = -2, unconfigured = -1, stopped = 0, starting = 1, running = 2, stopping = 3 };
 

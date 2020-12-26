@@ -11,13 +11,12 @@
 #include <modules/rosnodemodule.h>
 #include <ros.h>
 #include <timing.h>
-
 namespace unav::modules {
 ros::NodeHandle RosNodeModule::nh;
 RosNodeModule *rosNode;
 
 RosNodeModule::RosNodeModule()
-    : incomingMessageQueue{nullptr}, pubJoints("status/joints", &msgjointstate), pubVelPIDState("status/vel_pid", &msgpidstate),
+    : _incomingMessageQueue{nullptr}, pubJoints("status/joints", &msgjointstate), pubVelPIDState("status/vel_pid", &msgpidstate),
       pubCurPIDState("status/cur_pid", &msgpidstate), pubAck("status/ack", &msgack), pubDiagnostic("diagnostic", &msgdiagnostic),
       pubSystemStatus("status/system", &msgsystemstatus),
       subJointCmd("control/joints_cmd", [](const unav2_msgs::JointCommand &msg) { rosNode->sendToMotorManager(msg); }),
@@ -50,7 +49,7 @@ void RosNodeModule::initialize() {
 
   getNodeHandle().initNode();
   Application::messaging.setup((uint8_t *)_messageBuffer, sizeof(message_t), MESSAGING_BUFFER_SIZE);
-  subscribe(RosNodeModule::ModuleMessageId, RosNodeModule::ModuleName);
+  subscribe(Messaging::RosNodeModuleMessageId, RosNodeModule::ModuleName);
   initializeTask(osPriority::osPriorityNormal, RosNodeModule::ModuleName);
 }
 
@@ -89,7 +88,7 @@ void RosNodeModule::moduleThreadStart() {
     message_t *msg{nullptr};
     while (waitMessage(&msg, 2)) {
       sendRosMessage(msg);
-      releaseMessage(msg);
+      Application::messaging.releaseMessage(msg);
 
       if (timing_getUsSince(t) > 10000ul) {
         t = timing_getRaw();
@@ -156,6 +155,6 @@ void RosNodeModule::sendRosMessage(message_t *msg) {
   }
 }
 
-template class BaseRosModule<ROSNODESTACKSIZE>;
+template class BaseModule<ROSNODESTACKSIZE>;
 
 } // namespace unav::modules

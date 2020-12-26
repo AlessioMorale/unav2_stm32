@@ -1,4 +1,4 @@
-#include "baserosmodule.h"
+#include "basemodule.h"
 #include "ros.h"
 #include <drivers/ina219.h>
 #include <drivers/lm75.h>
@@ -12,9 +12,8 @@
 
 namespace unav::modules {
 #define SYSTEMSTACKSIZE 1024
-class SystemModule : public BaseRosModule<SYSTEMSTACKSIZE> {
+class SystemModule : public BaseModule<SYSTEMSTACKSIZE> {
 public:
-  static const uint32_t ModuleMessageId{0x0515};
   static constexpr char *ModuleName = "SysMod";
 
   SystemModule();
@@ -28,6 +27,5 @@ protected:
 
 private:
   unav::utils::Timer timer;
-  void checkMessages();
 };
 } // namespace unav::modules

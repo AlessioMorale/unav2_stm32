@@ -27,6 +27,7 @@ void Messaging::initFreeSlots() {
   taskEXIT_CRITICAL();
 }
 
+
 void Messaging::sendMessage(message_handle_t message, uint32_t recipientId) {
   QueueHandle_t queue = getRecipientQueue(recipientId);
   if (!queue) {
