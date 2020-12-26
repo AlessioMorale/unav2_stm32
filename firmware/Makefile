@@ -62,7 +62,7 @@ src/controls/pid.cpp \
 src/drivers/encoder.cpp \
 src/driver/lm75.cpp \
 src/driver/ina219.cpp \
-src/messaging.cpp
+src/zerocopymessaging.cpp
 
 
 # ASM sources

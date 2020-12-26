@@ -1,13 +1,13 @@
 #pragma once
 #include <configuration.h>
-#include <messaging.h>
+#include <zerocopymessaging.h>
 #include <systemhealthchecker.h>
 
 namespace unav {
 class Application {
 public:
   inline static Configuration configuration;
-  inline static Messaging messaging;
+  inline static ZeroCopyMessaging messaging;
   inline static SystemHealthChecker healthChecker;
 
   static void setup() {

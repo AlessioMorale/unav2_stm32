@@ -8,7 +8,6 @@
 #include <leds.h>
 #include <mathutils.h>
 #include <messages.h>
-#include <messaging.h>
 #include <modules.h>
 #include <modules/motorcontrollermodule.h>
 #include <modules/motormanagermodule.h>

@@ -6,7 +6,6 @@
 #include <leds.h>
 #include <message_buffer.h>
 #include <messageconverter.h>
-#include <messaging.h>
 #include <modules.h>
 #include <modules/rosnodemodule.h>
 #include <ros.h>
@@ -16,7 +15,7 @@ ros::NodeHandle RosNodeModule::nh;
 RosNodeModule *rosNode;
 
 RosNodeModule::RosNodeModule()
-    : _incomingMessageQueue{nullptr}, pubJoints("status/joints", &msgjointstate), pubVelPIDState("status/vel_pid", &msgpidstate),
+    : pubJoints("status/joints", &msgjointstate), pubVelPIDState("status/vel_pid", &msgpidstate),
       pubCurPIDState("status/cur_pid", &msgpidstate), pubAck("status/ack", &msgack), pubDiagnostic("diagnostic", &msgdiagnostic),
       pubSystemStatus("status/system", &msgsystemstatus),
       subJointCmd("control/joints_cmd", [](const unav2_msgs::JointCommand &msg) { rosNode->sendToMotorManager(msg); }),
@@ -49,7 +48,6 @@ void RosNodeModule::initialize() {
 
   getNodeHandle().initNode();
   Application::messaging.setup((uint8_t *)_messageBuffer, sizeof(message_t), MESSAGING_BUFFER_SIZE);
-  subscribe(Messaging::RosNodeModuleMessageId, RosNodeModule::ModuleName);
   initializeTask(osPriority::osPriorityNormal, RosNodeModule::ModuleName);
 }
 

@@ -45,15 +45,10 @@ private:
     return nh;
   }
 
-  inline void subscribe(uint32_t recipientId, const char *subscriberName) {
-    _incomingMessageQueue = unav::Application::messaging.subscribe(recipientId, subscriberName);
-  }
-
   bool waitMessage(message_handle_t *msg, TickType_t wait) {
-    return unav::Application::messaging.receiveMessage(_incomingMessageQueue, (message_handle_t *)msg, wait);
+    return unav::Application::messaging.receiveMessage(msg, wait);
   }
 
-  QueueHandle_t _incomingMessageQueue;
   message_t _messageBuffer[MESSAGING_BUFFER_SIZE];
   template <typename T> void sendToMotorManager(const T &msg);
   template <typename T> void handleRosConfigMessage(const T &msg);
