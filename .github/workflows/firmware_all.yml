@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     container: alessiomorale/gcc-arm-none-eabi-ci:release-1.0.1-gcc9-2019q4
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
       with: 
         submodules: true
         token: ${{ secrets.GITHUB_TOKEN }}
