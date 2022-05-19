@@ -4,3 +4,6 @@
 [submodule "firmware/libs/nanopb"]
 	path = firmware/libs/nanopb
 	url = https://github.com/nanopb/nanopb.git
+[submodule "firmware/libs/etl"]
+	path = firmware/libs/etl
+	url = https://github.com/ETLCPP/etl
