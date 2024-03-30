@@ -1,7 +1,7 @@
 ######################################
 # target
 ######################################
-TARGET = unavng_fw
+TARGET = board_v2
 
 ######################################
 # building variables
@@ -22,7 +22,7 @@ HALPATH = libs/drivers/STM32F4xx_HAL_Driver
 CMSIS = libs/drivers/CMSIS
 USBDEVPATH = src/usb_device
 MIDDLEWARESPATH = libs/middlewares
-ROSSERIAL = libs/rosserial
+LIBSPATH = libs
 
 BOARD_MODEL ?= board_v0.2
 
@@ -49,12 +49,12 @@ src/leds_hal.c \
 src/instrumentation/instrumentation.c \
 src/counters.c \
 src/freertos_support.c \
-src/custom_assert.c
+src/custom_assert.c \
 
 CPP_SOURCES = \
 src/freertos.cpp \
 src/modules/basemodule.cpp \
-src/modules/rosnodemodule.cpp \
+src/modules/commmodule.cpp \
 src/modules/motormanagermodule.cpp \
 src/modules/motorcontrollermodule.cpp \
 src/modules/systemmodule.cpp \
@@ -72,8 +72,11 @@ startup_stm32f405xx.s
 include $(HALPATH)/stm32hal.mk
 include $(USBDEVPATH)/usbdev.mk
 include $(MIDDLEWARESPATH)/middlewares.mk
-include $(ROSSERIAL)/rosserial.mk
 include ${BOARD_BSP}/bsp.mk
+include ${LIBSPATH}/etl.mk
+include ${LIBSPATH}/nanopb.mk
+include ${LIBSPATH}/messages.mk
+
 #######################################
 # binaries
 #######################################
@@ -118,7 +121,7 @@ ARM_AS_DEFS =
 # C defines
 ARM_C_DEFS =  \
 -DUSE_HAL_DRIVER \
--DSTM32F407xx
+-DSTM32F405xx
 
 
 # ARMAS includes
@@ -199,7 +202,7 @@ ARM_CFLAGS += $(ARM_CONLYFLAGS)
 # LDFLAGS
 #######################################
 # link script
-ARM_LDSCRIPT = unav_firmware.ld
+LDSCRIPT = STM32F405RGTx_FLASH.ld
 
 # libraries
 ARM_LIBS = -lc -lm -lnosys -lstdc++
@@ -216,7 +219,7 @@ CPPUTEST_USE_MEM_LEAK_DETECTION = N
 CPPUTEST_CXXFLAGS   += -std=c++17
 C_DEFS +=  \
 -DUSE_HAL_DRIVER \
--DSTM32F407xx
+-DSTM32F405xx
 
 CPPUTEST_CXXFLAGS += $(C_DEFS) 
 
@@ -315,7 +318,7 @@ $(BUILD_DIR):
 # clean up
 #######################################
 clean:
-	-rm -fR $(BUILD_DIR)
+	-rm -fR $(BUILD_DIR) $(CPPUTEST_HOME)/lib/
   
 #######################################
 # dependencies

@@ -25,40 +25,23 @@ enum class message_types_t : int32_t {
 
 typedef struct _pidstate_content {
   message_types_t type;
-  float output[MOTORS_COUNT];
-  float error[MOTORS_COUNT];
-  float p_term[MOTORS_COUNT];
-  float i_term[MOTORS_COUNT];
-  float d_term[MOTORS_COUNT];
-  float i_min[MOTORS_COUNT];
-  float i_max[MOTORS_COUNT];
-  float timestep[MOTORS_COUNT];
+  PIDState content[MOTORS_COUNT];
 } pidstate_content_t;
 
 typedef struct _jointstate_content {
   message_types_t type;
-  float vel[MOTORS_COUNT];
-  float pos[MOTORS_COUNT];
-  float eff[MOTORS_COUNT];
+  JointState content[MOTORS_COUNT];
 } jointstate_content_t;
 
 typedef struct _systemstatus_content {
   message_types_t type;
-  float battery_voltage;
-  float battery_current;
-  float temp;
-  int8_t manager_status;
-  int8_t controller_status;
-  int8_t health_status;
-  int8_t system_status;
+  MsgSystemStatus content;
 } systemstatus_content_t;
 
 typedef struct _ack_content {
   message_types_t type;
-  uint32_t transactionId;
+  MsgTransactionAck content;
 } ack_content_t;
-
-enum class jointcommand_mode_t { failsafe = -1, disabled = 0, position = 1, velocity = 2, effort = 3 };
 
 typedef struct jointcommand_content {
   message_types_t type;

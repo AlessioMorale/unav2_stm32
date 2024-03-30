@@ -7,6 +7,9 @@
 #include "spi.h"
 #include "tim.h"
 #include "usart.h"
+#include "rng.h"
+#include "crc.h"
+
 void board_init() {
   MX_GPIO_Init();
   HAL_GPIO_WritePin(O_PWR_REG_EN_GPIO_Port, O_PWR_REG_EN_Pin, O_PWR_EN_STATUS_ENABLE);
@@ -70,7 +73,7 @@ void disable_motors() {
   HAL_GPIO_Init(TIM_MOT1_A_GPIO_Port, &GPIO_InitStruct);
 
   GPIO_TypeDef *gpios[] = {TIM_MOT1_A_GPIO_Port, TIM_MOT1_B_GPIO_Port, TIM_MOT2_A_GPIO_Port, TIM_MOT2_B_GPIO_Port};
-  GPIO_PinState pins[] = {TIM_MOT1_A_Pin, TIM_MOT1_B_Pin, TIM_MOT2_A_Pin, TIM_MOT2_B_Pin};
+  uint16_t pins[] = {TIM_MOT1_A_Pin, TIM_MOT1_B_Pin, TIM_MOT2_A_Pin, TIM_MOT2_B_Pin};
   for (uint32_t i = 0; i < 4; i++) {
     HAL_GPIO_WritePin(gpios[i], pins[i], GPIO_PIN_RESET);
   }

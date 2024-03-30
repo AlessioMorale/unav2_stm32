@@ -34,16 +34,10 @@
 #include "usbd_cdc_if.h"
 #include <application.h>
 #include <modules.h>
+#include <modules/commmodule.h>
 #include <modules/motorcontrollermodule.h>
 #include <modules/motormanagermodule.h>
-#include <modules/rosnodemodule.h>
 #include <modules/systemmodule.h>
-#include <ros.h>
-#include <rosserial_msgs/Log.h>
-#include <std_msgs/Float32.h>
-#include <std_msgs/Int16.h>
-#include <std_msgs/Int32.h>
-
 
 /* USER CODE END PD */
 
@@ -58,7 +52,7 @@
 osThreadId defaultTaskHandle;
 unav::modules::MotorControllerModule motorController;
 unav::modules::MotorManagerModule motorManager;
-unav::modules::RosNodeModule rosNodeModule;
+unav::modules::CommModule rosNodeModule;
 unav::modules::SystemModule systemModule;
 unav::Configuration *configuration = &unav::Application::configuration;
 /* USER CODE END Variables */

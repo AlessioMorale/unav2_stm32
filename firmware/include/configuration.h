@@ -1,6 +1,7 @@
 #pragma once
 #include <array>
 #include <assert.h>
+#include <internal_messages.h>
 #include <messages.h>
 namespace unav {
 

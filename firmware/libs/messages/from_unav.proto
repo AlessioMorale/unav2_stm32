@@ -1,0 +1,77 @@
+syntax = "proto2";
+
+
+message MsgTransactionAck {
+  required uint32 transactionId = 1;
+}
+
+message JointState {
+  required float position = 1;
+  required float velocity = 2;
+  required float effort = 3;
+}
+
+message PIDState {
+  required float timestep = 1;
+  required float error = 2;
+  required float p_term = 3;
+  required float i_term = 4;
+  required float d_term = 5;
+  required float i_max = 6;
+  required float i_min = 7;
+  required float output = 8;
+}
+
+message PerfCounter {
+  required string key = 1;
+  required int32 value = 2;
+  required int32 max = 3;
+  required int32 min = 4;
+  required uint32 lastUpdateTS = 5;
+}
+
+message MsgJointsState {
+  repeated JointState joints = 1;
+}
+
+message MsgVelocityPIDState {
+  repeated PIDState pid_state = 1;
+}
+
+message MsgEffortPIDState {
+  repeated PIDState pid_state = 1;
+}
+
+message MsgDiagnostic {
+  repeated PerfCounter counters = 2;
+}
+
+message MsgSystemStatus {
+  required uint32 stamp = 1;
+  required float battery_voltage = 2;
+  required float battery_current = 3;
+  repeated float motor_current = 4;
+  required float temp = 5;
+  required uint32 status_flags = 6;
+  required uint32 messages_rx = 7;
+  required uint32 messages_rx_errors = 8;
+  required uint32 messages_tx = 9;
+}
+
+message MsgLogger {
+  enum LogLevel { debug = 0; info = 1; warning = 2; error = 3; critical = 4; };
+  required string message = 1;
+  required LogLevel level = 2;
+}
+
+message MsgFromUnavUnion {
+  oneof from_unav {
+  MsgJointsState joints_state = 1;
+  MsgSystemStatus system_status = 2;
+  MsgDiagnostic diagnostic = 3;
+  MsgEffortPIDState effort_pid_state = 4;
+  MsgVelocityPIDState velocity_pid_state = 5;
+  MsgTransactionAck ack = 6;
+  MsgLogger logger = 7;
+  }
+}

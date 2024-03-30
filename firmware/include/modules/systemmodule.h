@@ -1,11 +1,7 @@
 #include "basemodule.h"
-#include "ros.h"
 #include <drivers/ina219.h>
 #include <drivers/lm75.h>
 #include <messages.h>
-#include <std_msgs/Float32.h>
-#include <std_msgs/Int16.h>
-#include <std_msgs/Int32.h>
 #include <utils/timer.h>
 
 #pragma once

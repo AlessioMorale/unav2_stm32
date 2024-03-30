@@ -1,0 +1,23 @@
+#!/bin/bash
+set -e
+
+if rospack find unav2_hardware > /dev/null ;
+then
+    echo This script rebuilds all message header files needed by this firmware
+    echo "* retrieving unav2_hardware package folder"
+    unav2_hardware_folder=$(rospack find unav2_hardware)
+    echo "- unav2_hardware package found under ${unav2_hardware_folder}"
+    mkdir -p ./libs/messages
+    touch ./libs/messages/dummy
+    rm ./libs/messages/*
+    cp ${unav2_hardware_folder}/proto/*.proto ./libs/messages
+    echo "* Generating files"
+    for file in ./libs/messages/*.proto
+    do
+    echo "  - generating code for ${file}"
+    ./libs/nanopb/generator/nanopb_generator.py "$file" -q --cpp-descriptors -T
+    done
+    echo "Successfully completed"
+else
+    echo cannot find the required package unav2_hardware needed to create message files
+fi

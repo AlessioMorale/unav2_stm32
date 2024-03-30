@@ -7,17 +7,6 @@
 
 #include <instrumentation/instrumentation.h>
 #include <messages.h>
-#include <unav2_msgs/BridgeConfig.h>
-#include <unav2_msgs/Diagnostic.h>
-#include <unav2_msgs/EncoderConfig.h>
-#include <unav2_msgs/JointCommand.h>
-#include <unav2_msgs/JointState.h>
-#include <unav2_msgs/MechanicalConfig.h>
-#include <unav2_msgs/OperationConfig.h>
-#include <unav2_msgs/PIDConfig.h>
-#include <unav2_msgs/PIDState.h>
-#include <unav2_msgs/PerfCounter.h>
-#include <unav2_msgs/SafetyConfig.h>
 #pragma once
 namespace unav {
 template <typename T> class ConfigurationMessageConverter {

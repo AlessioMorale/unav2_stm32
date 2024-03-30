@@ -1,0 +1,93 @@
+syntax = "proto2";
+
+message OperationConfig {
+  enum OperationMode { Disabled = 0; Normal = 1; EmergencyStop = 2; }
+  required OperationMode operation_mode = 1;
+  required bool reset_to_dfu = 2;
+}
+
+message EncoderConfig {
+  enum EncoderPosition { encoder_after_gear = 0; encoder_before_gear = 1; }
+  enum EncoderChannels { invalid = 0; one = 1; two = 2; }
+  required uint32 cpr = 1;
+  required EncoderPosition position = 2;
+  required bool has_z_index = 3;
+  required EncoderChannels channels = 4;
+  repeated bool invert = 5;
+}
+
+message BridgeConfig {
+  required uint32 pwm_dead_time = 1;
+  required uint32 pwm_frequency = 2;
+}
+
+message PIDConfig {
+  required float velocity_kp = 1;
+  required float velocity_ki = 2;
+  required float velocity_kd = 3;
+  required float velocity_kaw = 4;
+  required float effort_kp = 5;
+  required float effort_ki = 6;
+  required float effort_kd = 7;
+  required float effort_kaw = 8;
+  required uint32 velocity_frequency = 9;
+  required uint32 effort_frequency = 10;
+  required bool effort_enable = 11;
+  required bool pid_debug = 12;
+}
+
+message MechanicalConfig {
+  required float ratio = 1;
+  repeated bool rotation = 2;
+}
+
+message SafetyConfig {
+  required float temp_warning = 1;
+  required float temp_limit = 2;
+  required uint32 temp_timeout = 3;
+  required uint32 temp_autorestore = 4;
+
+  required float current_warning = 5;
+  required float current_limit = 6;
+  required uint32 current_timeout = 7;
+  required uint32 current_autorestore = 8;
+
+  required float position_limit = 9;
+  required float velocity_limit = 10;
+  required float max_acceleration = 11;
+  required float max_deceleration = 12;
+
+  required uint32 pwm_limit = 13;
+  required uint32 error_limit = 14;
+
+  required uint32 slope_time = 15;
+  required uint32 bridge_off = 16;
+  required uint32 timeout = 17;
+}
+
+message MsgConfiguration {
+  oneof configuration {
+    OperationConfig operation = 1;
+    EncoderConfig encoder = 2;
+    BridgeConfig bridge = 3;
+    PIDConfig pid = 4;
+    MechanicalConfig mechanical = 5;
+    SafetyConfig safety = 6;
+  }
+  required uint32 transactionId = 7;
+}
+
+message MsgJointCommand {
+  // interpretation of command field
+  enum JointCommandMode { disabled = 0; failsafe = -1; position = 1; velocity = 2; effort = 3; }
+  required uint32 seq = 1;
+  required JointCommandMode mode = 2;
+  repeated float command = 3;
+}
+
+message MsgToUnavUnion {
+  oneof to_unav {
+    MsgJointCommand joint_command = 1;
+    MsgConfiguration configuration = 2;
+  }
+}

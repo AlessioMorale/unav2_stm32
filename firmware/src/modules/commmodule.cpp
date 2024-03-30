@@ -7,14 +7,13 @@
 #include <message_buffer.h>
 #include <messageconverter.h>
 #include <modules.h>
-#include <modules/rosnodemodule.h>
-#include <ros.h>
+#include <modules/commmodule.h>
 #include <timing.h>
 namespace unav::modules {
-ros::NodeHandle RosNodeModule::nh;
-RosNodeModule *rosNode;
+ros::NodeHandle CommModule::nh;
+CommModule *rosNode;
 
-RosNodeModule::RosNodeModule()
+CommModule::CommModule()
     : pubJoints("status/joints", &msgjointstate), pubVelPIDState("status/vel_pid", &msgpidstate),
       pubCurPIDState("status/cur_pid", &msgpidstate), pubAck("status/ack", &msgack), pubDiagnostic("diagnostic", &msgdiagnostic),
       pubSystemStatus("status/system", &msgsystemstatus),
@@ -28,30 +27,29 @@ RosNodeModule::RosNodeModule()
   rosNode = this;
 }
 
-template <typename T> void RosNodeModule::sendToMotorManager(const T &msg) {
+template <typename T> void CommModule::sendToMotorManager(const T &msg) {
   internal_message_t m;
   unav::MessageConverter<T>::fromRosMsg(msg, m);
   unav::Modules::motorManagerModule->processMessage(m);
 }
 
-template <typename T> void RosNodeModule::handleRosConfigMessage(const T &msg) {
+template <typename T> void CommModule::handleRosConfigMessage(const T &msg) {
   static configuration_message_t c;
   unav::ConfigurationMessageConverter<T>::fromRosMsg(msg, &c);
   Application::configuration.set(&c);
   msgack.data = c.header.transactionId;
   pubAck.publish(&msgack);
-}
 
-void RosNodeModule::initialize() {
+void CommModule::initialize() {
   instrumentation_init(COUNTERS_COUNT);
   initCounters();
 
   getNodeHandle().initNode();
   Application::messaging.setup((uint8_t *)_messageBuffer, sizeof(message_t), MESSAGING_BUFFER_SIZE);
-  initializeTask(osPriority::osPriorityNormal, RosNodeModule::ModuleName);
+  initializeTask(osPriority::osPriorityNormal, CommModule::ModuleName);
 }
 
-void RosNodeModule::moduleThreadStart() {
+void CommModule::moduleThreadStart() {
   getNodeHandle().advertise(pubDiagnostic);
   getNodeHandle().advertise(pubSystemStatus);
   getNodeHandle().advertise(pubJoints);
@@ -112,7 +110,7 @@ void RosNodeModule::moduleThreadStart() {
   }
 }
 
-void RosNodeModule::publishDiagnostic() {
+void CommModule::publishDiagnostic() {
   instrumentation_forEachCounter([](const perf_counter_t *counter, const int8_t index,
                                     void *context) { MessageConverter<unav2_msgs::PerfCounter>::toRosMsg(counter, rosNode->msgPerfCounter[index]); },
                                  nullptr);
@@ -121,21 +119,18 @@ void RosNodeModule::publishDiagnostic() {
   pubDiagnostic.publish(&msgdiagnostic);
 }
 
-void RosNodeModule::sendRosMessage(message_t *msg) {
+void CommModule::sendRosMessage(message_t *msg) {
   switch (msg->type) {
   case unav::message_types_t::outbound_JointState:
     unav::MessageConverter<unav2_msgs::JointState>::toRosMsg(msg, msgjointstate);
-    msgjointstate.stamp = getNodeHandle().now();
     pubJoints.publish(&msgjointstate);
     break;
   case unav::message_types_t::outbound_VelPIDState:
     unav::MessageConverter<unav2_msgs::PIDState>::toRosMsg(msg, msgpidstate);
-    msgpidstate.stamp = getNodeHandle().now();
     pubVelPIDState.publish(&msgpidstate);
     break;
   case unav::message_types_t::outbound_CurPIDState:
     unav::MessageConverter<unav2_msgs::PIDState>::toRosMsg(msg, msgpidstate);
-    msgpidstate.stamp = getNodeHandle().now();
     pubCurPIDState.publish(&msgpidstate);
     break;
   case unav::message_types_t::outbound_SystemStatus:

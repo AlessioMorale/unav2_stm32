@@ -11,7 +11,6 @@
 #include <modules.h>
 #include <modules/motorcontrollermodule.h>
 #include <modules/motormanagermodule.h>
-#include <modules/rosnodemodule.h>
 #include <stm32f4xx.h>
 #include <timers.h>
 namespace unav::modules {

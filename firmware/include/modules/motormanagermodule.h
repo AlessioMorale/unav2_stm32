@@ -1,14 +1,10 @@
 #include "basemodule.h"
-#include "ros.h"
 #include <configuration.h>
 #include <controls/pid.h>
 #include <drivers/encoder.h>
 #include <messages.h>
 #include <modules/motorcontrollermodule.h>
 #include <simplemessaging.h>
-#include <std_msgs/Float32.h>
-#include <std_msgs/Int16.h>
-#include <std_msgs/Int32.h>
 #include <utils/timer.h>
 #pragma once
 
